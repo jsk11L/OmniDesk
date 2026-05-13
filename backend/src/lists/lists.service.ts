@@ -1,0 +1,350 @@
+import { Injectable, NotFoundException } from '@nestjs/common';
+import type {
+  List,
+  ListField,
+  ListItem,
+  ListTag,
+  Prisma,
+} from '@prisma/client';
+
+import { PrismaService } from '../prisma/prisma.service';
+import { CreateListDto } from './dto/create-list.dto';
+import { UpdateListDto } from './dto/update-list.dto';
+import { CreateListItemDto } from './dto/create-list-item.dto';
+import { UpdateListItemDto } from './dto/update-list-item.dto';
+import { CreateListFieldDto } from './dto/create-list-field.dto';
+import { UpdateListFieldDto } from './dto/update-list-field.dto';
+import { CreateListTagDto } from './dto/create-list-tag.dto';
+
+const SORTABLE_FIELDS = ['title', 'position', 'createdAt', 'updatedAt'] as const;
+type SortableField = (typeof SORTABLE_FIELDS)[number];
+
+export interface ListItemsQuery {
+  q?: string;
+  tag?: string;
+  sort?: string;
+  dir?: string;
+}
+
+@Injectable()
+export class ListsService {
+  constructor(private readonly prisma: PrismaService) {}
+
+  // ─── Lists ───────────────────────────────────────────────
+
+  listForUser(userId: string): Promise<List[]> {
+    return this.prisma.list.findMany({
+      where: { userId },
+      orderBy: { updatedAt: 'desc' },
+    });
+  }
+
+  async findById(userId: string, id: string): Promise<List> {
+    const list = await this.prisma.list.findFirst({
+      where: { id, userId },
+      include: {
+        fields: { orderBy: { position: 'asc' } },
+        tags: { orderBy: { name: 'asc' } },
+      },
+    });
+    if (!list) {
+      throw new NotFoundException('List not found');
+    }
+    return list;
+  }
+
+  create(userId: string, dto: CreateListDto): Promise<List> {
+    return this.prisma.list.create({
+      data: {
+        userId,
+        name: dto.name,
+        description: dto.description ?? null,
+        icon: dto.icon ?? null,
+        coverImageUrl: dto.coverImageUrl ?? null,
+        defaultView: dto.defaultView ?? 'GRID',
+        defaultSortField: dto.defaultSortField ?? null,
+        defaultSortDir: dto.defaultSortDir ?? 'ASC',
+      },
+    });
+  }
+
+  async update(userId: string, id: string, dto: UpdateListDto): Promise<List> {
+    const list = await this.assertOwner(userId, id);
+    return this.prisma.list.update({
+      where: { id },
+      data: {
+        name: dto.name ?? list.name,
+        description: dto.description ?? list.description,
+        icon: dto.icon ?? list.icon,
+        coverImageUrl: dto.coverImageUrl ?? list.coverImageUrl,
+        defaultView: dto.defaultView ?? list.defaultView,
+        defaultSortField: dto.defaultSortField ?? list.defaultSortField,
+        defaultSortDir: dto.defaultSortDir ?? list.defaultSortDir,
+      },
+    });
+  }
+
+  async delete(userId: string, id: string): Promise<{ id: string }> {
+    await this.assertOwner(userId, id);
+    await this.prisma.list.delete({ where: { id } });
+    return { id };
+  }
+
+  // ─── Items ───────────────────────────────────────────────
+
+  async listItems(
+    userId: string,
+    listId: string,
+    query: ListItemsQuery,
+  ): Promise<ListItem[]> {
+    await this.assertOwner(userId, listId);
+
+    const where: Prisma.ListItemWhereInput = { listId };
+    if (query.q) {
+      where.title = { contains: query.q, mode: 'insensitive' };
+    }
+    if (query.tag) {
+      where.tags = {
+        some: {
+          tag: { name: { equals: query.tag, mode: 'insensitive' }, listId },
+        },
+      };
+    }
+
+    const sort = this.resolveSortField(query.sort);
+    const dir: Prisma.SortOrder = query.dir?.toUpperCase() === 'DESC' ? 'desc' : 'asc';
+
+    return this.prisma.listItem.findMany({
+      where,
+      orderBy: { [sort]: dir },
+      include: { tags: { include: { tag: true } } },
+    });
+  }
+
+  async createItem(
+    userId: string,
+    listId: string,
+    dto: CreateListItemDto,
+  ): Promise<ListItem> {
+    await this.assertOwner(userId, listId);
+    if (dto.tagIds?.length) {
+      await this.assertTagsBelongToList(listId, dto.tagIds);
+    }
+    const position = dto.position ?? (await this.nextItemPosition(listId));
+
+    return this.prisma.listItem.create({
+      data: {
+        listId,
+        title: dto.title,
+        imageUrl: dto.imageUrl ?? null,
+        customFields: (dto.customFields ?? {}) as Prisma.InputJsonValue,
+        position,
+        tags: dto.tagIds?.length
+          ? { create: dto.tagIds.map((tagId) => ({ tagId })) }
+          : undefined,
+      },
+      include: { tags: { include: { tag: true } } },
+    });
+  }
+
+  async updateItem(
+    userId: string,
+    listId: string,
+    itemId: string,
+    dto: UpdateListItemDto,
+  ): Promise<ListItem> {
+    await this.assertOwner(userId, listId);
+    const item = await this.prisma.listItem.findFirst({ where: { id: itemId, listId } });
+    if (!item) {
+      throw new NotFoundException('Item not found');
+    }
+    if (dto.tagIds) {
+      await this.assertTagsBelongToList(listId, dto.tagIds);
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      if (dto.tagIds) {
+        await tx.listItemTag.deleteMany({ where: { itemId } });
+        if (dto.tagIds.length > 0) {
+          await tx.listItemTag.createMany({
+            data: dto.tagIds.map((tagId) => ({ itemId, tagId })),
+          });
+        }
+      }
+
+      const data: Prisma.ListItemUpdateInput = {
+        title: dto.title ?? item.title,
+        imageUrl: dto.imageUrl ?? item.imageUrl,
+        position: dto.position ?? item.position,
+      };
+      if (dto.customFields !== undefined) {
+        data.customFields = dto.customFields as Prisma.InputJsonValue;
+      }
+
+      return tx.listItem.update({
+        where: { id: itemId },
+        data,
+        include: { tags: { include: { tag: true } } },
+      });
+    });
+  }
+
+  async deleteItem(
+    userId: string,
+    listId: string,
+    itemId: string,
+  ): Promise<{ id: string }> {
+    await this.assertOwner(userId, listId);
+    const item = await this.prisma.listItem.findFirst({ where: { id: itemId, listId } });
+    if (!item) {
+      throw new NotFoundException('Item not found');
+    }
+    await this.prisma.listItem.delete({ where: { id: itemId } });
+    return { id: itemId };
+  }
+
+  // ─── Fields ──────────────────────────────────────────────
+
+  async createField(
+    userId: string,
+    listId: string,
+    dto: CreateListFieldDto,
+  ): Promise<ListField> {
+    await this.assertOwner(userId, listId);
+    const position = dto.position ?? (await this.nextFieldPosition(listId));
+
+    const data: Prisma.ListFieldUncheckedCreateInput = {
+      listId,
+      name: dto.name,
+      fieldType: dto.fieldType,
+      isRequired: dto.isRequired ?? false,
+      position,
+      defaultValue: dto.defaultValue ?? null,
+    };
+    if (dto.options !== undefined) {
+      data.options = dto.options as Prisma.InputJsonValue;
+    }
+
+    return this.prisma.listField.create({ data });
+  }
+
+  async updateField(
+    userId: string,
+    listId: string,
+    fieldId: string,
+    dto: UpdateListFieldDto,
+  ): Promise<ListField> {
+    await this.assertOwner(userId, listId);
+    const field = await this.prisma.listField.findFirst({
+      where: { id: fieldId, listId },
+    });
+    if (!field) {
+      throw new NotFoundException('Field not found');
+    }
+
+    const data: Prisma.ListFieldUpdateInput = {
+      name: dto.name ?? field.name,
+      fieldType: dto.fieldType ?? field.fieldType,
+      isRequired: dto.isRequired ?? field.isRequired,
+      position: dto.position ?? field.position,
+      defaultValue: dto.defaultValue ?? field.defaultValue,
+    };
+    if (dto.options !== undefined) {
+      data.options = dto.options as Prisma.InputJsonValue;
+    }
+
+    return this.prisma.listField.update({ where: { id: fieldId }, data });
+  }
+
+  async deleteField(
+    userId: string,
+    listId: string,
+    fieldId: string,
+  ): Promise<{ id: string }> {
+    await this.assertOwner(userId, listId);
+    const field = await this.prisma.listField.findFirst({
+      where: { id: fieldId, listId },
+    });
+    if (!field) {
+      throw new NotFoundException('Field not found');
+    }
+    await this.prisma.listField.delete({ where: { id: fieldId } });
+    return { id: fieldId };
+  }
+
+  // ─── Tags ────────────────────────────────────────────────
+
+  async createTag(
+    userId: string,
+    listId: string,
+    dto: CreateListTagDto,
+  ): Promise<ListTag> {
+    await this.assertOwner(userId, listId);
+    return this.prisma.listTag.create({
+      data: {
+        listId,
+        name: dto.name,
+        color: dto.color ?? '#94a3b8',
+      },
+    });
+  }
+
+  async deleteTag(
+    userId: string,
+    listId: string,
+    tagId: string,
+  ): Promise<{ id: string }> {
+    await this.assertOwner(userId, listId);
+    const tag = await this.prisma.listTag.findFirst({ where: { id: tagId, listId } });
+    if (!tag) {
+      throw new NotFoundException('Tag not found');
+    }
+    await this.prisma.listTag.delete({ where: { id: tagId } });
+    return { id: tagId };
+  }
+
+  // ─── Helpers ─────────────────────────────────────────────
+
+  private async assertOwner(userId: string, listId: string): Promise<List> {
+    const list = await this.prisma.list.findFirst({ where: { id: listId, userId } });
+    if (!list) {
+      throw new NotFoundException('List not found');
+    }
+    return list;
+  }
+
+  private async assertTagsBelongToList(listId: string, tagIds: string[]): Promise<void> {
+    const found = await this.prisma.listTag.findMany({
+      where: { id: { in: tagIds }, listId },
+      select: { id: true },
+    });
+    if (found.length !== tagIds.length) {
+      throw new NotFoundException('One or more tags not found in this list');
+    }
+  }
+
+  private async nextItemPosition(listId: string): Promise<number> {
+    const last = await this.prisma.listItem.findFirst({
+      where: { listId },
+      orderBy: { position: 'desc' },
+      select: { position: true },
+    });
+    return (last?.position ?? -1) + 1;
+  }
+
+  private async nextFieldPosition(listId: string): Promise<number> {
+    const last = await this.prisma.listField.findFirst({
+      where: { listId },
+      orderBy: { position: 'desc' },
+      select: { position: true },
+    });
+    return (last?.position ?? -1) + 1;
+  }
+
+  private resolveSortField(sort?: string): SortableField {
+    if (sort && (SORTABLE_FIELDS as readonly string[]).includes(sort)) {
+      return sort as SortableField;
+    }
+    return 'position';
+  }
+}

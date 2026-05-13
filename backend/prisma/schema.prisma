@@ -1,0 +1,404 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────
+// AUTH & USER
+// ─────────────────────────────────────────
+
+model User {
+  id                  String    @id @default(uuid())
+  email               String    @unique
+  passwordHash        String
+  displayName         String?
+  avatarUrl           String?
+  isEmailVerified     Boolean   @default(false)
+  verificationToken   String?
+  resetPasswordToken  String?
+  resetPasswordExpiry DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  pushSubscriptions PushSubscription[]
+  calendarEvents    CalendarEvent[]
+  lists             List[]
+  notes             Note[]
+  todoBoards        TodoBoard[]
+  financeBoards     FinanceBoard[]
+  notifications     NotificationConfig[]
+  themes            Theme[]              @relation("ThemeOwner")
+  activeThemeId     String?
+  activeTheme       Theme?               @relation("ActiveTheme", fields: [activeThemeId], references: [id])
+}
+
+model PushSubscription {
+  id        String   @id @default(uuid())
+  userId    String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ─────────────────────────────────────────
+// NOTIFICATIONS (sistema central)
+// ─────────────────────────────────────────
+
+model NotificationConfig {
+  id            String                @id @default(uuid())
+  userId        String
+  title         String
+  message       String
+  iconUrl       String?
+  accentColor   String                @default("#6366f1")
+  triggerType   NotificationTrigger
+  scheduledAt   DateTime?
+  recurringRule String?
+  isRecurring   Boolean               @default(false)
+  channels      NotificationChannel[]
+  isActive      Boolean               @default(true)
+  isFired       Boolean               @default(false)
+  lastFiredAt   DateTime?
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
+
+  user           User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  calendarEvents CalendarEventNotification[]
+  notes          NoteNotification[]
+  inAppQueue     InAppNotification[]
+}
+
+enum NotificationTrigger {
+  MANUAL
+  SCHEDULED
+  RECURRING
+}
+
+enum NotificationChannel {
+  IN_APP
+  PUSH
+  EMAIL
+}
+
+model InAppNotification {
+  id             String   @id @default(uuid())
+  userId         String
+  notificationId String
+  isRead         Boolean  @default(false)
+  createdAt      DateTime @default(now())
+
+  notification NotificationConfig @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+}
+
+// ─────────────────────────────────────────
+// CALENDAR
+// ─────────────────────────────────────────
+
+model CalendarEvent {
+  id          String   @id @default(uuid())
+  userId      String
+  title       String
+  description String?
+  startDate   DateTime
+  endDate     DateTime
+  allDay      Boolean  @default(false)
+  color       String   @default("#6366f1")
+  location    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user          User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notifications CalendarEventNotification[]
+}
+
+model CalendarEventNotification {
+  id             String @id @default(uuid())
+  eventId        String
+  notificationId String
+  minutesBefore  Int    @default(15)
+
+  event        CalendarEvent      @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  notification NotificationConfig @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+}
+
+// ─────────────────────────────────────────
+// LISTS (Bibliotecas enriquecidas)
+// ─────────────────────────────────────────
+
+model List {
+  id               String        @id @default(uuid())
+  userId           String
+  name             String
+  description      String?
+  icon             String?
+  coverImageUrl    String?
+  defaultView      ListViewType  @default(GRID)
+  defaultSortField String?
+  defaultSortDir   SortDirection @default(ASC)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  user   User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items  ListItem[]
+  fields ListField[]
+  tags   ListTag[]
+}
+
+enum ListViewType {
+  GRID
+  TABLE
+  GALLERY
+  LIST
+}
+
+enum SortDirection {
+  ASC
+  DESC
+}
+
+model ListField {
+  id           String        @id @default(uuid())
+  listId       String
+  name         String
+  fieldType    ListFieldType
+  isRequired   Boolean       @default(false)
+  position     Int           @default(0)
+  options      Json?
+  defaultValue String?
+
+  list List @relation(fields: [listId], references: [id], onDelete: Cascade)
+}
+
+enum ListFieldType {
+  TEXT
+  NUMBER
+  DATE
+  URL
+  BOOLEAN
+  SELECT
+  MULTI_SELECT
+  RATING
+  IMAGE_URL
+}
+
+model ListTag {
+  id     String @id @default(uuid())
+  listId String
+  name   String
+  color  String @default("#94a3b8")
+
+  list  List          @relation(fields: [listId], references: [id], onDelete: Cascade)
+  items ListItemTag[]
+}
+
+model ListItem {
+  id           String   @id @default(uuid())
+  listId       String
+  title        String
+  imageUrl     String?
+  customFields Json     @default("{}")
+  position     Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  list List          @relation(fields: [listId], references: [id], onDelete: Cascade)
+  tags ListItemTag[]
+}
+
+model ListItemTag {
+  itemId String
+  tagId  String
+
+  item ListItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  tag  ListTag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([itemId, tagId])
+}
+
+// ─────────────────────────────────────────
+// NOTES
+// ─────────────────────────────────────────
+
+model Note {
+  id            String   @id @default(uuid())
+  userId        String
+  title         String
+  content       String   @default("")
+  icon          String?
+  coverImageUrl String?
+  isPinned      Boolean  @default(false)
+  tags          String[] @default([])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user          User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notifications NoteNotification[]
+}
+
+model NoteNotification {
+  id             String @id @default(uuid())
+  noteId         String
+  notificationId String
+
+  note         Note               @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  notification NotificationConfig @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+}
+
+// ─────────────────────────────────────────
+// TO-DO (Kanban)
+// ─────────────────────────────────────────
+
+model TodoBoard {
+  id        String   @id @default(uuid())
+  userId    String
+  name      String
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user    User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  columns TodoColumn[]
+}
+
+model TodoColumn {
+  id       String @id @default(uuid())
+  boardId  String
+  name     String
+  color    String @default("#94a3b8")
+  position Int    @default(0)
+
+  board TodoBoard  @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  items TodoItem[]
+}
+
+model TodoItem {
+  id          String       @id @default(uuid())
+  columnId    String
+  title       String
+  description String?
+  dueDate     DateTime?
+  priority    TodoPriority @default(MEDIUM)
+  tags        String[]     @default([])
+  position    Int          @default(0)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  column TodoColumn @relation(fields: [columnId], references: [id], onDelete: Cascade)
+}
+
+enum TodoPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+// ─────────────────────────────────────────
+// FINANCE
+// ─────────────────────────────────────────
+
+model FinanceBoard {
+  id        String   @id @default(uuid())
+  userId    String
+  name      String
+  currency  String   @default("USD")
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categories   FinanceCategory[]
+  transactions Transaction[]
+  budgets      Budget[]
+}
+
+model FinanceCategory {
+  id           String              @id @default(uuid())
+  boardId      String
+  name         String
+  color        String              @default("#94a3b8")
+  icon         String?
+  categoryType FinanceCategoryType
+
+  board        FinanceBoard  @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+  budgets      Budget[]
+}
+
+enum FinanceCategoryType {
+  INCOME
+  EXPENSE
+}
+
+model Transaction {
+  id         String              @id @default(uuid())
+  boardId    String
+  categoryId String?
+  title      String
+  amount     Float
+  type       FinanceCategoryType
+  date       DateTime
+  notes      String?
+  tags       String[]            @default([])
+  createdAt  DateTime            @default(now())
+  updatedAt  DateTime            @updatedAt
+
+  board    FinanceBoard     @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  category FinanceCategory? @relation(fields: [categoryId], references: [id])
+}
+
+model Budget {
+  id         String       @id @default(uuid())
+  boardId    String
+  categoryId String?
+  name       String
+  amount     Float
+  period     BudgetPeriod @default(MONTHLY)
+  createdAt  DateTime     @default(now())
+
+  board    FinanceBoard     @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  category FinanceCategory? @relation(fields: [categoryId], references: [id])
+}
+
+enum BudgetPeriod {
+  WEEKLY
+  MONTHLY
+  ANNUAL
+}
+
+// ─────────────────────────────────────────
+// THEMES
+// ─────────────────────────────────────────
+
+model Theme {
+  id                String   @id @default(uuid())
+  userId            String
+  name              String
+  isDefault         Boolean  @default(false)
+  isDark            Boolean  @default(true)
+  colorPrimary      String   @default("#6366f1")
+  colorSecondary    String   @default("#8b5cf6")
+  colorBackground   String   @default("#0f0f0f")
+  colorSurface      String   @default("#1a1a1a")
+  colorSurfaceHover String   @default("#242424")
+  colorBorder       String   @default("#2e2e2e")
+  colorText         String   @default("#e5e5e5")
+  colorTextMuted    String   @default("#71717a")
+  colorAccent       String   @default("#f59e0b")
+  colorDanger       String   @default("#ef4444")
+  colorSuccess      String   @default("#22c55e")
+  fontFamily        String   @default("'Inter', sans-serif")
+  borderRadius      String   @default("0.5rem")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  owner          User   @relation("ThemeOwner", fields: [userId], references: [id], onDelete: Cascade)
+  activeForUsers User[] @relation("ActiveTheme")
+}

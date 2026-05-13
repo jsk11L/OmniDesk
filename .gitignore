@@ -134,3 +134,31 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# =========================
+# Entorno y Secretos
+# =========================
+.env
+.env.*
+
+# =========================
+# Prisma ORM
+# =========================
+# Las migraciones SÍ se versionan. Solo ignoramos artefactos generados.
+**/prisma/dev.db
+**/prisma/dev.db-journal
+
+# =========================
+# IDE / OS
+# =========================
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# =========================
+# Build / dist
+# =========================
+**/dist/
+**/build/
+**/.angular/cache/

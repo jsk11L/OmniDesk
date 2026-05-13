@@ -1,0 +1,124 @@
+import { Injectable, NotFoundException } from '@nestjs/common';
+import type { Note, NoteNotification, Prisma } from '@prisma/client';
+
+import { PrismaService } from '../prisma/prisma.service';
+import { CreateNoteDto } from './dto/create-note.dto';
+import { UpdateNoteDto } from './dto/update-note.dto';
+import { AttachNoteNotificationDto } from './dto/attach-note-notification.dto';
+
+export interface ListNotesParams {
+  q?: string;
+  tag?: string;
+  pinned?: string;
+}
+
+@Injectable()
+export class NotesService {
+  constructor(private readonly prisma: PrismaService) {}
+
+  list(userId: string, params: ListNotesParams): Promise<Note[]> {
+    const where: Prisma.NoteWhereInput = { userId };
+
+    if (params.q) {
+      where.OR = [
+        { title: { contains: params.q, mode: 'insensitive' } },
+        { content: { contains: params.q, mode: 'insensitive' } },
+      ];
+    }
+    if (params.tag) {
+      where.tags = { has: params.tag };
+    }
+    if (params.pinned !== undefined) {
+      where.isPinned = params.pinned === 'true';
+    }
+
+    return this.prisma.note.findMany({
+      where,
+      orderBy: [{ isPinned: 'desc' }, { updatedAt: 'desc' }],
+      include: { notifications: true },
+    });
+  }
+
+  async findById(userId: string, id: string): Promise<Note> {
+    const note = await this.prisma.note.findFirst({
+      where: { id, userId },
+      include: { notifications: true },
+    });
+    if (!note) {
+      throw new NotFoundException('Note not found');
+    }
+    return note;
+  }
+
+  create(userId: string, dto: CreateNoteDto): Promise<Note> {
+    return this.prisma.note.create({
+      data: {
+        userId,
+        title: dto.title,
+        content: dto.content ?? '',
+        icon: dto.icon ?? null,
+        coverImageUrl: dto.coverImageUrl ?? null,
+        isPinned: dto.isPinned ?? false,
+        tags: dto.tags ?? [],
+      },
+    });
+  }
+
+  async update(userId: string, id: string, dto: UpdateNoteDto): Promise<Note> {
+    const note = await this.findById(userId, id);
+    return this.prisma.note.update({
+      where: { id },
+      data: {
+        title: dto.title ?? note.title,
+        content: dto.content ?? note.content,
+        icon: dto.icon ?? note.icon,
+        coverImageUrl: dto.coverImageUrl ?? note.coverImageUrl,
+        isPinned: dto.isPinned ?? note.isPinned,
+        tags: dto.tags ?? note.tags,
+      },
+    });
+  }
+
+  async delete(userId: string, id: string): Promise<{ id: string }> {
+    await this.findById(userId, id);
+    await this.prisma.note.delete({ where: { id } });
+    return { id };
+  }
+
+  async attachNotification(
+    userId: string,
+    noteId: string,
+    dto: AttachNoteNotificationDto,
+  ): Promise<NoteNotification> {
+    await this.findById(userId, noteId);
+
+    const notification = await this.prisma.notificationConfig.findFirst({
+      where: { id: dto.notificationId, userId },
+    });
+    if (!notification) {
+      throw new NotFoundException('Notification config not found');
+    }
+
+    return this.prisma.noteNotification.create({
+      data: { noteId, notificationId: dto.notificationId },
+    });
+  }
+
+  async detachNotification(
+    userId: string,
+    noteId: string,
+    entryId: string,
+  ): Promise<{ id: string }> {
+    await this.findById(userId, noteId);
+
+    const entry = await this.prisma.noteNotification.findFirst({
+      where: { id: entryId, noteId },
+    });
+    if (!entry) {
+      throw new NotFoundException('Notification link not found');
+    }
+
+    await this.prisma.noteNotification.delete({ where: { id: entryId } });
+    return { id: entryId };
+  }
+}
