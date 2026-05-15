@@ -133,23 +133,6 @@ El scheduler corre dentro del mismo proceso NestJS — no necesitas un cron exte
 
 ---
 
-## Estado del proyecto
-
-Versión 1.0 según especificación interna. Las 6 fases del roadmap están completas:
-
-| Fase | Alcance | Estado |
-|------|---------|:------:|
-| F1   | Monorepo + NestJS scaffold + Prisma schema + Auth + Seed | ✅ |
-| F2   | 7 módulos CRUD backend (themes, calendar, notes, todos, lists, finance, notifications) | ✅ |
-| F3   | Scheduler de notificaciones + service worker base | ✅ |
-| F4   | Angular 18 base: auth, theme service, sidebar, command palette | ✅ |
-| F5   | 7 módulos frontend completos | ✅ |
-| F6   | Auditoría de seguridad, sanitización JSONB, helmet CSP estricta, tests E2E | ✅ |
-
-Tests E2E del backend cubren el flujo completo de autenticación (register → verify → login → refresh → me) y el CRUD de temas incluyendo protecciones (sin token, hex inválido, whitelist DTO, system themes read-only, clear de `activeThemeId` al borrar).
-
----
-
 ## Licencia
 
 [MIT](./LICENSE).
