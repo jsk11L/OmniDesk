@@ -1,0 +1,66 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import 'ngx-toastr/toastr';
+
+/* ─── CSS Custom Properties (set in :root, overridden by ThemeService) ─── */
+:root {
+  --color-primary: #6366f1;
+  --color-secondary: #8b5cf6;
+  --color-background: #0f0f0f;
+  --color-surface: #1a1a1a;
+  --color-surface-hover: #242424;
+  --color-border: #2e2e2e;
+  --color-text: #e5e5e5;
+  --color-text-muted: #71717a;
+  --color-accent: #f59e0b;
+  --color-danger: #ef4444;
+  --color-success: #22c55e;
+  --font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  --border-radius: 0.5rem;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  font-family: var(--font-family);
+  background: var(--color-background);
+  color: var(--color-text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* ─── Scrollbar styling (subtle, theme-aware) ─── */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-muted);
+}
+
+/* ─── Angular Material overrides (minimum baseline) ─── */
+.mat-mdc-form-field {
+  width: 100%;
+}
+
+.mat-mdc-snack-bar-container {
+  --mdc-snackbar-container-color: var(--color-surface);
+  --mdc-snackbar-supporting-text-color: var(--color-text);
+}

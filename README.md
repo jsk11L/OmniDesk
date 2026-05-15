@@ -1,204 +1,155 @@
 # OmniDesk Web
 
-Aplicación web SPA de organización personal: calendario, listas, notas, kanban TO-DO,
-gestión financiera, notificaciones (in-app + push + email) y temas personalizables.
+Organizador personal integral en una sola SPA: calendario, listas tipo biblioteca, notas con editor rich-text, tablero Kanban TO-DO, gestión financiera, notificaciones (in-app, push del navegador y email) y temas totalmente personalizables.
 
-Documentación técnica completa: [`OMNIDESK_SPEC.md`](./OMNIDESK_SPEC.md).
-Variables y placeholders a reemplazar: [`CHANGE_ME.md`](./CHANGE_ME.md).
+Pensado para uso personal: una única cuenta por instalación, sin colaboración multiusuario, autohospedable de extremo a extremo.
 
 ---
 
-## Stack
+## Funcionalidades
 
-- **Backend**: NestJS 10 + Prisma 5 + PostgreSQL 15+ + Passport JWT
-- **Frontend** (próximas fases): Angular 18 + Tailwind + Angular Material + FullCalendar + TipTap + Chart.js
-- **Monorepo**: pnpm workspace
+- **Calendario** — vistas mensual, semanal, diaria y de agenda; eventos all-day o con rango; recordatorios programables por evento con notificación push y/o email.
+- **Listas** — bibliotecas personalizadas (juegos, libros, música, películas, lo que quieras) con campos definibles por el usuario, tags coloreadas, cover images por ítem (vía URL) y vistas grilla o tabla.
+- **Notas** — editor TipTap con autoguardado debounced cada 2 segundos, soporte de imágenes y links, pin de notas favoritas, búsqueda en tiempo real y atajo `Ctrl+N` para nueva nota.
+- **TO-DO Kanban** — tablero con columnas configurables, drag & drop entre columnas (Angular CDK), reordenamiento de items, dueDate y prioridad por tarjeta.
+- **Finanzas** — múltiples boards (cuentas), categorías de ingreso/egreso, presupuestos por categoría, transacciones recurrentes opcionales, dashboard con gráficos de balance y composición (Chart.js).
+- **Notificaciones** — tres canales: bandeja in-app, push del navegador (Web Push API + VAPID) y email (Nodemailer). Reglas con `recurringRule` estilo cron, evaluadas por un scheduler que corre cada minuto.
+- **Temas** — 5 temas predefinidos (Obsidian Dark, Notion Light, Midnight Blue, Forest, Sunset) más temas personalizados ilimitados; cada color, fuente y radio de borde se mapea a CSS custom properties inyectadas en `:root`.
+- **Command palette** — abrir con `Ctrl+K` desde cualquier vista para navegar rápido entre módulos.
 
 ---
 
-## Requisitos previos
+## Stack técnico
+
+**Backend** (NestJS 10 standalone modules)
+- TypeScript estricto, Prisma 5 + PostgreSQL 18
+- Passport JWT (access + refresh) con bcrypt 12 rounds
+- `class-validator` con DTOs estrictos en TODOS los endpoints (`whitelist: true`, `forbidNonWhitelisted: true`)
+- `@nestjs/throttler` con rate limit global 100/15min y `/auth/*` reducido a 10/15min
+- `@nestjs/schedule` con `@Cron(EVERY_MINUTE)` para evaluar y disparar notificaciones
+- `web-push` con VAPID para push del navegador
+- `nodemailer` con fallback a modo consola si el host SMTP es el placeholder
+- Helmet con CSP estricta (`default-src 'none'`), HSTS en producción, CORS con validador funcional
+- Sanitización de JSONB contra prototype pollution (caps de profundidad, keys, arrays, strings)
+
+**Frontend** (Angular 18 standalone components)
+- Signals + `computed()` + nuevo control flow (`@if` / `@for` / `@switch` / `@let`)
+- `ChangeDetectionStrategy.OnPush` en todos los componentes
+- Tailwind CSS sobre CSS custom properties (los temas re-pintan toda la app sin recompilar)
+- Angular Material Dialog para modales, `@angular/cdk` DragDrop para Kanban
+- FullCalendar 6 (dayGrid + timeGrid + list + interaction)
+- TipTap 2 (StarterKit + Image + Link) con autoguardado vía RxJS `Subject + debounceTime`
+- Chart.js 4 + `ng2-charts` 6 para gráficos del dashboard de finanzas
+- `ngx-toastr` para feedback de errores y éxitos
+- Service Worker propio (`sw.js`) para recibir push del navegador
+
+**Infraestructura**
+- Monorepo `pnpm workspace` (raíz + `backend` + `frontend`)
+- Node.js 20 LTS, PostgreSQL 18
+
+---
+
+## Arquitectura
+
+```
+┌──────────────────────────────────────────────────────┐
+│                    Angular 18 SPA                    │
+│   Auth · Calendar · Lists · Notes · Todos · Finance  │
+│         Notifications · Settings · Themes            │
+└──────────────────────┬───────────────────────────────┘
+                       │ HTTP (JWT en Authorization)
+                       │ Web Push (VAPID)
+                       ▼
+┌──────────────────────────────────────────────────────┐
+│              NestJS 10 — REST API                    │
+│  AuthGuard → DTO validation → Service → Prisma → DB  │
+│                                                      │
+│  + @Cron(EVERY_MINUTE) scheduler:                    │
+│    evalúa NotificationConfig vencidas,               │
+│    crea InAppNotification, manda push y email        │
+└──────────────────────┬───────────────────────────────┘
+                       │
+                       ▼
+                  PostgreSQL 18
+                  (21 modelos Prisma)
+```
+
+Todas las respuestas REST tienen forma `{ data, meta?, error? }`. El `userId` siempre se extrae del JWT vía decorator `@CurrentUser()`, NUNCA del body de la request. Las imágenes son SIEMPRE strings URL validados con `@IsUrl()` — el servidor no acepta uploads de archivos.
+
+---
+
+## Estructura del repo
+
+```
+.
+├── backend/                  Aplicación NestJS
+│   ├── prisma/               schema.prisma (21 modelos) + seed.ts (5 temas)
+│   ├── src/
+│   │   ├── auth/             Register, verify-email, login, refresh, me
+│   │   ├── users/            PATCH /users/me
+│   │   ├── themes/           CRUD + activate
+│   │   ├── calendar/         Eventos + recordatorios
+│   │   ├── notes/            CRUD + adjuntar notificaciones
+│   │   ├── todos/            Boards, columnas, items, reorder
+│   │   ├── lists/            Lists + items + fields + tags
+│   │   ├── finance/          Boards, transactions, categories, budgets, summary
+│   │   ├── notifications/    CRUD, scheduler, push subscriptions, inbox
+│   │   ├── mail/             Nodemailer con fallback consola
+│   │   ├── prisma/           PrismaService global
+│   │   └── common/           Filters, interceptors, decorators, utils
+│   └── test/                 Tests E2E (auth + themes)
+└── frontend/                 Aplicación Angular 18
+    ├── src/app/
+    │   ├── core/             Auth guard, interceptor, services, models
+    │   ├── shared/           main-layout, sidebar, command palette, dialogs
+    │   └── features/         Un módulo por dominio (auth, calendar, lists, …)
+    ├── src/sw.js             Service worker para push
+    └── src/styles.scss       Tailwind + CSS custom properties
+```
+
+---
+
+## Requisitos
 
 - Node.js 20 LTS
-- pnpm 9+ (`npm install -g pnpm`)
-- PostgreSQL 15+ corriendo localmente (o vía Docker)
-- pgAdmin 4 (o cualquier cliente Postgres) para crear la base manualmente
+- pnpm 9+ (preferentemente vía `corepack enable && corepack prepare pnpm@latest --activate`)
+- PostgreSQL 18 (local, Docker o gestionado)
+- Un cliente Postgres para crear la base manualmente (pgAdmin 4, DBeaver, `psql`, etc.)
 
 ---
 
-## Setup inicial — Fase 1
+## Uso
 
-```powershell
-# 1. Instalar dependencias del monorepo
-pnpm install
+Una vez instalado y configurado (la guía paso a paso de instalación local no se publica en este repo), el flujo es:
 
-# 2. Crear la base de datos en pgAdmin: nombre "omnidesk"
-#    Owner: el usuario que vas a usar en DATABASE_URL.
+1. **Registro** en `/auth/register`. Se envía un email de verificación (o se imprime por consola si no configuraste SMTP real).
+2. **Verificar email** con el token recibido — el servidor exige email verificado para hacer login.
+3. **Login** → se obtienen `accessToken` (15 min) y `refreshToken` (7 días).
+4. **Dashboard** con accesos rápidos a los 6 módulos. `Ctrl+K` abre la paleta de comandos.
+5. **Settings → Theme editor** para crear tu propio tema o activar uno de los 5 predefinidos.
+6. **Settings → Profile** para cambiar displayName, password o suscribirte a push del navegador.
 
-# 3. Crear backend/.env copiando la plantilla de CHANGE_ME.md
-#    (el archivo no se versiona; ver CHANGE_ME.md para placeholders)
-
-# 4. Generar el cliente Prisma y aplicar la migración inicial
-pnpm db:migrate
-# Te preguntará un nombre para la migración → "init"
-
-# 5. Sembrar el usuario system + los 5 temas predefinidos
-pnpm db:seed
-
-# 6. Levantar el backend en modo watch
-pnpm backend:dev
-# API disponible en http://localhost:3000
-```
-
-### Verificación
-
-```powershell
-# Healthcheck público (sin auth)
-curl http://localhost:3000/health
-# Respuesta esperada: { "data": { "status": "ok", "timestamp": "..." } }
-```
+El scheduler corre dentro del mismo proceso NestJS — no necesitas un cron externo.
 
 ---
 
-## Estructura
+## Estado del proyecto
 
-```
-omnidesk/
-├── backend/                  # NestJS API
-│   ├── prisma/
-│   │   ├── schema.prisma     # 21 modelos
-│   │   └── seed.ts           # system user + 5 temas predefinidos
-│   └── src/
-│       ├── auth/             # registro, login, refresh, verify, reset password
-│       ├── users/            # perfil + seed de defaults por usuario nuevo
-│       ├── themes/           # CRUD temas + activate
-│       ├── calendar/         # CRUD eventos + attach/detach notifications
-│       ├── notes/            # CRUD notas + attach/detach notifications
-│       ├── todos/            # boards/columns/items + reorder
-│       ├── lists/            # lists/items/fields/tags + filtros
-│       ├── finance/          # boards/categories/transactions/budgets + summary
-│       ├── notifications/    # configs/inbox/push + fire manual
-│       ├── mail/             # Nodemailer con fallback a consola
-│       ├── prisma/           # PrismaService global
-│       └── common/           # filter, interceptor, decorator
-├── CHANGE_ME.md              # placeholders a reemplazar
-├── OMNIDESK_SPEC.md          # spec técnica completa (fuente de verdad)
-└── pnpm-workspace.yaml
-```
+Versión 1.0 según especificación interna. Las 6 fases del roadmap están completas:
+
+| Fase | Alcance | Estado |
+|------|---------|:------:|
+| F1   | Monorepo + NestJS scaffold + Prisma schema + Auth + Seed | ✅ |
+| F2   | 7 módulos CRUD backend (themes, calendar, notes, todos, lists, finance, notifications) | ✅ |
+| F3   | Scheduler de notificaciones + service worker base | ✅ |
+| F4   | Angular 18 base: auth, theme service, sidebar, command palette | ✅ |
+| F5   | 7 módulos frontend completos | ✅ |
+| F6   | Auditoría de seguridad, sanitización JSONB, helmet CSP estricta, tests E2E | ✅ |
+
+Tests E2E del backend cubren el flujo completo de autenticación (register → verify → login → refresh → me) y el CRUD de temas incluyendo protecciones (sin token, hex inválido, whitelist DTO, system themes read-only, clear de `activeThemeId` al borrar).
 
 ---
 
-## Endpoints disponibles (Fases 1 + 2)
+## Licencia
 
-Todos retornan `{ data, meta?, error? }` (interceptor global) y los errores siguen el
-formato `{ error: { code, message, statusCode, path, timestamp } }`. Todos los protegidos
-extraen `userId` del JWT vía `@CurrentUser()`.
-
-### Auth (público, rate limit 10/15min)
-| Método | Endpoint | Descripción |
-|---|---|---|
-| GET | `/health` | Healthcheck |
-| POST | `/auth/register` | Crea cuenta + seed de defaults + envía email de verificación |
-| POST | `/auth/verify-email` | Activa la cuenta (body: `{ token }`) |
-| POST | `/auth/login` | Login (body: `{ email, password }`) |
-| POST | `/auth/refresh` | Renueva access token (body: `{ refreshToken }`) |
-| POST | `/auth/forgot-password` | Inicia reset (body: `{ email }`) |
-| POST | `/auth/reset-password` | Aplica reset (body: `{ token, newPassword }`) |
-| GET | `/auth/me` | Perfil del usuario autenticado (protegido) |
-
-### Themes (`/themes`, protegido)
-- `GET /themes` — propios + sistema (isDefault)
-- `POST /themes` — crear propio
-- `GET /themes/:id` — uno
-- `PATCH /themes/:id` — actualizar (solo propios, no system)
-- `DELETE /themes/:id` — eliminar (solo propios)
-- `PATCH /themes/:id/activate` — activar tema para el usuario
-
-### Calendar (`/calendar/events`, protegido)
-- `GET /calendar/events?start=ISO&end=ISO`
-- `POST /calendar/events`
-- `GET /calendar/events/:id`
-- `PATCH /calendar/events/:id`
-- `DELETE /calendar/events/:id`
-- `POST /calendar/events/:id/notifications` — body `{ notificationId, minutesBefore? }`
-- `DELETE /calendar/events/:id/notifications/:notifId`
-
-### Notes (`/notes`, protegido)
-- `GET /notes?q=&tag=&pinned=`
-- `POST /notes`
-- `GET /notes/:id`
-- `PATCH /notes/:id`
-- `DELETE /notes/:id`
-- `POST /notes/:id/notifications` — body `{ notificationId }`
-- `DELETE /notes/:id/notifications/:notifId`
-
-### TO-DO (`/todos`, protegido)
-- `GET /todos/boards` · `POST /todos/boards`
-- `GET /todos/boards/:id` (incluye columns + items) · `PATCH` · `DELETE`
-- `POST /todos/boards/:id/columns` · `PATCH /todos/boards/:id/columns/:colId` · `DELETE`
-- `POST /todos/boards/:id/columns/:colId/items`
-- `PATCH /todos/items/:itemId` (incluye mover de columna)
-- `DELETE /todos/items/:itemId`
-- `POST /todos/items/reorder` — body `{ items: [{ id, columnId, position }] }`
-
-### Lists (`/lists`, protegido)
-- `GET /lists` · `POST /lists` · `GET /lists/:id` (incluye fields + tags) · `PATCH` · `DELETE`
-- `GET /lists/:id/items?q=&tag=&sort=&dir=`
-- `POST /lists/:id/items` · `PATCH /lists/:id/items/:itemId` · `DELETE`
-- `POST /lists/:id/fields` · `PATCH /lists/:id/fields/:fieldId` · `DELETE`
-- `POST /lists/:id/tags` · `DELETE /lists/:id/tags/:tagId`
-
-### Finance (`/finance`, protegido)
-- `GET /finance/boards` · `POST` · `GET /finance/boards/:id` (incluye categories + budgets) · `PATCH` · `DELETE`
-- `GET /finance/boards/:id/transactions?start=&end=&type=&category=` · `POST` · `PATCH /:txId` · `DELETE /:txId`
-- `POST /finance/boards/:id/categories` · `PATCH /:catId` · `DELETE /:catId`
-- `POST /finance/boards/:id/budgets` · `PATCH /:budId` · `DELETE /:budId`
-- `GET /finance/boards/:id/summary?start=&end=` — `{ income, expense, balance, byCategory[] }`
-
-### Notifications (`/notifications`, protegido)
-- `GET /notifications` · `POST` · `GET /:id` · `PATCH` · `DELETE`
-- `POST /notifications/:id/fire` — dispara manualmente (IN_APP + PUSH + EMAIL según `channels`)
-- `GET /notifications/inbox` — no leídas
-- `PATCH /notifications/inbox/:id/read`
-- `DELETE /notifications/inbox/clear` — borra las ya leídas
-- `POST /notifications/push/subscribe` — body `{ endpoint, keys: { p256dh, auth } }`
-- `DELETE /notifications/push/unsubscribe` — body `{ endpoint }`
-
-**Rate limiting:**
-- Global: 100 req / 15 min por IP
-- `/auth/*`: 10 req / 15 min por IP
-
-**Notas de seguridad:**
-- Todo endpoint protegido usa `@UseGuards(JwtAuthGuard)` a nivel de controller.
-- `userId` SIEMPRE viene del JWT vía `@CurrentUser()`, nunca del body.
-- Toda imagen es validada con `@IsUrl({ protocols: ['http', 'https'], require_protocol: true })`.
-- ParseUUIDPipe valida todos los parámetros de ID en la ruta.
-- Cada operación de mutación verifica ownership (`findFirst` con filtro `userId`) antes de actuar.
-
----
-
-## Comandos útiles
-
-```powershell
-pnpm backend:dev          # NestJS en modo watch
-pnpm backend:build        # Compila a backend/dist/
-pnpm backend:start        # Corre el build de producción
-pnpm db:migrate           # Crea/aplica migración (dev)
-pnpm db:generate          # Regenera el cliente Prisma
-pnpm db:seed              # Re-corre el seed (idempotente)
-pnpm db:studio            # Abre Prisma Studio en el navegador
-pnpm --filter backend typecheck   # tsc --noEmit
-pnpm --filter backend test        # tests unitarios
-```
-
----
-
-## Próximas fases
-
-- ~~Fase 1~~ — Monorepo + NestJS + Prisma + Auth + Seed ✓
-- ~~Fase 2~~ — Módulos CRUD del backend (themes, calendar, notes, todos, lists, finance, notifications) ✓
-- **Fase 3**: Scheduler de notificaciones (cron @minuto) + Service Worker
-- **Fase 4**: Angular base (layout, routing, interceptors, ThemeService, auth UI)
-- **Fase 5.1–5.7**: Módulos del frontend uno por uno
-- **Fase 6**: Auditoría de seguridad y pulido
-
-Ver [`OMNIDESK_SPEC.md`](./OMNIDESK_SPEC.md) sección 10 para el roadmap completo.
+[MIT](./LICENSE).

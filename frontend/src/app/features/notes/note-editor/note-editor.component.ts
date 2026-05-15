@@ -1,0 +1,379 @@
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  ElementRef,
+  inject,
+  input,
+  OnDestroy,
+  output,
+  signal,
+  ViewChild,
+  effect,
+} from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { Editor } from '@tiptap/core';
+import StarterKit from '@tiptap/starter-kit';
+import Image from '@tiptap/extension-image';
+import Link from '@tiptap/extension-link';
+import { Subject, debounceTime, takeUntil } from 'rxjs';
+import { ToastrService } from 'ngx-toastr';
+import { HttpErrorResponse } from '@angular/common/http';
+
+import { NotesService } from '../services/notes.service';
+import type { Note, UpdateNoteDto } from '../notes.types';
+
+type SaveStatus = 'saved' | 'saving' | 'dirty' | 'error';
+
+@Component({
+  selector: 'app-note-editor',
+  standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [FormsModule],
+  template: `
+    <div class="h-full flex flex-col">
+      <header class="px-6 py-4 border-b border-border">
+        <div class="flex items-center justify-between mb-3 text-xs text-text-muted">
+          <span>
+            @switch (status()) {
+              @case ('saving') { Guardando… }
+              @case ('saved') { ✓ Guardado }
+              @case ('dirty') { Cambios sin guardar }
+              @case ('error') { ✗ Error al guardar }
+            }
+          </span>
+          <div class="flex items-center gap-3">
+            <button
+              type="button"
+              (click)="togglePin()"
+              [title]="pinned() ? 'Desfijar' : 'Fijar'"
+              class="hover:text-text"
+            >
+              {{ pinned() ? '★' : '☆' }}
+            </button>
+            <button
+              type="button"
+              (click)="deleteSelected()"
+              class="hover:text-danger"
+              title="Eliminar nota"
+            >
+              🗑
+            </button>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 mb-2">
+          <input
+            type="text"
+            [(ngModel)]="icon"
+            (ngModelChange)="onMetaChange()"
+            maxlength="4"
+            placeholder="📝"
+            class="w-12 px-2 py-1 bg-background border border-border rounded text-center text-lg"
+          />
+          <input
+            type="text"
+            [(ngModel)]="title"
+            (ngModelChange)="onMetaChange()"
+            maxlength="200"
+            placeholder="Sin título"
+            class="flex-1 text-2xl font-semibold bg-transparent outline-none placeholder:text-text-muted"
+          />
+        </div>
+
+        <input
+          type="url"
+          [(ngModel)]="coverImageUrl"
+          (ngModelChange)="onMetaChange()"
+          placeholder="URL de imagen de portada (opcional)"
+          class="w-full px-2 py-1 text-xs bg-transparent text-text-muted outline-none focus:text-text"
+        />
+
+        <div class="flex items-center gap-2 mt-2 flex-wrap">
+          @for (tag of tags(); track tag; let i = $index) {
+            <span
+              class="inline-flex items-center gap-1 px-2 py-0.5 bg-surface-hover rounded-full text-xs"
+            >
+              {{ tag }}
+              <button
+                type="button"
+                (click)="removeTag(i)"
+                class="opacity-60 hover:opacity-100"
+                aria-label="Eliminar tag"
+              >
+                ×
+              </button>
+            </span>
+          }
+          <input
+            type="text"
+            [(ngModel)]="newTag"
+            (keydown.enter)="addTag()"
+            placeholder="+ Tag"
+            class="text-xs bg-transparent outline-none border-b border-border focus:border-primary px-1 w-20"
+          />
+        </div>
+      </header>
+
+      <div class="border-b border-border px-6 py-2 flex items-center gap-1 flex-wrap">
+        <button type="button" (click)="cmd('toggleBold')" class="px-2 py-1 rounded hover:bg-surface-hover text-sm" title="Negrita">
+          <strong>B</strong>
+        </button>
+        <button type="button" (click)="cmd('toggleItalic')" class="px-2 py-1 rounded hover:bg-surface-hover text-sm italic" title="Cursiva">
+          I
+        </button>
+        <button type="button" (click)="cmd('toggleStrike')" class="px-2 py-1 rounded hover:bg-surface-hover text-sm line-through" title="Tachado">
+          S
+        </button>
+        <span class="w-px h-5 bg-border mx-1"></span>
+        <button type="button" (click)="setHeading(1)" class="px-2 py-1 rounded hover:bg-surface-hover text-sm" title="Heading 1">H1</button>
+        <button type="button" (click)="setHeading(2)" class="px-2 py-1 rounded hover:bg-surface-hover text-sm" title="Heading 2">H2</button>
+        <button type="button" (click)="setHeading(3)" class="px-2 py-1 rounded hover:bg-surface-hover text-sm" title="Heading 3">H3</button>
+        <span class="w-px h-5 bg-border mx-1"></span>
+        <button type="button" (click)="cmd('toggleBulletList')" class="px-2 py-1 rounded hover:bg-surface-hover text-sm" title="Lista">• Lista</button>
+        <button type="button" (click)="cmd('toggleOrderedList')" class="px-2 py-1 rounded hover:bg-surface-hover text-sm" title="Lista ordenada">1. Lista</button>
+        <button type="button" (click)="cmd('toggleBlockquote')" class="px-2 py-1 rounded hover:bg-surface-hover text-sm" title="Cita">"</button>
+        <button type="button" (click)="cmd('toggleCodeBlock')" class="px-2 py-1 rounded hover:bg-surface-hover text-sm font-mono" title="Código">{{ '<>' }}</button>
+        <span class="w-px h-5 bg-border mx-1"></span>
+        <button type="button" (click)="insertLink()" class="px-2 py-1 rounded hover:bg-surface-hover text-sm" title="Link">🔗</button>
+        <button type="button" (click)="insertImage()" class="px-2 py-1 rounded hover:bg-surface-hover text-sm" title="Imagen">🖼</button>
+        <button type="button" (click)="cmd('setHorizontalRule')" class="px-2 py-1 rounded hover:bg-surface-hover text-sm" title="Divisor">―</button>
+      </div>
+
+      <div
+        #editorEl
+        class="flex-1 overflow-auto px-6 py-4 prose prose-invert max-w-none focus:outline-none"
+        [class.bg-background]="true"
+      ></div>
+    </div>
+  `,
+  styles: [
+    `
+      :host ::ng-deep .ProseMirror {
+        outline: none;
+        min-height: 100%;
+        color: var(--color-text);
+      }
+      :host ::ng-deep .ProseMirror h1 {
+        font-size: 1.875rem;
+        font-weight: 600;
+        margin: 1rem 0 0.5rem;
+      }
+      :host ::ng-deep .ProseMirror h2 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin: 0.875rem 0 0.5rem;
+      }
+      :host ::ng-deep .ProseMirror h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin: 0.75rem 0 0.5rem;
+      }
+      :host ::ng-deep .ProseMirror p {
+        margin: 0.5rem 0;
+        line-height: 1.6;
+      }
+      :host ::ng-deep .ProseMirror ul,
+      :host ::ng-deep .ProseMirror ol {
+        padding-left: 1.5rem;
+        margin: 0.5rem 0;
+      }
+      :host ::ng-deep .ProseMirror blockquote {
+        border-left: 3px solid var(--color-border);
+        padding-left: 1rem;
+        margin: 0.5rem 0;
+        color: var(--color-text-muted);
+      }
+      :host ::ng-deep .ProseMirror code {
+        background: var(--color-surface);
+        padding: 0.125rem 0.375rem;
+        border-radius: 0.25rem;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.875rem;
+      }
+      :host ::ng-deep .ProseMirror pre {
+        background: var(--color-surface);
+        padding: 0.75rem;
+        border-radius: 0.375rem;
+        overflow-x: auto;
+      }
+      :host ::ng-deep .ProseMirror a {
+        color: var(--color-primary);
+        text-decoration: underline;
+      }
+      :host ::ng-deep .ProseMirror img {
+        max-width: 100%;
+        border-radius: 0.375rem;
+      }
+      :host ::ng-deep .ProseMirror hr {
+        border: 0;
+        border-top: 1px solid var(--color-border);
+        margin: 1rem 0;
+      }
+    `,
+  ],
+})
+export class NoteEditorComponent implements OnDestroy {
+  private readonly service = inject(NotesService);
+  private readonly toastr = inject(ToastrService);
+
+  readonly note = input.required<Note>();
+  readonly noteDeleted = output<string>();
+  readonly noteUpdated = output<Note>();
+
+  @ViewChild('editorEl', { static: true }) editorEl!: ElementRef<HTMLDivElement>;
+
+  protected readonly status = signal<SaveStatus>('saved');
+  protected readonly pinned = signal(false);
+  protected readonly tags = signal<string[]>([]);
+  protected title = '';
+  protected icon = '';
+  protected coverImageUrl = '';
+  protected newTag = '';
+
+  private editor: Editor | null = null;
+  private readonly save$ = new Subject<UpdateNoteDto>();
+  private readonly destroy$ = new Subject<void>();
+
+  constructor() {
+    effect(() => {
+      const n = this.note();
+      this.title = n.title;
+      this.icon = n.icon ?? '';
+      this.coverImageUrl = n.coverImageUrl ?? '';
+      this.pinned.set(n.isPinned);
+      this.tags.set([...n.tags]);
+      this.status.set('saved');
+      this.initEditor(n);
+    });
+
+    this.save$.pipe(debounceTime(2000), takeUntil(this.destroy$)).subscribe((payload) => {
+      this.flush(payload);
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.editor?.destroy();
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  private initEditor(note: Note): void {
+    this.editor?.destroy();
+    this.editor = new Editor({
+      element: this.editorEl.nativeElement,
+      extensions: [
+        StarterKit,
+        Image.configure({ inline: false }),
+        Link.configure({ openOnClick: false, autolink: true }),
+      ],
+      content: this.parseContent(note.content) as never,
+      onUpdate: ({ editor }) => {
+        this.status.set('dirty');
+        const json = editor.getJSON();
+        this.save$.next({ content: JSON.stringify(json) });
+      },
+    });
+  }
+
+  private parseContent(raw: string): unknown {
+    if (!raw) return '';
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return raw;
+    }
+  }
+
+  protected cmd(name: string): void {
+    if (!this.editor) return;
+    const chain = (this.editor.chain().focus() as unknown as Record<string, () => { run(): boolean }>);
+    if (typeof chain[name] === 'function') {
+      chain[name]().run();
+    }
+  }
+
+  protected setHeading(level: 1 | 2 | 3): void {
+    this.editor?.chain().focus().toggleHeading({ level }).run();
+  }
+
+  protected insertLink(): void {
+    const url = prompt('URL del link:');
+    if (!url) return;
+    this.editor?.chain().focus().setLink({ href: url }).run();
+  }
+
+  protected insertImage(): void {
+    const url = prompt('URL de la imagen:');
+    if (!url) return;
+    this.editor?.chain().focus().setImage({ src: url }).run();
+  }
+
+  protected onMetaChange(): void {
+    this.status.set('dirty');
+    this.save$.next({
+      title: this.title.trim() || 'Sin título',
+      icon: this.icon.trim() || undefined,
+      coverImageUrl: this.coverImageUrl.trim() || undefined,
+    });
+  }
+
+  protected togglePin(): void {
+    const next = !this.pinned();
+    this.pinned.set(next);
+    this.status.set('saving');
+    this.flush({ isPinned: next });
+  }
+
+  protected addTag(): void {
+    const v = this.newTag.trim();
+    if (!v) return;
+    if (this.tags().includes(v)) {
+      this.newTag = '';
+      return;
+    }
+    const next = [...this.tags(), v];
+    this.tags.set(next);
+    this.newTag = '';
+    this.status.set('saving');
+    this.flush({ tags: next });
+  }
+
+  protected removeTag(index: number): void {
+    const next = this.tags().filter((_, i) => i !== index);
+    this.tags.set(next);
+    this.status.set('saving');
+    this.flush({ tags: next });
+  }
+
+  protected deleteSelected(): void {
+    const n = this.note();
+    if (!confirm(`¿Eliminar la nota "${n.title}"? Esta acción no se puede deshacer.`)) return;
+    this.service.delete(n.id).subscribe({
+      next: () => {
+        this.toastr.success('Nota eliminada');
+        this.noteDeleted.emit(n.id);
+      },
+      error: (err: HttpErrorResponse) => this.toastr.error(this.errMsg(err)),
+    });
+  }
+
+  private flush(payload: UpdateNoteDto): void {
+    this.status.set('saving');
+    this.service.update(this.note().id, payload).subscribe({
+      next: (updated) => {
+        this.status.set('saved');
+        this.noteUpdated.emit(updated);
+      },
+      error: () => this.status.set('error'),
+    });
+  }
+
+  private errMsg(err: HttpErrorResponse): string {
+    const body = err.error as { error?: { message?: string | string[] } } | null;
+    const msg = body?.error?.message;
+    if (Array.isArray(msg)) return msg.join('. ');
+    if (typeof msg === 'string') return msg;
+    return 'Error inesperado';
+  }
+}

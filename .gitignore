@@ -162,3 +162,19 @@ Thumbs.db
 **/dist/
 **/build/
 **/.angular/cache/
+
+# =========================
+# Engram / agentes locales
+# =========================
+.claude/
+memory/
+
+# =========================
+# Documentación local (no se publica)
+# =========================
+# Solo README.md es público. Toda otra documentación markdown del root
+# es para uso interno/local (instrucciones para IAs, spec de construcción,
+# guías de despliegue, planillas de placeholders, instrucciones de dev local).
+/*.md
+!/README.md
+

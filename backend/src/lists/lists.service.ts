@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import type {
   List,
   ListField,
@@ -8,6 +8,7 @@ import type {
 } from '@prisma/client';
 
 import { PrismaService } from '../prisma/prisma.service';
+import { JsonSanitizationError, sanitizeJson } from '../common/utils/sanitize-json';
 import { CreateListDto } from './dto/create-list.dto';
 import { UpdateListDto } from './dto/update-list.dto';
 import { CreateListItemDto } from './dto/create-list-item.dto';
@@ -15,6 +16,17 @@ import { UpdateListItemDto } from './dto/update-list-item.dto';
 import { CreateListFieldDto } from './dto/create-list-field.dto';
 import { UpdateListFieldDto } from './dto/update-list-field.dto';
 import { CreateListTagDto } from './dto/create-list-tag.dto';
+
+function safeSanitize(value: unknown): unknown {
+  try {
+    return sanitizeJson(value);
+  } catch (err) {
+    if (err instanceof JsonSanitizationError) {
+      throw new BadRequestException(err.message);
+    }
+    throw err;
+  }
+}
 
 const SORTABLE_FIELDS = ['title', 'position', 'createdAt', 'updatedAt'] as const;
 type SortableField = (typeof SORTABLE_FIELDS)[number];
@@ -137,7 +149,7 @@ export class ListsService {
         listId,
         title: dto.title,
         imageUrl: dto.imageUrl ?? null,
-        customFields: (dto.customFields ?? {}) as Prisma.InputJsonValue,
+        customFields: safeSanitize(dto.customFields ?? {}) as Prisma.InputJsonValue,
         position,
         tags: dto.tagIds?.length
           ? { create: dto.tagIds.map((tagId) => ({ tagId })) }
@@ -178,7 +190,7 @@ export class ListsService {
         position: dto.position ?? item.position,
       };
       if (dto.customFields !== undefined) {
-        data.customFields = dto.customFields as Prisma.InputJsonValue;
+        data.customFields = safeSanitize(dto.customFields) as Prisma.InputJsonValue;
       }
 
       return tx.listItem.update({
@@ -222,7 +234,7 @@ export class ListsService {
       defaultValue: dto.defaultValue ?? null,
     };
     if (dto.options !== undefined) {
-      data.options = dto.options as Prisma.InputJsonValue;
+      data.options = safeSanitize(dto.options) as Prisma.InputJsonValue;
     }
 
     return this.prisma.listField.create({ data });
@@ -250,7 +262,7 @@ export class ListsService {
       defaultValue: dto.defaultValue ?? field.defaultValue,
     };
     if (dto.options !== undefined) {
-      data.options = dto.options as Prisma.InputJsonValue;
+      data.options = safeSanitize(dto.options) as Prisma.InputJsonValue;
     }
 
     return this.prisma.listField.update({ where: { id: fieldId }, data });

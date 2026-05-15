@@ -20,21 +20,41 @@ async function bootstrap(): Promise<void> {
   app.use(
     helmet({
       contentSecurityPolicy: {
+        useDefaults: false,
         directives: {
-          defaultSrc: ["'self'"],
-          connectSrc: ["'self'", frontendUrl],
-          imgSrc: ["'self'", 'data:', 'https:'],
+          defaultSrc: ["'none'"],
+          baseUri: ["'none'"],
+          formAction: ["'none'"],
+          frameAncestors: ["'none'"],
+          connectSrc: ["'self'"],
+          imgSrc: ["'self'"],
+          scriptSrc: ["'none'"],
+          styleSrc: ["'none'"],
+          objectSrc: ["'none'"],
         },
       },
       crossOriginResourcePolicy: { policy: 'cross-origin' },
+      crossOriginEmbedderPolicy: false,
+      strictTransportSecurity:
+        nodeEnv === 'production'
+          ? { maxAge: 31_536_000, includeSubDomains: true, preload: true }
+          : false,
+      referrerPolicy: { policy: 'no-referrer' },
     }),
   );
 
   app.enableCors({
-    origin: frontendUrl,
+    origin: (origin, callback) => {
+      if (!origin || origin === frontendUrl) {
+        callback(null, true);
+      } else {
+        callback(new Error(`CORS: origin "${origin}" not allowed`), false);
+      }
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Authorization', 'Content-Type'],
+    maxAge: 600,
   });
 
   app.useGlobalPipes(
