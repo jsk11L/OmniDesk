@@ -13,6 +13,7 @@ import type {
   ListField,
   ListItem,
   ListTag,
+  MoveListItemDto,
   UpdateListDto,
   UpdateListFieldDto,
   UpdateListItemDto,
@@ -75,6 +76,12 @@ export class ListsService {
   deleteItem(listId: string, itemId: string): Observable<{ id: string }> {
     return this.http
       .delete<ApiResponse<{ id: string }>>(`${this.base}/${listId}/items/${itemId}`)
+      .pipe(map((r) => r.data));
+  }
+
+  moveItem(listId: string, itemId: string, dto: MoveListItemDto): Observable<ListItem> {
+    return this.http
+      .post<ApiResponse<ListItem>>(`${this.base}/${listId}/items/${itemId}/move`, dto)
       .pipe(map((r) => r.data));
   }
 

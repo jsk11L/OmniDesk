@@ -19,5 +19,5 @@ export const publicOnlyGuard: CanActivateFn = () => {
   const router = inject(Router);
 
   if (!auth.accessToken) return true;
-  return router.createUrlTree(['/']);
+  return router.createUrlTree(['/app']);
 };

@@ -16,6 +16,7 @@ import { UpdateListItemDto } from './dto/update-list-item.dto';
 import { CreateListFieldDto } from './dto/create-list-field.dto';
 import { UpdateListFieldDto } from './dto/update-list-field.dto';
 import { CreateListTagDto } from './dto/create-list-tag.dto';
+import { MoveListItemDto } from './dto/move-list-item.dto';
 
 function safeSanitize(value: unknown): unknown {
   try {
@@ -82,18 +83,22 @@ export class ListsService {
 
   async update(userId: string, id: string, dto: UpdateListDto): Promise<List> {
     const list = await this.assertOwner(userId, id);
-    return this.prisma.list.update({
-      where: { id },
-      data: {
-        name: dto.name ?? list.name,
-        description: dto.description ?? list.description,
-        icon: dto.icon ?? list.icon,
-        coverImageUrl: dto.coverImageUrl ?? list.coverImageUrl,
-        defaultView: dto.defaultView ?? list.defaultView,
-        defaultSortField: dto.defaultSortField ?? list.defaultSortField,
-        defaultSortDir: dto.defaultSortDir ?? list.defaultSortDir,
-      },
-    });
+    const data: Prisma.ListUpdateInput = {
+      name: dto.name ?? list.name,
+      description: dto.description ?? list.description,
+      icon: dto.icon ?? list.icon,
+      coverImageUrl: dto.coverImageUrl ?? list.coverImageUrl,
+      defaultView: dto.defaultView ?? list.defaultView,
+      defaultSortField: dto.defaultSortField ?? list.defaultSortField,
+      defaultSortDir: dto.defaultSortDir ?? list.defaultSortDir,
+    };
+    if (dto.gridConfig !== undefined) {
+      data.gridConfig = safeSanitize(dto.gridConfig) as Prisma.InputJsonValue;
+    }
+    if (dto.viewConfig !== undefined) {
+      data.viewConfig = safeSanitize(dto.viewConfig) as Prisma.InputJsonValue;
+    }
+    return this.prisma.list.update({ where: { id }, data });
   }
 
   async delete(userId: string, id: string): Promise<{ id: string }> {
@@ -148,7 +153,6 @@ export class ListsService {
       data: {
         listId,
         title: dto.title,
-        imageUrl: dto.imageUrl ?? null,
         customFields: safeSanitize(dto.customFields ?? {}) as Prisma.InputJsonValue,
         position,
         tags: dto.tagIds?.length
@@ -186,7 +190,6 @@ export class ListsService {
 
       const data: Prisma.ListItemUpdateInput = {
         title: dto.title ?? item.title,
-        imageUrl: dto.imageUrl ?? item.imageUrl,
         position: dto.position ?? item.position,
       };
       if (dto.customFields !== undefined) {
@@ -213,6 +216,87 @@ export class ListsService {
     }
     await this.prisma.listItem.delete({ where: { id: itemId } });
     return { id: itemId };
+  }
+
+  /**
+   * Move an item from one list to another, remapping customFields by field name
+   * and tags by tag name. Optional `customFieldsPatch` is merged on top so callers
+   * can fill in completion-time fields (year, month, computed index, etc).
+   *
+   * The remap-by-name strategy means that if both lists have a field called
+   * "Plataforma", values transfer cleanly. Source fields with no matching
+   * destination field are dropped.
+   */
+  async moveItem(
+    userId: string,
+    sourceListId: string,
+    itemId: string,
+    dto: MoveListItemDto,
+  ): Promise<ListItem> {
+    if (sourceListId === dto.targetListId) {
+      throw new BadRequestException('Source and target lists must be different');
+    }
+    await this.assertOwner(userId, sourceListId);
+    await this.assertOwner(userId, dto.targetListId);
+
+    const item = await this.prisma.listItem.findFirst({
+      where: { id: itemId, listId: sourceListId },
+      include: { tags: { include: { tag: true } } },
+    });
+    if (!item) {
+      throw new NotFoundException('Item not found');
+    }
+
+    const [sourceFields, targetFields, targetTags] = await Promise.all([
+      this.prisma.listField.findMany({ where: { listId: sourceListId } }),
+      this.prisma.listField.findMany({ where: { listId: dto.targetListId } }),
+      this.prisma.listTag.findMany({ where: { listId: dto.targetListId } }),
+    ]);
+
+    const targetFieldByName = new Map(
+      targetFields.map((f) => [f.name.trim().toLowerCase(), f]),
+    );
+
+    const remapped: Record<string, unknown> = {};
+    const sourceCustomFields = (item.customFields ?? {}) as Record<string, unknown>;
+    for (const srcField of sourceFields) {
+      const dest = targetFieldByName.get(srcField.name.trim().toLowerCase());
+      if (!dest) continue;
+      const value = sourceCustomFields[srcField.id];
+      if (value === undefined) continue;
+      remapped[dest.id] = value;
+    }
+
+    const patch = dto.customFieldsPatch ?? {};
+    const mergedCustomFields = safeSanitize({ ...remapped, ...patch }) as Prisma.InputJsonValue;
+
+    const targetTagByName = new Map(
+      targetTags.map((t) => [t.name.trim().toLowerCase(), t.id]),
+    );
+    const carriedTagIds: string[] = [];
+    for (const link of item.tags) {
+      const targetId = targetTagByName.get(link.tag.name.trim().toLowerCase());
+      if (targetId) carriedTagIds.push(targetId);
+    }
+
+    const nextPosition = await this.nextItemPosition(dto.targetListId);
+
+    return this.prisma.$transaction(async (tx) => {
+      const moved = await tx.listItem.create({
+        data: {
+          listId: dto.targetListId,
+          title: dto.title?.trim() || item.title,
+          customFields: mergedCustomFields,
+          position: nextPosition,
+          tags: carriedTagIds.length
+            ? { create: carriedTagIds.map((tagId) => ({ tagId })) }
+            : undefined,
+        },
+        include: { tags: { include: { tag: true } } },
+      });
+      await tx.listItem.delete({ where: { id: itemId } });
+      return moved;
+    });
   }
 
   // ─── Fields ──────────────────────────────────────────────

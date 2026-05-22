@@ -3,6 +3,7 @@ export interface Note {
   userId: string;
   title: string;
   content: string;
+  description: string | null;
   icon: string | null;
   coverImageUrl: string | null;
   isPinned: boolean;
@@ -14,6 +15,7 @@ export interface Note {
 export interface CreateNoteDto {
   title: string;
   content?: string;
+  description?: string;
   icon?: string;
   coverImageUrl?: string;
   isPinned?: boolean;

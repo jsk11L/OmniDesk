@@ -26,9 +26,11 @@ model User {
 
   pushSubscriptions PushSubscription[]
   calendarEvents    CalendarEvent[]
+  calendarSettings  CalendarSettings?
   lists             List[]
   notes             Note[]
   todoBoards        TodoBoard[]
+  habits            Habit[]
   financeBoards     FinanceBoard[]
   notifications     NotificationConfig[]
   themes            Theme[]              @relation("ThemeOwner")
@@ -128,6 +130,29 @@ model CalendarEventNotification {
   notification NotificationConfig @relation(fields: [notificationId], references: [id], onDelete: Cascade)
 }
 
+model CalendarSettings {
+  id          String              @id @default(uuid())
+  userId      String              @unique
+  size        CalendarSize        @default(NORMAL)
+  borderStyle CalendarBorderStyle @default(ROUNDED)
+  firstDay    Int                 @default(1)
+  defaultView String              @default("dayGridMonth")
+  updatedAt   DateTime            @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum CalendarSize {
+  COMPACT
+  NORMAL
+  COMFORTABLE
+}
+
+enum CalendarBorderStyle {
+  SQUARE
+  ROUNDED
+}
+
 // ─────────────────────────────────────────
 // LISTS (Bibliotecas enriquecidas)
 // ─────────────────────────────────────────
@@ -142,6 +167,8 @@ model List {
   defaultView      ListViewType  @default(GRID)
   defaultSortField String?
   defaultSortDir   SortDirection @default(ASC)
+  gridConfig       Json          @default("{}")
+  viewConfig       Json          @default("{}")
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
 
@@ -202,7 +229,6 @@ model ListItem {
   id           String   @id @default(uuid())
   listId       String
   title        String
-  imageUrl     String?
   customFields Json     @default("{}")
   position     Int      @default(0)
   createdAt    DateTime @default(now())
@@ -231,6 +257,7 @@ model Note {
   userId        String
   title         String
   content       String   @default("")
+  description   String?  @db.VarChar(280)
   icon          String?
   coverImageUrl String?
   isPinned      Boolean  @default(false)
@@ -260,6 +287,7 @@ model TodoBoard {
   userId    String
   name      String
   isDefault Boolean  @default(false)
+  isSystem  Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -284,7 +312,9 @@ model TodoItem {
   title       String
   description String?
   dueDate     DateTime?
+  hasDueDate  Boolean      @default(false)
   priority    TodoPriority @default(MEDIUM)
+  hasPriority Boolean      @default(false)
   tags        String[]     @default([])
   position    Int          @default(0)
   createdAt   DateTime     @default(now())
@@ -301,6 +331,49 @@ enum TodoPriority {
 }
 
 // ─────────────────────────────────────────
+// HABITS
+// ─────────────────────────────────────────
+
+model Habit {
+  id            String   @id @default(uuid())
+  userId        String
+  name          String
+  description   String?
+  icon          String?
+  color         String   @default("#6366f1")
+  activeDays    Int[]    @default([1, 2, 3, 4, 5, 6, 0])
+  weeklyGoal    Int?
+  currentStreak Int      @default(0)
+  longestStreak Int      @default(0)
+  perfectWeeks  Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user    User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  entries HabitEntry[]
+}
+
+model HabitEntry {
+  id        String           @id @default(uuid())
+  habitId   String
+  date      DateTime         @db.Date
+  status    HabitEntryStatus
+  notes     String?
+  createdAt DateTime         @default(now())
+
+  habit Habit @relation(fields: [habitId], references: [id], onDelete: Cascade)
+
+  @@unique([habitId, date])
+}
+
+enum HabitEntryStatus {
+  DONE
+  MISSED
+  RECOVERED
+  REST
+}
+
+// ─────────────────────────────────────────
 // FINANCE
 // ─────────────────────────────────────────
 
@@ -313,10 +386,13 @@ model FinanceBoard {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  categories   FinanceCategory[]
-  transactions Transaction[]
-  budgets      Budget[]
+  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categories        FinanceCategory[]
+  transactions      Transaction[]
+  budgets           Budget[]
+  wishlistItems     WishlistItem[]
+  plannedPurchases  PlannedPurchase[]
+  savingsGoals      SavingsGoal[]
 }
 
 model FinanceCategory {
@@ -327,9 +403,10 @@ model FinanceCategory {
   icon         String?
   categoryType FinanceCategoryType
 
-  board        FinanceBoard  @relation(fields: [boardId], references: [id], onDelete: Cascade)
-  transactions Transaction[]
-  budgets      Budget[]
+  board             FinanceBoard       @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  transactions      Transaction[]
+  budgets           Budget[]
+  plannedPurchases  PlannedPurchase[]
 }
 
 enum FinanceCategoryType {
@@ -371,6 +448,77 @@ enum BudgetPeriod {
   WEEKLY
   MONTHLY
   ANNUAL
+}
+
+model WishlistItem {
+  id             String           @id @default(uuid())
+  boardId        String
+  title          String
+  description    String?
+  imageUrl       String?
+  estimatedPrice Float?
+  currency       String           @default("USD")
+  url            String?
+  category       String?
+  priority       WishlistPriority @default(MEDIUM)
+  isArchived     Boolean          @default(false)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  board FinanceBoard @relation(fields: [boardId], references: [id], onDelete: Cascade)
+}
+
+enum WishlistPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+model PlannedPurchase {
+  id          String    @id @default(uuid())
+  boardId     String
+  title       String
+  amount      Float
+  currency    String    @default("USD")
+  targetDate  DateTime
+  categoryId  String?
+  isPurchased Boolean   @default(false)
+  purchasedAt DateTime?
+  notes       String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  board    FinanceBoard     @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  category FinanceCategory? @relation(fields: [categoryId], references: [id])
+}
+
+model SavingsGoal {
+  id            String    @id @default(uuid())
+  boardId       String
+  name          String
+  targetAmount  Float
+  currentAmount Float     @default(0)
+  currency      String    @default("USD")
+  targetDate    DateTime?
+  icon          String?
+  color         String    @default("#22c55e")
+  isCompleted   Boolean   @default(false)
+  completedAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  board         FinanceBoard          @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  contributions SavingsContribution[]
+}
+
+model SavingsContribution {
+  id        String   @id @default(uuid())
+  goalId    String
+  amount    Float
+  date      DateTime @default(now())
+  notes     String?
+
+  goal SavingsGoal @relation(fields: [goalId], references: [id], onDelete: Cascade)
 }
 
 // ─────────────────────────────────────────

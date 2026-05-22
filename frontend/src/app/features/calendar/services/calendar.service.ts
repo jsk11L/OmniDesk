@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpResponse } from '@angular/common/http';
 import { map, Observable } from 'rxjs';
 
 import { environment } from '../../../../environments/environment';
@@ -7,7 +7,9 @@ import type { ApiResponse } from '../../../core/models/api-response.model';
 import type {
   CalendarEvent,
   CalendarEventNotification,
+  CalendarSettings,
   CreateEventDto,
+  UpdateCalendarSettingsDto,
   UpdateEventDto,
 } from '../calendar.types';
 
@@ -68,5 +70,24 @@ export class CalendarService {
         `${this.base}/events/${eventId}/notifications/${notifId}`,
       )
       .pipe(map((r) => r.data));
+  }
+
+  getSettings(): Observable<CalendarSettings> {
+    return this.http
+      .get<ApiResponse<CalendarSettings>>(`${this.base}/settings`)
+      .pipe(map((r) => r.data));
+  }
+
+  updateSettings(dto: UpdateCalendarSettingsDto): Observable<CalendarSettings> {
+    return this.http
+      .patch<ApiResponse<CalendarSettings>>(`${this.base}/settings`, dto)
+      .pipe(map((r) => r.data));
+  }
+
+  exportIcs(): Observable<HttpResponse<Blob>> {
+    return this.http.get(`${this.base}/export`, {
+      responseType: 'blob',
+      observe: 'response',
+    });
   }
 }

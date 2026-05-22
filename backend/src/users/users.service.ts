@@ -54,8 +54,9 @@ export class UsersService {
     await client.todoBoard.create({
       data: {
         userId,
-        name: 'Mi Tablero',
+        name: 'Tablero Personal',
         isDefault: true,
+        isSystem: true,
         columns: {
           create: [
             { name: 'Backlog', color: '#71717a', position: 0 },

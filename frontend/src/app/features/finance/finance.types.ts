@@ -89,3 +89,98 @@ export interface CreateBudgetDto {
   period?: BudgetPeriod;
   categoryId?: string;
 }
+
+// ─── Organizer ─────────────────────────────────────────
+
+export type WishlistPriority = 'LOW' | 'MEDIUM' | 'HIGH';
+
+export interface WishlistItem {
+  id: string;
+  boardId: string;
+  title: string;
+  description: string | null;
+  imageUrl: string | null;
+  estimatedPrice: number | null;
+  currency: string;
+  url: string | null;
+  category: string | null;
+  priority: WishlistPriority;
+  isArchived: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PlannedPurchase {
+  id: string;
+  boardId: string;
+  title: string;
+  amount: number;
+  currency: string;
+  targetDate: string;
+  categoryId: string | null;
+  isPurchased: boolean;
+  purchasedAt: string | null;
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SavingsContribution {
+  id: string;
+  goalId: string;
+  amount: number;
+  date: string;
+  notes: string | null;
+}
+
+export interface SavingsGoal {
+  id: string;
+  boardId: string;
+  name: string;
+  targetAmount: number;
+  currentAmount: number;
+  currency: string;
+  targetDate: string | null;
+  icon: string | null;
+  color: string;
+  isCompleted: boolean;
+  completedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  contributions?: SavingsContribution[];
+}
+
+export interface CreateWishlistDto {
+  title: string;
+  description?: string;
+  imageUrl?: string;
+  estimatedPrice?: number;
+  currency?: string;
+  url?: string;
+  category?: string;
+  priority?: WishlistPriority;
+}
+
+export interface CreatePlannedPurchaseDto {
+  title: string;
+  amount: number;
+  currency?: string;
+  targetDate: string;
+  categoryId?: string;
+  notes?: string;
+}
+
+export interface CreateSavingsGoalDto {
+  name: string;
+  targetAmount: number;
+  currency?: string;
+  targetDate?: string;
+  icon?: string;
+  color?: string;
+}
+
+export interface CreateContributionDto {
+  amount: number;
+  notes?: string;
+  date?: string;
+}

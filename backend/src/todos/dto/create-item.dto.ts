@@ -1,6 +1,7 @@
 import {
   ArrayMaxSize,
   IsArray,
+  IsBoolean,
   IsEnum,
   IsISO8601,
   IsInt,
@@ -28,8 +29,16 @@ export class CreateItemDto {
   dueDate?: string;
 
   @IsOptional()
+  @IsBoolean()
+  hasDueDate?: boolean;
+
+  @IsOptional()
   @IsEnum(TodoPriority)
   priority?: TodoPriority;
+
+  @IsOptional()
+  @IsBoolean()
+  hasPriority?: boolean;
 
   @IsOptional()
   @IsArray()

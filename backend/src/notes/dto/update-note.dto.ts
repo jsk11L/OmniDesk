@@ -4,10 +4,12 @@ import {
   IsBoolean,
   IsOptional,
   IsString,
-  IsUrl,
+  Matches,
   MaxLength,
   MinLength,
 } from 'class-validator';
+
+const URL_OR_UPLOAD = /^(?:https?:\/\/|\/uploads\/).+/i;
 
 export class UpdateNoteDto {
   @IsOptional()
@@ -23,11 +25,17 @@ export class UpdateNoteDto {
 
   @IsOptional()
   @IsString()
+  @MaxLength(280)
+  description?: string;
+
+  @IsOptional()
+  @IsString()
   @MaxLength(200)
   icon?: string;
 
   @IsOptional()
-  @IsUrl({ protocols: ['http', 'https'], require_protocol: true })
+  @IsString()
+  @Matches(URL_OR_UPLOAD, { message: 'coverImageUrl debe ser una URL o ruta /uploads/...' })
   coverImageUrl?: string;
 
   @IsOptional()

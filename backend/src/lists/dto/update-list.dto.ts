@@ -1,12 +1,15 @@
 import {
   IsEnum,
+  IsObject,
   IsOptional,
   IsString,
-  IsUrl,
+  Matches,
   MaxLength,
   MinLength,
 } from 'class-validator';
 import { ListViewType, SortDirection } from '@prisma/client';
+
+const URL_OR_UPLOAD = /^(?:https?:\/\/|\/uploads\/).+/i;
 
 export class UpdateListDto {
   @IsOptional()
@@ -26,7 +29,8 @@ export class UpdateListDto {
   icon?: string;
 
   @IsOptional()
-  @IsUrl({ protocols: ['http', 'https'], require_protocol: true })
+  @IsString()
+  @Matches(URL_OR_UPLOAD, { message: 'coverImageUrl debe ser una URL o ruta /uploads/...' })
   coverImageUrl?: string;
 
   @IsOptional()
@@ -41,4 +45,12 @@ export class UpdateListDto {
   @IsOptional()
   @IsEnum(SortDirection)
   defaultSortDir?: SortDirection;
+
+  @IsOptional()
+  @IsObject()
+  gridConfig?: Record<string, unknown>;
+
+  @IsOptional()
+  @IsObject()
+  viewConfig?: Record<string, unknown>;
 }

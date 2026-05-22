@@ -6,7 +6,9 @@ export interface TodoItem {
   title: string;
   description: string | null;
   dueDate: string | null;
+  hasDueDate: boolean;
   priority: TodoPriority;
+  hasPriority: boolean;
   tags: string[];
   position: number;
   createdAt: string;
@@ -27,6 +29,7 @@ export interface TodoBoard {
   userId: string;
   name: string;
   isDefault: boolean;
+  isSystem: boolean;
   createdAt: string;
   updatedAt: string;
   columns?: TodoColumn[];
@@ -48,7 +51,9 @@ export interface CreateItemDto {
   title: string;
   description?: string;
   dueDate?: string;
+  hasDueDate?: boolean;
   priority?: TodoPriority;
+  hasPriority?: boolean;
   tags?: string[];
   position?: number;
 }

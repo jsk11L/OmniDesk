@@ -5,15 +5,18 @@ import { HttpErrorResponse } from '@angular/common/http';
 
 import { AuthService } from '../../../core/services/auth.service';
 import { ThemeService } from '../../../core/services/theme.service';
+import { AnimatedBgComponent } from '../../../shared/components/animated-bg/animated-bg.component';
 
 @Component({
   selector: 'app-login',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, AnimatedBgComponent],
   template: `
-    <div class="min-h-screen flex items-center justify-center bg-background px-4">
-      <div class="w-full max-w-md bg-surface border border-border rounded p-8 shadow-2xl">
+    <div class="relative min-h-screen flex items-center justify-center bg-background px-4 overflow-hidden">
+      <app-animated-bg />
+      <div class="relative z-10 w-full max-w-md bg-surface/85 backdrop-blur-md border border-border rounded-xl p-8 shadow-2xl">
+        <a routerLink="/" class="inline-block mb-6 text-text-muted hover:text-text text-xs">← Volver</a>
         <h1 class="text-2xl font-semibold mb-1">OmniDesk</h1>
         <p class="text-sm text-text-muted mb-6">Inicia sesión para continuar</p>
 
@@ -85,7 +88,7 @@ export class LoginComponent {
     this.auth.login(email, password).subscribe({
       next: (user) => {
         this.theme.bootstrap(user.activeThemeId);
-        const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') ?? '/';
+        const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') ?? '/app';
         void this.router.navigateByUrl(returnUrl);
       },
       error: (err: HttpErrorResponse) => {

@@ -6,7 +6,6 @@ import {
   IsOptional,
   IsString,
   IsUUID,
-  IsUrl,
   MaxLength,
   Min,
   MinLength,
@@ -17,10 +16,6 @@ export class CreateListItemDto {
   @MinLength(1)
   @MaxLength(200)
   title!: string;
-
-  @IsOptional()
-  @IsUrl({ protocols: ['http', 'https'], require_protocol: true })
-  imageUrl?: string;
 
   @IsOptional()
   @IsObject()

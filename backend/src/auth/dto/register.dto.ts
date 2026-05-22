@@ -1,5 +1,9 @@
-import { IsEmail, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+import { IsEmail, IsOptional, IsString, Matches, MaxLength, MinLength } from 'class-validator';
 import { Transform } from 'class-transformer';
+
+const PASSWORD_REGEX = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%&*?])[A-Za-z\d!@#$%&*?]{8,}$/;
+const PASSWORD_MESSAGE =
+  'La contraseña debe tener al menos 8 caracteres, 1 mayúscula, 1 número y 1 carácter especial (!@#$%&*?).';
 
 export class RegisterDto {
   @IsEmail()
@@ -9,6 +13,7 @@ export class RegisterDto {
   @IsString()
   @MinLength(8)
   @MaxLength(128)
+  @Matches(PASSWORD_REGEX, { message: PASSWORD_MESSAGE })
   password!: string;
 
   @IsOptional()

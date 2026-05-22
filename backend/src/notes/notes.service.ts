@@ -56,6 +56,7 @@ export class NotesService {
         userId,
         title: dto.title,
         content: dto.content ?? '',
+        description: dto.description ?? null,
         icon: dto.icon ?? null,
         coverImageUrl: dto.coverImageUrl ?? null,
         isPinned: dto.isPinned ?? false,
@@ -71,6 +72,7 @@ export class NotesService {
       data: {
         title: dto.title ?? note.title,
         content: dto.content ?? note.content,
+        description: dto.description ?? note.description,
         icon: dto.icon ?? note.icon,
         coverImageUrl: dto.coverImageUrl ?? note.coverImageUrl,
         isPinned: dto.isPinned ?? note.isPinned,

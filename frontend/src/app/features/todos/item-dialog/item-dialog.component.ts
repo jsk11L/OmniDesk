@@ -47,9 +47,24 @@ export type TodoItemDialogResult = TodoItem | { deleted: string } | undefined;
           ></textarea>
         </label>
 
-        <div class="grid grid-cols-2 gap-3">
-          <label class="block">
-            <span class="block text-xs text-text-muted mb-1">Prioridad</span>
+        <div class="space-y-3 border border-border rounded-lg p-3">
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" formControlName="hasDueDate" class="accent-primary" />
+            <span class="text-sm">Establecer fecha límite</span>
+          </label>
+          @if (form.value.hasDueDate) {
+            <input
+              type="datetime-local"
+              formControlName="dueDate"
+              class="w-full px-3 py-2 bg-background border border-border rounded outline-none focus:border-primary"
+            />
+          }
+
+          <label class="flex items-center gap-2 cursor-pointer pt-1 border-t border-border">
+            <input type="checkbox" formControlName="hasPriority" class="accent-primary" />
+            <span class="text-sm">Establecer prioridad</span>
+          </label>
+          @if (form.value.hasPriority) {
             <select
               formControlName="priority"
               class="w-full px-3 py-2 bg-background border border-border rounded outline-none focus:border-primary"
@@ -59,15 +74,7 @@ export type TodoItemDialogResult = TodoItem | { deleted: string } | undefined;
               <option value="HIGH">Alta</option>
               <option value="URGENT">Urgente</option>
             </select>
-          </label>
-          <label class="block">
-            <span class="block text-xs text-text-muted mb-1">Fecha límite</span>
-            <input
-              type="datetime-local"
-              formControlName="dueDate"
-              class="w-full px-3 py-2 bg-background border border-border rounded outline-none focus:border-primary"
-            />
-          </label>
+          }
         </div>
 
         <label class="block">
@@ -149,7 +156,9 @@ export class TodoItemDialogComponent {
     this.form = this.fb.nonNullable.group({
       title: [item?.title ?? '', [Validators.required, Validators.maxLength(200)]],
       description: [item?.description ?? ''],
+      hasPriority: [item?.hasPriority ?? false],
       priority: [(item?.priority ?? 'MEDIUM') as TodoPriority],
+      hasDueDate: [item?.hasDueDate ?? Boolean(item?.dueDate)],
       dueDate: [dueDateValue],
       columnId: [item?.columnId ?? data.columnId],
       tags: [(item?.tags ?? []).join(', ')],
@@ -170,8 +179,10 @@ export class TodoItemDialogComponent {
     const payload = {
       title: raw.title.trim(),
       description: raw.description.trim() || undefined,
-      priority: raw.priority,
-      dueDate: raw.dueDate ? new Date(raw.dueDate).toISOString() : undefined,
+      priority: raw.hasPriority ? raw.priority : 'MEDIUM' as TodoPriority,
+      hasPriority: raw.hasPriority,
+      dueDate: raw.hasDueDate && raw.dueDate ? new Date(raw.dueDate).toISOString() : undefined,
+      hasDueDate: raw.hasDueDate,
       tags,
     };
 

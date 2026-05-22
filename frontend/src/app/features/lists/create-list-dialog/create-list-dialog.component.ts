@@ -5,6 +5,8 @@ import { ToastrService } from 'ngx-toastr';
 import { HttpErrorResponse } from '@angular/common/http';
 
 import { ListsService } from '../services/lists.service';
+import { EmojiPickerComponent } from '../../../shared/components/emoji-picker/emoji-picker.component';
+import { ImageInputComponent } from '../../../shared/components/image-input/image-input.component';
 import type { List, ListViewType } from '../lists.types';
 
 export type CreateListDialogResult = List | undefined;
@@ -13,7 +15,12 @@ export type CreateListDialogResult = List | undefined;
   selector: 'app-create-list-dialog',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, MatDialogModule],
+  imports: [
+    ReactiveFormsModule,
+    MatDialogModule,
+    EmojiPickerComponent,
+    ImageInputComponent,
+  ],
   template: `
     <div class="bg-surface text-text p-6 w-[min(480px,95vw)]">
       <h2 class="text-lg font-semibold mb-4">Nueva lista</h2>
@@ -31,26 +38,23 @@ export type CreateListDialogResult = List | undefined;
           />
         </label>
 
-        <label class="block">
-          <span class="block text-xs text-text-muted mb-1">Icono (emoji)</span>
-          <input
-            type="text"
-            formControlName="icon"
-            maxlength="4"
-            class="w-full px-3 py-2 bg-background border border-border rounded outline-none focus:border-primary"
-            placeholder="🎮"
-          />
-        </label>
-
-        <label class="block">
-          <span class="block text-xs text-text-muted mb-1">URL de imagen de portada</span>
-          <input
-            type="url"
-            formControlName="coverImageUrl"
-            class="w-full px-3 py-2 bg-background border border-border rounded outline-none focus:border-primary"
-            placeholder="https://…"
-          />
-        </label>
+        <div class="flex gap-4 items-start">
+          <div>
+            <span class="block text-xs text-text-muted mb-1">Icono</span>
+            <app-emoji-picker
+              [initialValue]="icon()"
+              placeholder="📚"
+              (valueChange)="setIcon($event)"
+            />
+          </div>
+          <div class="flex-1">
+            <span class="block text-xs text-text-muted mb-1">Imagen de portada (opcional)</span>
+            <app-image-input
+              [initialValue]="cover()"
+              (valueChange)="setCover($event)"
+            />
+          </div>
+        </div>
 
         <label class="block">
           <span class="block text-xs text-text-muted mb-1">Vista por defecto</span>
@@ -96,15 +100,23 @@ export class CreateListDialogComponent {
 
   protected readonly loading = signal(false);
   protected readonly error = signal<string | null>(null);
+  protected readonly icon = signal<string | null>(null);
+  protected readonly cover = signal<string | null>(null);
 
   protected readonly form = this.fb.nonNullable.group({
     name: ['', [Validators.required, Validators.maxLength(100)]],
-    icon: ['', [Validators.maxLength(4)]],
-    coverImageUrl: [''],
     defaultView: ['GRID' as ListViewType],
   });
 
   constructor(public ref: MatDialogRef<CreateListDialogComponent, CreateListDialogResult>) {}
+
+  protected setIcon(v: string | null): void {
+    this.icon.set(v);
+  }
+
+  protected setCover(v: string | null): void {
+    this.cover.set(v);
+  }
 
   submit(): void {
     if (this.form.invalid || this.loading()) return;
@@ -116,8 +128,10 @@ export class CreateListDialogComponent {
       name: raw.name.trim(),
       defaultView: raw.defaultView,
     };
-    if (raw.icon.trim()) payload.icon = raw.icon.trim();
-    if (raw.coverImageUrl.trim()) payload.coverImageUrl = raw.coverImageUrl.trim();
+    const icon = this.icon();
+    if (icon) payload.icon = icon;
+    const cover = this.cover();
+    if (cover) payload.coverImageUrl = cover;
 
     this.service.create(payload).subscribe({
       next: (list) => {

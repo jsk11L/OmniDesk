@@ -3,12 +3,19 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import type { CalendarEvent, CalendarEventNotification, Prisma } from '@prisma/client';
+import type {
+  CalendarEvent,
+  CalendarEventNotification,
+  CalendarSettings,
+  Prisma,
+} from '@prisma/client';
+import { createEvents, type EventAttributes } from 'ics';
 
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { AttachEventNotificationDto } from './dto/attach-notification.dto';
+import { UpdateCalendarSettingsDto } from './dto/update-calendar-settings.dto';
 
 export interface ListEventsParams {
   start?: string;
@@ -139,5 +146,61 @@ export class CalendarService {
 
     await this.prisma.calendarEventNotification.delete({ where: { id: entryId } });
     return { id: entryId };
+  }
+
+  async getSettings(userId: string): Promise<CalendarSettings> {
+    const existing = await this.prisma.calendarSettings.findUnique({ where: { userId } });
+    if (existing) return existing;
+    return this.prisma.calendarSettings.create({ data: { userId } });
+  }
+
+  async updateSettings(userId: string, dto: UpdateCalendarSettingsDto): Promise<CalendarSettings> {
+    await this.getSettings(userId);
+    return this.prisma.calendarSettings.update({
+      where: { userId },
+      data: {
+        ...(dto.size !== undefined ? { size: dto.size } : {}),
+        ...(dto.borderStyle !== undefined ? { borderStyle: dto.borderStyle } : {}),
+        ...(dto.firstDay !== undefined ? { firstDay: dto.firstDay } : {}),
+        ...(dto.defaultView !== undefined ? { defaultView: dto.defaultView } : {}),
+      },
+    });
+  }
+
+  async exportIcs(userId: string): Promise<string> {
+    const events = await this.prisma.calendarEvent.findMany({
+      where: { userId },
+      orderBy: { startDate: 'asc' },
+    });
+
+    const attrs: EventAttributes[] = events.map((e) => {
+      const startArr = this.dateToArray(e.startDate);
+      const endArr = this.dateToArray(e.endDate);
+      return {
+        uid: e.id,
+        title: e.title,
+        description: e.description ?? undefined,
+        start: startArr,
+        end: endArr,
+        location: e.location ?? undefined,
+        calName: 'OmniDesk',
+      };
+    });
+
+    const { error, value } = createEvents(attrs);
+    if (error || !value) {
+      throw new BadRequestException('No se pudo generar el archivo .ics');
+    }
+    return value;
+  }
+
+  private dateToArray(date: Date): [number, number, number, number, number] {
+    return [
+      date.getUTCFullYear(),
+      date.getUTCMonth() + 1,
+      date.getUTCDate(),
+      date.getUTCHours(),
+      date.getUTCMinutes(),
+    ];
   }
 }

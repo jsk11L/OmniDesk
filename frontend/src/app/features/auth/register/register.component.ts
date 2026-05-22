@@ -4,15 +4,19 @@ import { RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 
 import { AuthService } from '../../../core/services/auth.service';
+import { AnimatedBgComponent } from '../../../shared/components/animated-bg/animated-bg.component';
+import { PasswordInputComponent } from '../../../shared/components/password-input/password-input.component';
 
 @Component({
   selector: 'app-register',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, AnimatedBgComponent, PasswordInputComponent],
   template: `
-    <div class="min-h-screen flex items-center justify-center bg-background px-4">
-      <div class="w-full max-w-md bg-surface border border-border rounded p-8 shadow-2xl">
+    <div class="relative min-h-screen flex items-center justify-center bg-background px-4 py-8 overflow-hidden">
+      <app-animated-bg />
+      <div class="relative z-10 w-full max-w-md bg-surface/85 backdrop-blur-md border border-border rounded-xl p-8 shadow-2xl">
+        <a routerLink="/" class="inline-block mb-6 text-text-muted hover:text-text text-xs">← Volver</a>
         <h1 class="text-2xl font-semibold mb-1">Crear cuenta</h1>
         <p class="text-sm text-text-muted mb-6">Comienza tu organizador personal</p>
 
@@ -49,18 +53,15 @@ import { AuthService } from '../../../core/services/auth.service';
             />
           </label>
 
-          <label class="block">
-            <span class="block text-xs font-medium text-text-muted mb-1.5">
-              Contraseña (mínimo 8 caracteres)
-            </span>
-            <input
-              type="password"
-              formControlName="password"
+          <div class="block">
+            <span class="block text-xs font-medium text-text-muted mb-1.5">Contraseña</span>
+            <app-password-input
+              [showChecks]="true"
               autocomplete="new-password"
-              class="w-full px-3 py-2 bg-background border border-border rounded text-text placeholder:text-text-muted focus:border-primary outline-none"
-              placeholder="••••••••"
+              (valueChange)="onPasswordChange($event)"
+              (validChange)="onPasswordValidChange($event)"
             />
-          </label>
+          </div>
 
           @if (error()) {
             <p class="text-sm text-danger">{{ error() }}</p>
@@ -68,7 +69,7 @@ import { AuthService } from '../../../core/services/auth.service';
 
           <button
             type="submit"
-            [disabled]="form.invalid || loading()"
+            [disabled]="!canSubmit() || loading()"
             class="w-full py-2 rounded bg-primary text-white font-medium hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
           >
             {{ loading() ? 'Creando…' : 'Crear cuenta' }}
@@ -90,15 +91,28 @@ export class RegisterComponent {
   protected readonly loading = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly success = signal<string | null>(null);
+  protected readonly password = signal('');
+  protected readonly passwordValid = signal(false);
 
   protected readonly form = this.fb.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
-    password: ['', [Validators.required, Validators.minLength(8), Validators.maxLength(128)]],
     displayName: ['', [Validators.maxLength(100)]],
   });
 
+  protected canSubmit(): boolean {
+    return this.form.valid && this.passwordValid();
+  }
+
+  protected onPasswordChange(value: string): void {
+    this.password.set(value);
+  }
+
+  protected onPasswordValidChange(valid: boolean): void {
+    this.passwordValid.set(valid);
+  }
+
   submit(): void {
-    if (this.form.invalid || this.loading()) return;
+    if (!this.canSubmit() || this.loading()) return;
     this.error.set(null);
     this.success.set(null);
     this.loading.set(true);
@@ -106,7 +120,7 @@ export class RegisterComponent {
     const raw = this.form.getRawValue();
     const payload: { email: string; password: string; displayName?: string } = {
       email: raw.email,
-      password: raw.password,
+      password: this.password(),
     };
     if (raw.displayName.trim()) {
       payload.displayName = raw.displayName.trim();
@@ -117,6 +131,8 @@ export class RegisterComponent {
         this.loading.set(false);
         this.success.set(res.message);
         this.form.reset();
+        this.password.set('');
+        this.passwordValid.set(false);
       },
       error: (err: HttpErrorResponse) => {
         this.loading.set(false);

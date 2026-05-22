@@ -66,7 +66,7 @@ import type { List } from '../lists.types';
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             @for (list of filtered(); track list.id) {
               <a
-                [routerLink]="['/lists', list.id]"
+                [routerLink]="['/app/lists', list.id]"
                 class="block bg-surface border border-border rounded overflow-hidden hover:border-primary transition-colors"
               >
                 <app-image-cell
@@ -134,7 +134,7 @@ export class ListHomeComponent implements OnInit {
     );
     ref.afterClosed().subscribe((result) => {
       if (result) {
-        void this.router.navigate(['/lists', result.id]);
+        void this.router.navigate(['/app/lists', result.id]);
       }
     });
   }

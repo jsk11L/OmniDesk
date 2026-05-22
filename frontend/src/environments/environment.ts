@@ -1,5 +1,5 @@
 export const environment = {
   production: false,
   apiUrl: 'http://localhost:3000',
-  vapidPublicKey: '',
+  vapidPublicKey: 'BIboVxoNe_m30dLOtn-ILS9Gb6w_NTiV5wdnsjZUCZxUsLIcgIWQ_qwYFFmVzYbPA2UjnJ2d6LNvKUjfAFRMYUA',
 };

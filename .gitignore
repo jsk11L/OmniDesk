@@ -178,3 +178,14 @@ memory/
 /*.md
 !/README.md
 
+# =========================
+# Carpetas de referencia/diseño (no se publican)
+# =========================
+# `example/`: snippets CSS originales de Obsidian del usuario — referencia de estilo
+# `design_bundle/`: handoff descomprimido de claude.ai/design
+# Artefactos del decode del handoff:
+/example/
+/design_bundle/
+/design_decoded.html
+/decode_design.ps1
+

@@ -39,13 +39,64 @@ export interface ListItem {
   id: string;
   listId: string;
   title: string;
-  imageUrl: string | null;
   customFields: Record<string, unknown>;
   position: number;
   createdAt: string;
   updatedAt: string;
   tags?: ListItemTagLink[];
 }
+
+export type GridTemplate =
+  | 'card-large'
+  | 'card-compact'
+  | 'card-cover'
+  | 'dense-list'
+  | 'gallery-no-image'
+  | 'table';
+
+export interface GridConfig {
+  template: GridTemplate;
+  visibleFields: string[];
+  showImage: boolean;
+  imagePosition: 'top' | 'left';
+  showTags: boolean;
+}
+
+export type FilterType =
+  | 'text-contains'
+  | 'number-range'
+  | 'date-range'
+  | 'tag-in'
+  | 'boolean-equals'
+  | 'select-in';
+
+export interface ListFilter {
+  fieldId: string;
+  type: FilterType;
+  value: unknown;
+}
+
+export interface ViewConfig {
+  groupBy: string | null;
+  sortBy: string;
+  sortDir: 'asc' | 'desc';
+  filters: ListFilter[];
+}
+
+export const DEFAULT_GRID_CONFIG: GridConfig = {
+  template: 'card-large',
+  visibleFields: [],
+  showImage: true,
+  imagePosition: 'top',
+  showTags: true,
+};
+
+export const DEFAULT_VIEW_CONFIG: ViewConfig = {
+  groupBy: null,
+  sortBy: 'createdAt',
+  sortDir: 'desc',
+  filters: [],
+};
 
 export interface List {
   id: string;
@@ -57,6 +108,8 @@ export interface List {
   defaultView: ListViewType;
   defaultSortField: string | null;
   defaultSortDir: SortDirection;
+  gridConfig: Partial<GridConfig>;
+  viewConfig: Partial<ViewConfig>;
   createdAt: string;
   updatedAt: string;
   fields?: ListField[];
@@ -75,16 +128,23 @@ export interface CreateListDto {
 export type UpdateListDto = Partial<CreateListDto> & {
   defaultSortField?: string;
   defaultSortDir?: SortDirection;
+  gridConfig?: Partial<GridConfig>;
+  viewConfig?: Partial<ViewConfig>;
 };
 
 export interface CreateListItemDto {
   title: string;
-  imageUrl?: string;
   customFields?: Record<string, unknown>;
   tagIds?: string[];
 }
 
 export type UpdateListItemDto = Partial<CreateListItemDto> & { position?: number };
+
+export interface MoveListItemDto {
+  targetListId: string;
+  title?: string;
+  customFieldsPatch?: Record<string, unknown>;
+}
 
 export interface CreateListFieldDto {
   name: string;
@@ -100,4 +160,16 @@ export type UpdateListFieldDto = Partial<CreateListFieldDto>;
 export interface CreateListTagDto {
   name: string;
   color?: string;
+}
+
+export function resolveGridConfig(list: List): GridConfig {
+  return { ...DEFAULT_GRID_CONFIG, ...(list.gridConfig ?? {}) };
+}
+
+export function resolveViewConfig(list: List): ViewConfig {
+  return { ...DEFAULT_VIEW_CONFIG, ...(list.viewConfig ?? {}) };
+}
+
+export function findImageField(list: List): ListField | null {
+  return list.fields?.find((f) => f.fieldType === 'IMAGE_URL') ?? null;
 }

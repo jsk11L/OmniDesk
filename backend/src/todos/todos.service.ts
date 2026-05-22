@@ -64,7 +64,10 @@ export class TodosService {
   }
 
   async deleteBoard(userId: string, id: string): Promise<{ id: string }> {
-    await this.assertBoardOwner(userId, id);
+    const board = await this.assertBoardOwner(userId, id);
+    if (board.isSystem) {
+      throw new BadRequestException('El Tablero Personal no se puede eliminar');
+    }
     await this.prisma.todoBoard.delete({ where: { id } });
     return { id };
   }
@@ -131,7 +134,9 @@ export class TodosService {
         title: dto.title,
         description: dto.description ?? null,
         dueDate: dto.dueDate ? new Date(dto.dueDate) : null,
+        hasDueDate: dto.hasDueDate ?? !!dto.dueDate,
         priority: dto.priority ?? 'MEDIUM',
+        hasPriority: dto.hasPriority ?? false,
         tags: dto.tags ?? [],
         position,
       },
@@ -160,7 +165,9 @@ export class TodosService {
         title: dto.title ?? item.title,
         description: dto.description ?? item.description,
         dueDate: dto.dueDate ? new Date(dto.dueDate) : item.dueDate,
+        hasDueDate: dto.hasDueDate ?? item.hasDueDate,
         priority: dto.priority ?? item.priority,
+        hasPriority: dto.hasPriority ?? item.hasPriority,
         tags: dto.tags ?? item.tags,
         columnId: dto.columnId ?? item.columnId,
         position: dto.position ?? item.position,
@@ -212,14 +219,14 @@ export class TodosService {
 
   // ─── Helpers ─────────────────────────────────────────────
 
-  private async assertBoardOwner(userId: string, boardId: string): Promise<void> {
+  private async assertBoardOwner(userId: string, boardId: string): Promise<TodoBoard> {
     const board = await this.prisma.todoBoard.findFirst({
       where: { id: boardId, userId },
-      select: { id: true },
     });
     if (!board) {
       throw new NotFoundException('Board not found');
     }
+    return board;
   }
 
   private async findColumnInBoard(

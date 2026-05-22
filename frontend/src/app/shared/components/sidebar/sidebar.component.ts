@@ -64,17 +64,18 @@ export class SidebarComponent {
   readonly userEmail = computed(() => this.auth.user()?.email ?? null);
 
   readonly mainNav: NavItem[] = [
-    { path: '/', label: 'Dashboard', exact: true },
-    { path: '/calendar', label: 'Calendario' },
-    { path: '/lists', label: 'Listas' },
-    { path: '/notes', label: 'Notas' },
-    { path: '/todos', label: 'TO-DO' },
-    { path: '/finance', label: 'Finanzas' },
+    { path: '/app', label: 'Dashboard', exact: true },
+    { path: '/app/calendar', label: 'Calendario' },
+    { path: '/app/lists', label: 'Listas' },
+    { path: '/app/notes', label: 'Notas' },
+    { path: '/app/todos', label: 'TO-DO' },
+    { path: '/app/habits', label: 'Hábitos' },
+    { path: '/app/finance', label: 'Finanzas' },
   ];
 
   readonly footerNav: NavItem[] = [
-    { path: '/notifications', label: 'Notificaciones' },
-    { path: '/settings', label: 'Ajustes' },
+    { path: '/app/notifications', label: 'Notificaciones' },
+    { path: '/app/settings', label: 'Ajustes' },
   ];
 
   logout(): void {

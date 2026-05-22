@@ -31,3 +31,23 @@ export interface CreateEventDto {
 }
 
 export type UpdateEventDto = Partial<CreateEventDto>;
+
+export type CalendarSize = 'COMPACT' | 'NORMAL' | 'COMFORTABLE';
+export type CalendarBorderStyle = 'SQUARE' | 'ROUNDED';
+
+export interface CalendarSettings {
+  id: string;
+  userId: string;
+  size: CalendarSize;
+  borderStyle: CalendarBorderStyle;
+  firstDay: number;
+  defaultView: 'dayGridMonth' | 'timeGridWeek' | 'timeGridDay' | 'listWeek';
+  updatedAt: string;
+}
+
+export interface UpdateCalendarSettingsDto {
+  size?: CalendarSize;
+  borderStyle?: CalendarBorderStyle;
+  firstDay?: number;
+  defaultView?: CalendarSettings['defaultView'];
+}

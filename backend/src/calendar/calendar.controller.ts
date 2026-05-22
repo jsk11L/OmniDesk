@@ -3,13 +3,16 @@ import {
   Controller,
   Delete,
   Get,
+  Header,
   Param,
   ParseUUIDPipe,
   Patch,
   Post,
   Query,
+  Res,
   UseGuards,
 } from '@nestjs/common';
+import type { Response } from 'express';
 
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser, AuthUser } from '../common/decorators/current-user.decorator';
@@ -17,6 +20,7 @@ import { CalendarService } from './calendar.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { AttachEventNotificationDto } from './dto/attach-notification.dto';
+import { UpdateCalendarSettingsDto } from './dto/update-calendar-settings.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('calendar')
@@ -72,5 +76,26 @@ export class CalendarController {
     @Param('notifId', ParseUUIDPipe) notifId: string,
   ) {
     return this.calendar.detachNotification(user.id, eventId, notifId);
+  }
+
+  @Get('settings')
+  getSettings(@CurrentUser() user: AuthUser) {
+    return this.calendar.getSettings(user.id);
+  }
+
+  @Patch('settings')
+  updateSettings(
+    @CurrentUser() user: AuthUser,
+    @Body() dto: UpdateCalendarSettingsDto,
+  ) {
+    return this.calendar.updateSettings(user.id, dto);
+  }
+
+  @Get('export')
+  @Header('Content-Type', 'text/calendar')
+  @Header('Content-Disposition', 'attachment; filename="omnidesk-calendar.ics"')
+  async export(@CurrentUser() user: AuthUser, @Res() res: Response): Promise<void> {
+    const ics = await this.calendar.exportIcs(user.id);
+    res.send(ics);
   }
 }

@@ -1,7 +1,7 @@
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
   Component,
-  computed,
   ElementRef,
   inject,
   input,
@@ -12,6 +12,7 @@ import {
   effect,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { MatDialog } from '@angular/material/dialog';
 import { Editor } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
@@ -21,6 +22,12 @@ import { ToastrService } from 'ngx-toastr';
 import { HttpErrorResponse } from '@angular/common/http';
 
 import { NotesService } from '../services/notes.service';
+import { EmojiPickerComponent } from '../../../shared/components/emoji-picker/emoji-picker.component';
+import {
+  NoteSettingsDialogComponent,
+  type NoteSettingsDialogData,
+  type NoteSettingsDialogResult,
+} from '../note-settings-dialog/note-settings-dialog.component';
 import type { Note, UpdateNoteDto } from '../notes.types';
 
 type SaveStatus = 'saved' | 'saving' | 'dirty' | 'error';
@@ -29,7 +36,7 @@ type SaveStatus = 'saved' | 'saving' | 'dirty' | 'error';
   selector: 'app-note-editor',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule],
+  imports: [FormsModule, EmojiPickerComponent],
   template: `
     <div class="h-full flex flex-col">
       <header class="px-6 py-4 border-b border-border">
@@ -63,13 +70,10 @@ type SaveStatus = 'saved' | 'saving' | 'dirty' | 'error';
         </div>
 
         <div class="flex items-center gap-2 mb-2">
-          <input
-            type="text"
-            [(ngModel)]="icon"
-            (ngModelChange)="onMetaChange()"
-            maxlength="4"
+          <app-emoji-picker
+            [initialValue]="icon"
             placeholder="📝"
-            class="w-12 px-2 py-1 bg-background border border-border rounded text-center text-lg"
+            (valueChange)="onIconChange($event)"
           />
           <input
             type="text"
@@ -79,14 +83,21 @@ type SaveStatus = 'saved' | 'saving' | 'dirty' | 'error';
             placeholder="Sin título"
             class="flex-1 text-2xl font-semibold bg-transparent outline-none placeholder:text-text-muted"
           />
+          <button
+            type="button"
+            (click)="openSettings()"
+            class="px-2 py-1 rounded hover:bg-surface-hover text-sm"
+            title="Configuración de la nota"
+          >⚙</button>
         </div>
 
         <input
-          type="url"
-          [(ngModel)]="coverImageUrl"
+          type="text"
+          [(ngModel)]="description"
           (ngModelChange)="onMetaChange()"
-          placeholder="URL de imagen de portada (opcional)"
-          class="w-full px-2 py-1 text-xs bg-transparent text-text-muted outline-none focus:text-text"
+          maxlength="280"
+          placeholder="Descripción breve…"
+          class="w-full px-2 py-1 text-sm bg-transparent text-text-muted outline-none focus:text-text mb-1"
         />
 
         <div class="flex items-center gap-2 mt-2 flex-wrap">
@@ -130,8 +141,8 @@ type SaveStatus = 'saved' | 'saving' | 'dirty' | 'error';
         <button type="button" (click)="setHeading(2)" class="px-2 py-1 rounded hover:bg-surface-hover text-sm" title="Heading 2">H2</button>
         <button type="button" (click)="setHeading(3)" class="px-2 py-1 rounded hover:bg-surface-hover text-sm" title="Heading 3">H3</button>
         <span class="w-px h-5 bg-border mx-1"></span>
-        <button type="button" (click)="cmd('toggleBulletList')" class="px-2 py-1 rounded hover:bg-surface-hover text-sm" title="Lista">• Lista</button>
-        <button type="button" (click)="cmd('toggleOrderedList')" class="px-2 py-1 rounded hover:bg-surface-hover text-sm" title="Lista ordenada">1. Lista</button>
+        <button type="button" (click)="cmd('toggleBulletList')" class="px-2 py-1 rounded hover:bg-surface-hover text-sm w-8" title="Lista con viñetas">•</button>
+        <button type="button" (click)="cmd('toggleOrderedList')" class="px-2 py-1 rounded hover:bg-surface-hover text-sm w-8" title="Lista numerada">1.</button>
         <button type="button" (click)="cmd('toggleBlockquote')" class="px-2 py-1 rounded hover:bg-surface-hover text-sm" title="Cita">"</button>
         <button type="button" (click)="cmd('toggleCodeBlock')" class="px-2 py-1 rounded hover:bg-surface-hover text-sm font-mono" title="Código">{{ '<>' }}</button>
         <span class="w-px h-5 bg-border mx-1"></span>
@@ -142,8 +153,9 @@ type SaveStatus = 'saved' | 'saving' | 'dirty' | 'error';
 
       <div
         #editorEl
-        class="flex-1 overflow-auto px-6 py-4 prose prose-invert max-w-none focus:outline-none"
-        [class.bg-background]="true"
+        class="flex-1 overflow-auto px-6 py-4 prose prose-invert max-w-none focus:outline-none cursor-text"
+        style="min-height: 240px;"
+        (click)="focusEditor()"
       ></div>
     </div>
   `,
@@ -151,8 +163,16 @@ type SaveStatus = 'saved' | 'saving' | 'dirty' | 'error';
     `
       :host ::ng-deep .ProseMirror {
         outline: none;
-        min-height: 100%;
+        min-height: 240px;
         color: var(--color-text);
+        cursor: text;
+      }
+      :host ::ng-deep .ProseMirror p.is-editor-empty:first-child::before {
+        content: 'Empieza a escribir…';
+        color: var(--color-text-muted);
+        float: left;
+        height: 0;
+        pointer-events: none;
       }
       :host ::ng-deep .ProseMirror h1 {
         font-size: 1.875rem;
@@ -213,9 +233,10 @@ type SaveStatus = 'saved' | 'saving' | 'dirty' | 'error';
     `,
   ],
 })
-export class NoteEditorComponent implements OnDestroy {
+export class NoteEditorComponent implements AfterViewInit, OnDestroy {
   private readonly service = inject(NotesService);
   private readonly toastr = inject(ToastrService);
+  private readonly dialog = inject(MatDialog);
 
   readonly note = input.required<Note>();
   readonly noteDeleted = output<string>();
@@ -227,11 +248,13 @@ export class NoteEditorComponent implements OnDestroy {
   protected readonly pinned = signal(false);
   protected readonly tags = signal<string[]>([]);
   protected title = '';
-  protected icon = '';
+  protected icon: string | null = '';
   protected coverImageUrl = '';
+  protected description = '';
   protected newTag = '';
 
   private editor: Editor | null = null;
+  private currentNoteId: string | null = null;
   private readonly save$ = new Subject<UpdateNoteDto>();
   private readonly destroy$ = new Subject<void>();
 
@@ -241,15 +264,34 @@ export class NoteEditorComponent implements OnDestroy {
       this.title = n.title;
       this.icon = n.icon ?? '';
       this.coverImageUrl = n.coverImageUrl ?? '';
+      this.description = n.description ?? '';
       this.pinned.set(n.isPinned);
       this.tags.set([...n.tags]);
       this.status.set('saved');
-      this.initEditor(n);
+      this.applyNoteToEditor(n);
     });
 
     this.save$.pipe(debounceTime(2000), takeUntil(this.destroy$)).subscribe((payload) => {
       this.flush(payload);
     });
+  }
+
+  ngAfterViewInit(): void {
+    this.editor = new Editor({
+      element: this.editorEl.nativeElement,
+      extensions: [
+        StarterKit,
+        Image.configure({ inline: false }),
+        Link.configure({ openOnClick: false, autolink: true }),
+      ],
+      content: '<p></p>',
+      onUpdate: ({ editor }) => {
+        this.status.set('dirty');
+        const json = editor.getJSON();
+        this.save$.next({ content: JSON.stringify(json) });
+      },
+    });
+    this.applyNoteToEditor(this.note());
   }
 
   ngOnDestroy(): void {
@@ -258,30 +300,26 @@ export class NoteEditorComponent implements OnDestroy {
     this.destroy$.complete();
   }
 
-  private initEditor(note: Note): void {
-    this.editor?.destroy();
-    this.editor = new Editor({
-      element: this.editorEl.nativeElement,
-      extensions: [
-        StarterKit,
-        Image.configure({ inline: false }),
-        Link.configure({ openOnClick: false, autolink: true }),
-      ],
-      content: this.parseContent(note.content) as never,
-      onUpdate: ({ editor }) => {
-        this.status.set('dirty');
-        const json = editor.getJSON();
-        this.save$.next({ content: JSON.stringify(json) });
-      },
-    });
+  protected focusEditor(): void {
+    this.editor?.commands.focus();
+  }
+
+  private applyNoteToEditor(note: Note): void {
+    if (!this.editor) return;
+    if (this.currentNoteId === note.id) return;
+    this.currentNoteId = note.id;
+    const content = this.parseContent(note.content);
+    this.editor.commands.setContent(content as never, false);
   }
 
   private parseContent(raw: string): unknown {
-    if (!raw) return '';
+    if (!raw || raw.trim() === '') return '<p></p>';
     try {
-      return JSON.parse(raw);
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === 'object' && 'type' in parsed) return parsed;
+      return '<p></p>';
     } catch {
-      return raw;
+      return raw.startsWith('<') ? raw : `<p>${raw}</p>`;
     }
   }
 
@@ -313,8 +351,31 @@ export class NoteEditorComponent implements OnDestroy {
     this.status.set('dirty');
     this.save$.next({
       title: this.title.trim() || 'Sin título',
-      icon: this.icon.trim() || undefined,
+      icon: this.icon?.trim() || undefined,
+      description: this.description.trim() || undefined,
       coverImageUrl: this.coverImageUrl.trim() || undefined,
+    });
+  }
+
+  protected onIconChange(value: string | null): void {
+    this.icon = value;
+    this.status.set('dirty');
+    this.save$.next({ icon: value ?? undefined });
+  }
+
+  protected openSettings(): void {
+    const ref = this.dialog.open<
+      NoteSettingsDialogComponent,
+      NoteSettingsDialogData,
+      NoteSettingsDialogResult
+    >(NoteSettingsDialogComponent, { data: { note: this.note() } });
+    ref.afterClosed().subscribe((updated) => {
+      if (updated) {
+        this.coverImageUrl = updated.coverImageUrl ?? '';
+        this.tags.set([...updated.tags]);
+        this.pinned.set(updated.isPinned);
+        this.noteUpdated.emit(updated);
+      }
     });
   }
 

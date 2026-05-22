@@ -1,16 +1,18 @@
-import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { HttpErrorResponse } from '@angular/common/http';
 
 import { AuthService } from '../../../core/services/auth.service';
 import { SettingsService } from '../services/settings.service';
+import { ImageInputComponent } from '../../../shared/components/image-input/image-input.component';
+import { UploadsService } from '../../../shared/services/uploads.service';
 
 @Component({
   selector: 'app-profile-settings',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, ImageInputComponent],
   template: `
     <div class="max-w-xl">
       @if (user(); as u) {
@@ -43,22 +45,24 @@ import { SettingsService } from '../services/settings.service';
             />
           </label>
 
-          <label class="block">
-            <span class="block text-xs text-text-muted mb-1">URL de avatar</span>
-            <input
-              type="url"
-              formControlName="avatarUrl"
-              class="w-full px-3 py-2 bg-background border border-border rounded outline-none focus:border-primary"
-              placeholder="https://…"
-            />
-            @if (avatarPreview()) {
-              <img
-                [src]="avatarPreview()"
-                alt="Avatar preview"
-                class="mt-2 w-20 h-20 rounded-full object-cover border border-border"
-              />
-            }
-          </label>
+          <div>
+            <span class="block text-xs text-text-muted mb-1">Avatar</span>
+            <div class="flex gap-4 items-start">
+              @if (avatarPreview()) {
+                <img
+                  [src]="avatarPreview()!"
+                  alt="Avatar"
+                  class="w-20 h-20 rounded-full object-cover border border-border shrink-0"
+                />
+              }
+              <div class="flex-1">
+                <app-image-input
+                  [initialValue]="avatarUrl()"
+                  (valueChange)="onAvatarChange($event)"
+                />
+              </div>
+            </div>
+          </div>
 
           @if (error()) {
             <p class="text-sm text-danger">{{ error() }}</p>
@@ -82,30 +86,32 @@ export class ProfileSettingsComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly auth = inject(AuthService);
   private readonly settings = inject(SettingsService);
+  private readonly uploads = inject(UploadsService);
   private readonly toastr = inject(ToastrService);
 
   protected readonly user = this.auth.user;
   protected readonly saving = signal(false);
   protected readonly error = signal<string | null>(null);
-  protected readonly avatarPreview = signal<string | null>(null);
+  protected readonly avatarUrl = signal<string | null>(null);
 
   protected readonly form = this.fb.nonNullable.group({
     displayName: ['', [Validators.maxLength(100)]],
-    avatarUrl: [''],
   });
+
+  protected avatarPreview(): string | null {
+    return this.uploads.resolveUrl(this.avatarUrl());
+  }
 
   ngOnInit(): void {
     const u = this.user();
     if (u) {
-      this.form.patchValue({
-        displayName: u.displayName ?? '',
-        avatarUrl: u.avatarUrl ?? '',
-      });
-      this.avatarPreview.set(u.avatarUrl);
+      this.form.patchValue({ displayName: u.displayName ?? '' });
+      this.avatarUrl.set(u.avatarUrl ?? null);
     }
-    this.form.controls.avatarUrl.valueChanges.subscribe((url) => {
-      this.avatarPreview.set(url && url.trim().length > 0 ? url : null);
-    });
+  }
+
+  protected onAvatarChange(url: string | null): void {
+    this.avatarUrl.set(url);
   }
 
   submit(): void {
@@ -116,7 +122,8 @@ export class ProfileSettingsComponent implements OnInit {
     const raw = this.form.getRawValue();
     const payload: { displayName?: string; avatarUrl?: string } = {};
     if (raw.displayName.trim()) payload.displayName = raw.displayName.trim();
-    if (raw.avatarUrl.trim()) payload.avatarUrl = raw.avatarUrl.trim();
+    const url = this.avatarUrl();
+    if (url) payload.avatarUrl = url;
 
     this.settings.updateProfile(payload).subscribe({
       next: () => {

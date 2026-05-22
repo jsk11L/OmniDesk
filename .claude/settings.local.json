@@ -22,7 +22,10 @@
       "Bash(curl -sI https://tailwindcss.com/llms.txt)",
       "Bash(curl -sI https://tiptap.dev/llms.txt)",
       "Bash(curl -sI https://tiptap.dev/llms-full.txt)",
-      "Bash(curl -sI https://www.prisma.io/llms.txt)"
+      "Bash(curl -sI https://www.prisma.io/llms.txt)",
+      "mcp__plugin_engram_engram__mem_search",
+      "mcp__plugin_engram_engram__mem_context",
+      "WebFetch(domain:api.anthropic.com)"
     ]
   }
 }

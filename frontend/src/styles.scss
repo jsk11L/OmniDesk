@@ -4,8 +4,12 @@
 
 @import 'ngx-toastr/toastr';
 
+/* ─── Web fonts (Inter UI · JetBrains Mono metadata · Newsreader serif accents) ─── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600;6..72,700&display=swap');
+
 /* ─── CSS Custom Properties (set in :root, overridden by ThemeService) ─── */
 :root {
+  /* Theme colors (writable by ThemeService) */
   --color-primary: #6366f1;
   --color-secondary: #8b5cf6;
   --color-background: #0f0f0f;
@@ -17,8 +21,40 @@
   --color-accent: #f59e0b;
   --color-danger: #ef4444;
   --color-success: #22c55e;
-  --font-family: 'Inter', system-ui, -apple-system, sans-serif;
+
+  /* Derived surfaces / borders / text (color-mix against the base tokens) */
+  --color-surface-2: color-mix(in srgb, var(--color-surface) 85%, var(--color-background));
+  --color-border-soft: color-mix(in srgb, var(--color-border) 60%, var(--color-background));
+  --color-text-faint: color-mix(in srgb, var(--color-text-muted) 70%, var(--color-background));
+  --color-primary-soft: color-mix(in srgb, var(--color-primary) 80%, black);
+  --color-primary-ghost: color-mix(in srgb, var(--color-primary) 12%, transparent);
+
+  /* Status accents not stored in theme yet */
+  --color-warning: #eab308;
+  --color-info: #38bdf8;
+
+  /* Typography */
+  --font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-sans: var(--font-family);
+  --font-mono: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+  --font-serif: 'Newsreader', Georgia, serif;
+
+  /* Border radius scale (writable: --border-radius is the base from theme) */
   --border-radius: 0.5rem;
+  --radius-xs: calc(var(--border-radius) * 0.5);
+  --radius-sm: calc(var(--border-radius) * 0.75);
+  --radius: var(--border-radius);
+  --radius-lg: calc(var(--border-radius) * 1.5);
+  --radius-xl: calc(var(--border-radius) * 2);
+
+  /* Elevation */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.6);
+
+  /* Layout */
+  --sidebar-w: 248px;
+  --topbar-h: 48px;
 }
 
 html,
@@ -28,12 +64,45 @@ body {
   font-family: var(--font-family);
   background: var(--color-background);
   color: var(--color-text);
+  font-size: 14px;
+  line-height: 1.45;
+  letter-spacing: -0.005em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 * {
   box-sizing: border-box;
+}
+
+/* ─── Typography helpers (mirror design bundle) ─── */
+.mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.serif {
+  font-family: var(--font-serif);
+}
+
+.uppercase-tag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-text-faint);
+  font-weight: 500;
+}
+
+.kbd {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 2px 6px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  box-shadow: inset 0 -1px 0 var(--color-border-soft);
 }
 
 /* ─── Scrollbar styling (subtle, theme-aware) ─── */
@@ -43,16 +112,17 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--color-background);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
   background: var(--color-border);
-  border-radius: 5px;
+  border-radius: 8px;
+  border: 2px solid var(--color-background);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-text-muted);
+  background: var(--color-text-faint);
 }
 
 /* ─── Angular Material overrides (minimum baseline) ─── */
@@ -63,4 +133,102 @@ body {
 .mat-mdc-snack-bar-container {
   --mdc-snackbar-container-color: var(--color-surface);
   --mdc-snackbar-supporting-text-color: var(--color-text);
+}
+
+/* ─── OmniDesk Dialog (popup modal) ─── */
+.omni-dialog .mat-mdc-dialog-container {
+  --mdc-dialog-container-color: var(--color-surface);
+  --mdc-dialog-subhead-color: var(--color-text);
+  --mdc-dialog-supporting-text-color: var(--color-text);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  color: var(--color-text);
+}
+
+.omni-dialog .mat-mdc-dialog-surface {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: 0 !important;
+  overflow: hidden;
+}
+
+.cdk-overlay-dark-backdrop.omni-backdrop {
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(2px);
+}
+
+.cdk-global-scrollblock {
+  overflow-y: hidden;
+}
+
+/* ─── Obsidian-style card cover (Lists Gallery template) ─── */
+.card-cover {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 7 / 4;
+  border-radius: var(--radius-lg);
+  background-size: cover;
+  background-position: center;
+  background-color: var(--color-surface-2);
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 1px solid var(--color-border-soft);
+}
+
+.card-cover:hover {
+  transform: scale(1.03);
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-primary);
+}
+
+.card-cover::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0) 55%);
+  z-index: 1;
+}
+
+.card-cover-content {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 12px;
+  color: #fff;
+}
+
+.card-cover-title {
+  font-weight: 600;
+  line-height: 1.2;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
+}
+
+.card-cover-meta {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  opacity: 0.85;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
+}
+
+.card-cover-top {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.card-cover-badge {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  text-shadow: none;
 }

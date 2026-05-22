@@ -21,6 +21,7 @@ import { UpdateListItemDto } from './dto/update-list-item.dto';
 import { CreateListFieldDto } from './dto/create-list-field.dto';
 import { UpdateListFieldDto } from './dto/update-list-field.dto';
 import { CreateListTagDto } from './dto/create-list-tag.dto';
+import { MoveListItemDto } from './dto/move-list-item.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('lists')
@@ -98,6 +99,16 @@ export class ListsController {
     @Param('itemId', ParseUUIDPipe) itemId: string,
   ) {
     return this.lists.deleteItem(user.id, listId, itemId);
+  }
+
+  @Post(':id/items/:itemId/move')
+  moveItem(
+    @CurrentUser() user: AuthUser,
+    @Param('id', ParseUUIDPipe) listId: string,
+    @Param('itemId', ParseUUIDPipe) itemId: string,
+    @Body() dto: MoveListItemDto,
+  ) {
+    return this.lists.moveItem(user.id, listId, itemId, dto);
   }
 
   // ─── Fields ──────────────────────────────────────────────

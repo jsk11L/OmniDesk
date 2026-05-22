@@ -4,12 +4,18 @@ import { authGuard, publicOnlyGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   {
+    path: '',
+    pathMatch: 'full',
+    loadComponent: () =>
+      import('./features/landing/landing.component').then((m) => m.LandingComponent),
+  },
+  {
     path: 'auth',
     canActivate: [publicOnlyGuard],
     loadChildren: () => import('./features/auth/auth.routes').then((m) => m.AUTH_ROUTES),
   },
   {
-    path: '',
+    path: 'app',
     canActivate: [authGuard],
     loadComponent: () =>
       import('./shared/components/main-layout/main-layout.component').then(
@@ -44,6 +50,13 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/todos/kanban-board/kanban-board.component').then(
             (m) => m.KanbanBoardComponent,
+          ),
+      },
+      {
+        path: 'habits',
+        loadComponent: () =>
+          import('./features/habits/habits-home/habits-home.component').then(
+            (m) => m.HabitsHomeComponent,
           ),
       },
       {

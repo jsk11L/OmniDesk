@@ -1,8 +1,10 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { ServeStaticModule } from '@nestjs/serve-static';
 import { APP_GUARD } from '@nestjs/core';
+import { join, isAbsolute } from 'path';
 
 import { AppController } from './app.controller';
 import { PrismaModule } from './prisma/prisma.module';
@@ -16,6 +18,9 @@ import { TodosModule } from './todos/todos.module';
 import { ListsModule } from './lists/lists.module';
 import { FinanceModule } from './finance/finance.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { UploadsModule } from './uploads/uploads.module';
+import { DashboardModule } from './dashboard/dashboard.module';
+import { HabitsModule } from './habits/habits.module';
 
 @Module({
   imports: [
@@ -23,6 +28,15 @@ import { NotificationsModule } from './notifications/notifications.module';
       isGlobal: true,
       cache: true,
       expandVariables: true,
+    }),
+    ServeStaticModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => {
+        const uploadsDir = config.get<string>('UPLOADS_DIR', './uploads');
+        const rootPath = isAbsolute(uploadsDir) ? uploadsDir : join(process.cwd(), uploadsDir);
+        return [{ rootPath, serveRoot: config.get<string>('UPLOADS_BASE_URL', '/uploads') }];
+      },
     }),
     ThrottlerModule.forRoot([
       {
@@ -43,6 +57,9 @@ import { NotificationsModule } from './notifications/notifications.module';
     ListsModule,
     FinanceModule,
     NotificationsModule,
+    UploadsModule,
+    DashboardModule,
+    HabitsModule,
   ],
   controllers: [AppController],
   providers: [
