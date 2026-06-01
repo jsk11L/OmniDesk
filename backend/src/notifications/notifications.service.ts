@@ -150,13 +150,28 @@ export class NotificationsService implements OnModuleInit {
   async deliver(config: NotificationConfig): Promise<FireResult> {
     const result: FireResult = { inAppCreated: false, pushSent: 0, emailsSent: 0 };
 
-    if (config.channels.includes('IN_APP')) {
-      await this.prisma.inAppNotification.create({
-        data: { userId: config.userId, notificationId: config.id, isRead: false },
-      });
-      result.inAppCreated = true;
-    }
+    // Record the in-app notification and the fired marker atomically. If either
+    // failed independently, a stale lastFiredAt would let the next scheduler
+    // tick re-fire and duplicate the inbox entry for RECURRING configs (§2.5 #8).
+    await this.prisma.$transaction(async (tx) => {
+      if (config.channels.includes('IN_APP')) {
+        await tx.inAppNotification.create({
+          data: { userId: config.userId, notificationId: config.id, isRead: false },
+        });
+        result.inAppCreated = true;
+      }
 
+      await tx.notificationConfig.update({
+        where: { id: config.id },
+        data: {
+          lastFiredAt: new Date(),
+          isFired: config.triggerType === 'SCHEDULED' ? true : config.isFired,
+        },
+      });
+    });
+
+    // External, best-effort side effects. They run after the fired marker is
+    // committed so a transient push/email failure can never trigger a re-fire.
     if (config.channels.includes('PUSH') && this.pushEnabled) {
       result.pushSent = await this.sendPushToUser(config);
     }
@@ -174,14 +189,6 @@ export class NotificationsService implements OnModuleInit {
         result.emailsSent = 1;
       }
     }
-
-    await this.prisma.notificationConfig.update({
-      where: { id: config.id },
-      data: {
-        lastFiredAt: new Date(),
-        isFired: config.triggerType === 'SCHEDULED' ? true : config.isFired,
-      },
-    });
 
     return result;
   }
