@@ -21,6 +21,8 @@ model User {
   verificationToken   String?
   resetPasswordToken  String?
   resetPasswordExpiry DateTime?
+  timezone            String?
+  deletedAt           DateTime?
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
 
@@ -257,6 +259,7 @@ model Note {
   userId        String
   title         String
   content       String   @default("")
+  plainText     String?
   description   String?  @db.VarChar(280)
   icon          String?
   coverImageUrl String?
@@ -296,11 +299,12 @@ model TodoBoard {
 }
 
 model TodoColumn {
-  id       String @id @default(uuid())
-  boardId  String
-  name     String
-  color    String @default("#94a3b8")
-  position Int    @default(0)
+  id                 String  @id @default(uuid())
+  boardId            String
+  name               String
+  color              String  @default("#94a3b8")
+  position           Int     @default(0)
+  isCompletionColumn Boolean @default(false)
 
   board TodoBoard  @relation(fields: [boardId], references: [id], onDelete: Cascade)
   items TodoItem[]

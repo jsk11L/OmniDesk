@@ -1,4 +1,5 @@
 import {
+  IsBoolean,
   IsHexColor,
   IsInt,
   IsOptional,
@@ -23,4 +24,8 @@ export class UpdateColumnDto {
   @IsInt()
   @Min(0)
   position?: number;
+
+  @IsOptional()
+  @IsBoolean()
+  isCompletionColumn?: boolean;
 }

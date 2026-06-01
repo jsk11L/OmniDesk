@@ -25,7 +25,7 @@ export class DashboardService {
     const endOfDay = new Date(now);
     endOfDay.setHours(23, 59, 59, 999);
 
-    const [nextEvent, latestNote, todoItems, completedColumnNames, randomItem] = await Promise.all([
+    const [nextEvent, latestNote, todoItems, randomItem] = await Promise.all([
       this.prisma.calendarEvent.findFirst({
         where: { userId, startDate: { gt: now } },
         orderBy: { startDate: 'asc' },
@@ -64,11 +64,10 @@ export class DashboardService {
           title: true,
           dueDate: true,
           priority: true,
-          column: { select: { id: true, name: true, boardId: true } },
+          column: { select: { id: true, name: true, boardId: true, isCompletionColumn: true } },
         },
         take: 50,
       }),
-      this.detectCompletedColumnNames(),
       this.pickRandomItem(userId),
     ]);
 
@@ -76,7 +75,7 @@ export class DashboardService {
     const pending: typeof todoItems = [];
     const noDate: typeof todoItems = [];
     for (const item of todoItems) {
-      const isCompleted = completedColumnNames.has(item.column.name.toLowerCase());
+      const isCompleted = item.column.isCompletionColumn;
       if (!item.dueDate) {
         if (!isCompleted) noDate.push(item);
       } else if (isCompleted) {
@@ -97,10 +96,6 @@ export class DashboardService {
       nextFinanceGoal,
       randomItem,
     };
-  }
-
-  private detectCompletedColumnNames(): Promise<Set<string>> {
-    return Promise.resolve(new Set(['hecho', 'done', 'completado', 'completadas', 'completed', 'finalizado']));
   }
 
   private async pickRandomItem(userId: string): Promise<unknown | null> {
