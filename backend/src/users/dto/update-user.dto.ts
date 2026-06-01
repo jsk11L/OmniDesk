@@ -1,4 +1,6 @@
-import { IsOptional, IsString, IsUrl, MaxLength, MinLength } from 'class-validator';
+import { IsOptional, IsString, Matches, MaxLength, MinLength } from 'class-validator';
+
+const URL_OR_UPLOAD = /^(?:https?:\/\/|\/uploads\/).+/i;
 
 export class UpdateUserDto {
   @IsOptional()
@@ -8,6 +10,7 @@ export class UpdateUserDto {
   displayName?: string;
 
   @IsOptional()
-  @IsUrl({ protocols: ['http', 'https'], require_protocol: true })
+  @IsString()
+  @Matches(URL_OR_UPLOAD, { message: 'avatarUrl must be a URL or an /uploads/ path' })
   avatarUrl?: string;
 }
