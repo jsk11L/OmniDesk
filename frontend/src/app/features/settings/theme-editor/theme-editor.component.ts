@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
+import { DialogService } from '../../../shared/services/dialog.service';
 import { HttpErrorResponse } from '@angular/common/http';
 
 import { ThemeService } from '../../../core/services/theme.service';
@@ -220,6 +221,7 @@ const COLOR_LABELS: Record<string, string> = {
 export class ThemeEditorComponent implements OnInit {
   private readonly themeService = inject(ThemeService);
   private readonly settings = inject(SettingsService);
+  private readonly dialogs = inject(DialogService);
   private readonly toastr = inject(ToastrService);
 
   protected readonly themes = this.themeService.themes;
@@ -309,10 +311,16 @@ export class ThemeEditorComponent implements OnInit {
     });
   }
 
-  protected deleteCurrent(): void {
+  protected async deleteCurrent(): Promise<void> {
     const t = this.current();
     if (!t || t.isDefault) return;
-    if (!confirm(`¿Eliminar el tema "${t.name}"?`)) return;
+    const ok = await this.dialogs.confirm({
+      title: 'Eliminar tema',
+      message: `¿Eliminar el tema "${t.name}"?`,
+      confirmLabel: 'Eliminar',
+      destructive: true,
+    });
+    if (!ok) return;
     this.settings.deleteTheme(t.id).subscribe({
       next: () => {
         this.toastr.success('Tema eliminado');

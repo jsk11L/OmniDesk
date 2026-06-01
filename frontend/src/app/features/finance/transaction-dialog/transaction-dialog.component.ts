@@ -5,6 +5,7 @@ import { ToastrService } from 'ngx-toastr';
 import { HttpErrorResponse } from '@angular/common/http';
 
 import { FinanceService } from '../services/finance.service';
+import { DialogService } from '../../../shared/services/dialog.service';
 import type {
   FinanceBoard,
   FinanceCategoryType,
@@ -162,6 +163,7 @@ export type TransactionDialogResult = Transaction | { deleted: string } | undefi
 export class TransactionDialogComponent {
   private readonly fb = inject(FormBuilder);
   private readonly service = inject(FinanceService);
+  private readonly dialogs = inject(DialogService);
   private readonly toastr = inject(ToastrService);
 
   protected readonly loading = signal(false);
@@ -232,9 +234,15 @@ export class TransactionDialogComponent {
     });
   }
 
-  remove(): void {
+  async remove(): Promise<void> {
     if (!this.data.transaction || this.loading()) return;
-    if (!confirm('¿Eliminar esta transacción?')) return;
+    const ok = await this.dialogs.confirm({
+      title: 'Eliminar transacción',
+      message: '¿Eliminar esta transacción?',
+      confirmLabel: 'Eliminar',
+      destructive: true,
+    });
+    if (!ok) return;
     this.loading.set(true);
     this.service
       .deleteTransaction(this.data.board.id, this.data.transaction.id)

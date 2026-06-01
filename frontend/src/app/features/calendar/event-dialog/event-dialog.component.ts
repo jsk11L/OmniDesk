@@ -5,6 +5,7 @@ import { ToastrService } from 'ngx-toastr';
 import { HttpErrorResponse } from '@angular/common/http';
 
 import { CalendarService } from '../services/calendar.service';
+import { DialogService } from '../../../shared/services/dialog.service';
 import type { CalendarEvent } from '../calendar.types';
 
 export interface EventDialogData {
@@ -163,6 +164,7 @@ function toLocalInput(date: Date): string {
 export class EventDialogComponent {
   private readonly fb = inject(FormBuilder);
   private readonly service = inject(CalendarService);
+  private readonly dialogs = inject(DialogService);
   private readonly toastr = inject(ToastrService);
 
   protected readonly loading = signal(false);
@@ -232,9 +234,15 @@ export class EventDialogComponent {
     });
   }
 
-  remove(): void {
+  async remove(): Promise<void> {
     if (!this.data.event || this.loading()) return;
-    if (!confirm('¿Eliminar este evento? Esta acción no se puede deshacer.')) return;
+    const ok = await this.dialogs.confirm({
+      title: 'Eliminar evento',
+      message: '¿Eliminar este evento? Esta acción no se puede deshacer.',
+      confirmLabel: 'Eliminar',
+      destructive: true,
+    });
+    if (!ok) return;
 
     this.loading.set(true);
     this.service.delete(this.data.event.id).subscribe({

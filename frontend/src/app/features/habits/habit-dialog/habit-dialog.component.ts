@@ -5,6 +5,7 @@ import { ToastrService } from 'ngx-toastr';
 import { HttpErrorResponse } from '@angular/common/http';
 
 import { HabitsService } from '../services/habits.service';
+import { DialogService } from '../../../shared/services/dialog.service';
 import { EmojiPickerComponent } from '../../../shared/components/emoji-picker/emoji-picker.component';
 import type { CreateHabitDto, Habit } from '../habits.types';
 
@@ -130,6 +131,7 @@ const DAYS = [
 export class HabitDialogComponent {
   private readonly fb = inject(FormBuilder);
   private readonly service = inject(HabitsService);
+  private readonly dialogs = inject(DialogService);
   private readonly toastr = inject(ToastrService);
 
   protected readonly loading = signal(false);
@@ -201,9 +203,15 @@ export class HabitDialogComponent {
     });
   }
 
-  remove(): void {
+  async remove(): Promise<void> {
     if (!this.data.habit || this.loading()) return;
-    if (!confirm(`¿Eliminar el hábito "${this.data.habit.name}"? Se perderá todo el histórico.`)) return;
+    const ok = await this.dialogs.confirm({
+      title: 'Eliminar hábito',
+      message: `¿Eliminar el hábito "${this.data.habit.name}"? Se perderá todo el histórico.`,
+      confirmLabel: 'Eliminar',
+      destructive: true,
+    });
+    if (!ok) return;
     this.loading.set(true);
     this.service.delete(this.data.habit.id).subscribe({
       next: ({ id }) => {

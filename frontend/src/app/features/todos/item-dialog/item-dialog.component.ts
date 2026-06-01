@@ -5,6 +5,7 @@ import { ToastrService } from 'ngx-toastr';
 import { HttpErrorResponse } from '@angular/common/http';
 
 import { TodosService } from '../services/todos.service';
+import { DialogService } from '../../../shared/services/dialog.service';
 import type { TodoBoard, TodoItem, TodoPriority } from '../todos.types';
 
 export interface TodoItemDialogData {
@@ -140,6 +141,7 @@ export type TodoItemDialogResult = TodoItem | { deleted: string } | undefined;
 export class TodoItemDialogComponent {
   private readonly fb = inject(FormBuilder);
   private readonly service = inject(TodosService);
+  private readonly dialogs = inject(DialogService);
   private readonly toastr = inject(ToastrService);
 
   protected readonly loading = signal(false);
@@ -205,9 +207,15 @@ export class TodoItemDialogComponent {
     });
   }
 
-  remove(): void {
+  async remove(): Promise<void> {
     if (!this.data.item || this.loading()) return;
-    if (!confirm('¿Eliminar esta tarea?')) return;
+    const ok = await this.dialogs.confirm({
+      title: 'Eliminar tarea',
+      message: '¿Eliminar esta tarea?',
+      confirmLabel: 'Eliminar',
+      destructive: true,
+    });
+    if (!ok) return;
     this.loading.set(true);
     this.service.deleteItem(this.data.item.id).subscribe({
       next: ({ id }) => {

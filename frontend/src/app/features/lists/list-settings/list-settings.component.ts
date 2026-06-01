@@ -5,6 +5,7 @@ import { ToastrService } from 'ngx-toastr';
 import { HttpErrorResponse } from '@angular/common/http';
 
 import { ListsService } from '../services/lists.service';
+import { DialogService } from '../../../shared/services/dialog.service';
 import type { List, ListField, ListFieldType, ListTag } from '../lists.types';
 
 export interface ListSettingsData {
@@ -225,6 +226,7 @@ const FIELD_TYPES: { value: ListFieldType; label: string }[] = [
 export class ListSettingsComponent {
   private readonly fb = inject(FormBuilder);
   private readonly service = inject(ListsService);
+  private readonly dialogs = inject(DialogService);
   private readonly toastr = inject(ToastrService);
 
   protected readonly savingList = signal(false);
@@ -305,8 +307,14 @@ export class ListSettingsComponent {
       });
   }
 
-  deleteField(fieldId: string): void {
-    if (!confirm('¿Eliminar este campo? Los valores en los ítems quedarán huérfanos.')) return;
+  async deleteField(fieldId: string): Promise<void> {
+    const ok = await this.dialogs.confirm({
+      title: 'Eliminar campo',
+      message: '¿Eliminar este campo? Los valores en los ítems quedarán huérfanos.',
+      confirmLabel: 'Eliminar',
+      destructive: true,
+    });
+    if (!ok) return;
     this.service.deleteField(this.data.list.id, fieldId).subscribe({
       next: () => {
         this.fields.update((arr) => arr.filter((f) => f.id !== fieldId));
@@ -331,8 +339,14 @@ export class ListSettingsComponent {
       });
   }
 
-  deleteTag(tagId: string): void {
-    if (!confirm('¿Eliminar este tag?')) return;
+  async deleteTag(tagId: string): Promise<void> {
+    const ok = await this.dialogs.confirm({
+      title: 'Eliminar tag',
+      message: '¿Eliminar este tag?',
+      confirmLabel: 'Eliminar',
+      destructive: true,
+    });
+    if (!ok) return;
     this.service.deleteTag(this.data.list.id, tagId).subscribe({
       next: () => {
         this.tags.update((arr) => arr.filter((t) => t.id !== tagId));
@@ -342,8 +356,14 @@ export class ListSettingsComponent {
     });
   }
 
-  deleteList(): void {
-    if (!confirm(`¿Eliminar la lista "${this.data.list.name}" con todos sus ítems?`)) return;
+  async deleteList(): Promise<void> {
+    const ok = await this.dialogs.confirm({
+      title: 'Eliminar lista',
+      message: `¿Eliminar la lista "${this.data.list.name}" con todos sus ítems?`,
+      confirmLabel: 'Eliminar',
+      destructive: true,
+    });
+    if (!ok) return;
     this.service.delete(this.data.list.id).subscribe({
       next: () => {
         this.toastr.success('Lista eliminada');
