@@ -21,6 +21,7 @@ export interface TodoColumn {
   name: string;
   color: string;
   position: number;
+  isCompletionColumn: boolean;
   items: TodoItem[];
 }
 
@@ -43,6 +44,7 @@ export interface CreateColumnDto {
   name: string;
   color?: string;
   position?: number;
+  isCompletionColumn?: boolean;
 }
 
 export type UpdateColumnDto = Partial<CreateColumnDto>;
