@@ -9,6 +9,12 @@ import type {
 
 import { PrismaService } from '../prisma/prisma.service';
 import { JsonSanitizationError, sanitizeJson } from '../common/utils/sanitize-json';
+import {
+  Paginated,
+  PaginationQuery,
+  buildPageMeta,
+  resolvePagination,
+} from '../common/pagination';
 import { CreateListDto } from './dto/create-list.dto';
 import { UpdateListDto } from './dto/update-list.dto';
 import { CreateListItemDto } from './dto/create-list-item.dto';
@@ -32,7 +38,7 @@ function safeSanitize(value: unknown): unknown {
 const SORTABLE_FIELDS = ['title', 'position', 'createdAt', 'updatedAt'] as const;
 type SortableField = (typeof SORTABLE_FIELDS)[number];
 
-export interface ListItemsQuery {
+export interface ListItemsQuery extends PaginationQuery {
   q?: string;
   tag?: string;
   sort?: string;
@@ -113,7 +119,7 @@ export class ListsService {
     userId: string,
     listId: string,
     query: ListItemsQuery,
-  ): Promise<ListItem[]> {
+  ): Promise<Paginated<ListItem>> {
     await this.assertOwner(userId, listId);
 
     const where: Prisma.ListItemWhereInput = { listId };
@@ -131,11 +137,19 @@ export class ListsService {
     const sort = this.resolveSortField(query.sort);
     const dir: Prisma.SortOrder = query.dir?.toUpperCase() === 'DESC' ? 'desc' : 'asc';
 
-    return this.prisma.listItem.findMany({
-      where,
-      orderBy: { [sort]: dir },
-      include: { tags: { include: { tag: true } } },
-    });
+    const pagination = resolvePagination(query);
+    const [data, total] = await Promise.all([
+      this.prisma.listItem.findMany({
+        where,
+        orderBy: { [sort]: dir },
+        include: { tags: { include: { tag: true } } },
+        skip: pagination.skip,
+        take: pagination.take,
+      }),
+      this.prisma.listItem.count({ where }),
+    ]);
+
+    return { data, meta: buildPageMeta(pagination, total) };
   }
 
   async createItem(

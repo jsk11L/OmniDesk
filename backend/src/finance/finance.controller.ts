@@ -99,8 +99,17 @@ export class FinanceController {
     @Query('end') end?: string,
     @Query('type') type?: string,
     @Query('category') category?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
   ) {
-    return this.finance.listTransactions(user.id, boardId, { start, end, type, category });
+    return this.finance.listTransactions(user.id, boardId, {
+      start,
+      end,
+      type,
+      category,
+      page,
+      limit,
+    });
   }
 
   @Post('boards/:id/transactions')

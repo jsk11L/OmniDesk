@@ -69,8 +69,10 @@ export class ListsController {
     @Query('tag') tag?: string,
     @Query('sort') sort?: string,
     @Query('dir') dir?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
   ) {
-    return this.lists.listItems(user.id, listId, { q, tag, sort, dir });
+    return this.lists.listItems(user.id, listId, { q, tag, sort, dir, page, limit });
   }
 
   @Post(':id/items')

@@ -2,11 +2,17 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import type { Note, NoteNotification, Prisma } from '@prisma/client';
 
 import { PrismaService } from '../prisma/prisma.service';
+import {
+  Paginated,
+  PaginationQuery,
+  buildPageMeta,
+  resolvePagination,
+} from '../common/pagination';
 import { CreateNoteDto } from './dto/create-note.dto';
 import { UpdateNoteDto } from './dto/update-note.dto';
 import { AttachNoteNotificationDto } from './dto/attach-note-notification.dto';
 
-export interface ListNotesParams {
+export interface ListNotesParams extends PaginationQuery {
   q?: string;
   tag?: string;
   pinned?: string;
@@ -16,13 +22,13 @@ export interface ListNotesParams {
 export class NotesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  list(userId: string, params: ListNotesParams): Promise<Note[]> {
+  async list(userId: string, params: ListNotesParams): Promise<Paginated<Note>> {
     const where: Prisma.NoteWhereInput = { userId };
 
     if (params.q) {
       where.OR = [
         { title: { contains: params.q, mode: 'insensitive' } },
-        { content: { contains: params.q, mode: 'insensitive' } },
+        { plainText: { contains: params.q, mode: 'insensitive' } },
       ];
     }
     if (params.tag) {
@@ -32,11 +38,19 @@ export class NotesService {
       where.isPinned = params.pinned === 'true';
     }
 
-    return this.prisma.note.findMany({
-      where,
-      orderBy: [{ isPinned: 'desc' }, { updatedAt: 'desc' }],
-      include: { notifications: true },
-    });
+    const pagination = resolvePagination(params);
+    const [data, total] = await Promise.all([
+      this.prisma.note.findMany({
+        where,
+        orderBy: [{ isPinned: 'desc' }, { updatedAt: 'desc' }],
+        include: { notifications: true },
+        skip: pagination.skip,
+        take: pagination.take,
+      }),
+      this.prisma.note.count({ where }),
+    ]);
+
+    return { data, meta: buildPageMeta(pagination, total) };
   }
 
   async findById(userId: string, id: string): Promise<Note> {
