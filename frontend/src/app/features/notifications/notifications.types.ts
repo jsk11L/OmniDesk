@@ -1,31 +1,15 @@
-export type NotificationTrigger = 'MANUAL' | 'SCHEDULED' | 'RECURRING';
-export type NotificationChannel = 'IN_APP' | 'PUSH' | 'EMAIL';
+// Entity shapes from the Prisma-generated source (D-011). The inbox API nests
+// its NotificationConfig, composed here.
+import type {
+  InAppNotification as InAppNotificationBase,
+  NotificationConfig,
+  NotificationTrigger,
+  NotificationChannel,
+} from '@omnidesk/shared';
 
-export interface NotificationConfig {
-  id: string;
-  userId: string;
-  title: string;
-  message: string;
-  iconUrl: string | null;
-  accentColor: string;
-  triggerType: NotificationTrigger;
-  scheduledAt: string | null;
-  recurringRule: string | null;
-  isRecurring: boolean;
-  channels: NotificationChannel[];
-  isActive: boolean;
-  isFired: boolean;
-  lastFiredAt: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
+export type { NotificationConfig, NotificationTrigger, NotificationChannel };
 
-export interface InAppNotification {
-  id: string;
-  userId: string;
-  notificationId: string;
-  isRead: boolean;
-  createdAt: string;
+export interface InAppNotification extends InAppNotificationBase {
   notification?: NotificationConfig;
 }
 

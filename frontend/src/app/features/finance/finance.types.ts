@@ -1,48 +1,37 @@
-export type FinanceCategoryType = 'INCOME' | 'EXPENSE';
-export type BudgetPeriod = 'WEEKLY' | 'MONTHLY' | 'ANNUAL';
+// Entity shapes from the Prisma-generated source (D-011). API responses nest
+// some relations (transaction.category, board.categories/budgets,
+// goal.contributions), composed here. Enums used by the DTOs below are imported
+// (local binding) and re-exported.
+import type {
+  Transaction as TransactionBase,
+  FinanceBoard as FinanceBoardBase,
+  SavingsGoal as SavingsGoalBase,
+  FinanceCategory,
+  Budget,
+  SavingsContribution,
+  WishlistItem,
+  PlannedPurchase,
+  FinanceCategoryType,
+  BudgetPeriod,
+  WishlistPriority,
+} from '@omnidesk/shared';
 
-export interface FinanceCategory {
-  id: string;
-  boardId: string;
-  name: string;
-  color: string;
-  icon: string | null;
-  categoryType: FinanceCategoryType;
-}
+export type {
+  FinanceCategory,
+  Budget,
+  SavingsContribution,
+  WishlistItem,
+  PlannedPurchase,
+  FinanceCategoryType,
+  BudgetPeriod,
+  WishlistPriority,
+};
 
-export interface Transaction {
-  id: string;
-  boardId: string;
-  categoryId: string | null;
-  title: string;
-  amount: number;
-  type: FinanceCategoryType;
-  date: string;
-  notes: string | null;
-  tags: string[];
-  createdAt: string;
-  updatedAt: string;
+export interface Transaction extends TransactionBase {
   category?: FinanceCategory | null;
 }
 
-export interface Budget {
-  id: string;
-  boardId: string;
-  categoryId: string | null;
-  name: string;
-  amount: number;
-  period: BudgetPeriod;
-  createdAt: string;
-}
-
-export interface FinanceBoard {
-  id: string;
-  userId: string;
-  name: string;
-  currency: string;
-  isDefault: boolean;
-  createdAt: string;
-  updatedAt: string;
+export interface FinanceBoard extends FinanceBoardBase {
   categories?: FinanceCategory[];
   budgets?: Budget[];
 }
@@ -91,62 +80,10 @@ export interface CreateBudgetDto {
 }
 
 // ─── Organizer ─────────────────────────────────────────
+// WishlistItem, PlannedPurchase and SavingsContribution come from the shared
+// generated source (re-exported at the top of this file).
 
-export type WishlistPriority = 'LOW' | 'MEDIUM' | 'HIGH';
-
-export interface WishlistItem {
-  id: string;
-  boardId: string;
-  title: string;
-  description: string | null;
-  imageUrl: string | null;
-  estimatedPrice: number | null;
-  currency: string;
-  url: string | null;
-  category: string | null;
-  priority: WishlistPriority;
-  isArchived: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface PlannedPurchase {
-  id: string;
-  boardId: string;
-  title: string;
-  amount: number;
-  currency: string;
-  targetDate: string;
-  categoryId: string | null;
-  isPurchased: boolean;
-  purchasedAt: string | null;
-  notes: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface SavingsContribution {
-  id: string;
-  goalId: string;
-  amount: number;
-  date: string;
-  notes: string | null;
-}
-
-export interface SavingsGoal {
-  id: string;
-  boardId: string;
-  name: string;
-  targetAmount: number;
-  currentAmount: number;
-  currency: string;
-  targetDate: string | null;
-  icon: string | null;
-  color: string;
-  isCompleted: boolean;
-  completedAt: string | null;
-  createdAt: string;
-  updatedAt: string;
+export interface SavingsGoal extends SavingsGoalBase {
   contributions?: SavingsContribution[];
 }
 
