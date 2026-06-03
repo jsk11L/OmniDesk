@@ -23,63 +23,63 @@ interface PriceTier {
 type ShowcaseTab = 'calendar' | 'lists' | 'notes' | 'wishlist';
 
 const FEATURES: Feature[] = [
-  { icon: '📅', title: 'Calendario',     text: 'Mes, semana, día y lista. Drag-drop, eventos con color y notificaciones programadas.' },
-  { icon: '📚', title: 'Listas',         text: 'Bibliotecas con campos personalizados. Grid · Tabla · Galería · Lista. Sin plantillas: configurás todo.' },
-  { icon: '📝', title: 'Notas',          text: 'Editor TipTap con bloques, código, citas y portada. Auto-guardado e historial.' },
-  { icon: '✓',  title: 'TO-DO Kanban',   text: 'Columnas configurables, drag-drop, prioridades y fechas límite opcionales.' },
-  { icon: '🔥', title: 'Hábitos',         text: 'Tracking semanal con rachas, días activos y metas. Recordatorios por canal.' },
-  { icon: '💰', title: 'Wishlist',       text: 'Saving pots con barra de progreso. Cotiza objetos y mira cuándo te los puedes permitir.' },
-  { icon: '🔔', title: 'Notificaciones', text: 'In-app, push del navegador y email. Cron visual para recurrentes.' },
-  { icon: '🎨', title: 'Temas',          text: '12 presets incluidos + editor de colores, tipografía y radio. Todo cambia en vivo.' },
+  { icon: '📅', title: 'Calendar',       text: 'Month, week, day and list. Drag-drop, color-coded events and scheduled notifications.' },
+  { icon: '📚', title: 'Lists',          text: 'Libraries with custom fields. Grid · Table · Gallery · List. No templates: you configure everything.' },
+  { icon: '📝', title: 'Notes',          text: 'TipTap editor with blocks, code, quotes and cover. Auto-save and history.' },
+  { icon: '✓',  title: 'TO-DO Kanban',   text: 'Configurable columns, drag-drop, priorities and optional due dates.' },
+  { icon: '🔥', title: 'Habits',         text: 'Weekly tracking with streaks, active days and goals. Reminders per channel.' },
+  { icon: '💰', title: 'Wishlist',       text: 'Saving pots with a progress bar. Price items and see when you can afford them.' },
+  { icon: '🔔', title: 'Notifications',  text: 'In-app, browser push and email. Visual cron for recurring ones.' },
+  { icon: '🎨', title: 'Themes',         text: '12 presets included + editor for colors, typography and radius. Everything changes live.' },
 ];
 
 const TIERS: PriceTier[] = [
   {
     eyebrow: 'Self-hosted',
-    price: '0€',
-    blurb: 'para siempre · MIT',
+    price: '€0',
+    blurb: 'forever · MIT',
     features: [
-      '✓ Todo el código en GitHub',
-      '✓ Docker compose listo',
-      '✓ Todos los módulos',
-      '✓ Notificaciones push y email',
-      '✓ Sin límite de espacio',
-      '✓ Backup exportable',
+      '✓ All the code on GitHub',
+      '✓ Docker compose ready',
+      '✓ All modules',
+      '✓ Push and email notifications',
+      '✓ No storage limit',
+      '✓ Exportable backup',
     ],
-    ctaLabel: 'Ver en GitHub',
+    ctaLabel: 'View on GitHub',
     ctaHref: 'https://github.com',
   },
   {
-    badge: 'RECOMENDADO',
-    eyebrow: 'Demo en la nube',
-    price: '0€',
-    blurb: 'probar sin instalar',
+    badge: 'RECOMMENDED',
+    eyebrow: 'Cloud demo',
+    price: '€0',
+    blurb: 'try without installing',
     features: [
-      '✓ Tu cuenta en demo.omnidesk.app',
-      '✓ Todos los módulos',
-      '✓ Notificaciones push reales',
-      '✓ 1 GB de datos',
-      '✓ Cancela cuando quieras',
-      '✓ Datos exportables siempre',
+      '✓ Your account on demo.omnidesk.app',
+      '✓ All modules',
+      '✓ Real push notifications',
+      '✓ 1 GB of data',
+      '✓ Cancel anytime',
+      '✓ Data always exportable',
     ],
-    ctaLabel: 'Probar ahora →',
+    ctaLabel: 'Try now →',
     ctaRoute: '/auth/register',
     featured: true,
   },
   {
-    eyebrow: 'Apoyo opcional',
-    price: '5€',
-    priceSuffix: '/mes',
-    blurb: 'solo si lo usas y te gusta',
+    eyebrow: 'Optional support',
+    price: '€5',
+    priceSuffix: '/mo',
+    blurb: 'only if you use it and like it',
     features: [
-      '☕ Pagás un café al mes',
-      '☕ Acceso a roadmap privado',
-      '☕ Tu nombre en CONTRIBUTORS.md',
-      '☕ Sticker físico (envío gratis)',
-      '☕ Cancelás cuando quieras',
-      '☕ Sin features bloqueadas',
+      '☕ Buy a coffee a month',
+      '☕ Access to the private roadmap',
+      '☕ Your name in CONTRIBUTORS.md',
+      '☕ Physical sticker (free shipping)',
+      '☕ Cancel anytime',
+      '☕ No locked features',
     ],
-    ctaLabel: 'Donar en GitHub Sponsors',
+    ctaLabel: 'Donate on GitHub Sponsors',
     ctaHref: 'https://github.com/sponsors',
   },
 ];
@@ -106,8 +106,8 @@ const TIERS: PriceTier[] = [
             <a href="https://github.com" target="_blank" rel="noopener">GitHub</a>
           </nav>
           <div class="nav-actions">
-            <a routerLink="/auth/login" class="btn btn-ghost">Iniciar sesión</a>
-            <a routerLink="/auth/register" class="btn btn-primary">Crear cuenta</a>
+            <a routerLink="/auth/login" class="btn btn-ghost">Sign in</a>
+            <a routerLink="/auth/register" class="btn btn-primary">Create account</a>
           </div>
         </div>
       </header>
@@ -120,20 +120,20 @@ const TIERS: PriceTier[] = [
             <div>
               <div class="uppercase-tag eyebrow-primary">
                 <span class="status-dot"></span>
-                v3 · publicada {{ today }}
+                v3 · released {{ today }}
               </div>
               <h1 class="land-h1">
-                Tu segundo cerebro,<br />
-                <span class="accent">en tu propio servidor</span>.
+                Your second brain,<br />
+                <span class="accent">on your own server</span>.
               </h1>
               <p class="land-lead">
-                Calendario, listas, notas, tareas, hábitos y wishlist en una sola app.
-                Diseñada para uso personal · sin ads, sin trackers, sin "premium feature".
-                <strong>Todo el código es tuyo.</strong>
+                Calendar, lists, notes, tasks, habits and wishlist in a single app.
+                Designed for personal use · no ads, no trackers, no "premium feature".
+                <strong>All the code is yours.</strong>
               </p>
               <div class="cta-group">
-                <a routerLink="/auth/register" class="btn btn-primary btn-lg">Probar la demo →</a>
-                <a href="https://github.com" target="_blank" rel="noopener" class="btn btn-lg">🐙 Star en GitHub</a>
+                <a routerLink="/auth/register" class="btn btn-primary btn-lg">Try the demo →</a>
+                <a href="https://github.com" target="_blank" rel="noopener" class="btn btn-lg">🐙 Star on GitHub</a>
               </div>
               <div class="hero-bullets mono">
                 <span>✓ Self-hosted</span>
@@ -160,7 +160,7 @@ const TIERS: PriceTier[] = [
                   </div>
                   <div class="land-app-main">
                     <div class="uppercase-tag" style="font-size: 9px;">{{ todayLabel }}</div>
-                    <div class="main-greeting">Buenos días.</div>
+                    <div class="main-greeting">Good morning.</div>
                     <div class="stats-grid">
                       @for (s of statTiles; track s.label) {
                         <div class="stat-tile">
@@ -170,12 +170,12 @@ const TIERS: PriceTier[] = [
                       }
                     </div>
                     <div class="next-tile">
-                      <div class="uppercase-tag" style="font-size: 9px;">PRÓXIMO</div>
+                      <div class="uppercase-tag" style="font-size: 9px;">NEXT</div>
                       <div class="next-row">
                         <span class="next-bar"></span>
                         <div>
-                          <div class="next-title">Standup semanal</div>
-                          <div class="mono next-time">L 09:30</div>
+                          <div class="next-title">Weekly standup</div>
+                          <div class="mono next-time">Mon 09:30</div>
                         </div>
                       </div>
                     </div>
@@ -190,9 +190,9 @@ const TIERS: PriceTier[] = [
       <!-- ─── Features ─── -->
       <section class="land-section" id="features">
         <div class="land-container">
-          <div class="uppercase-tag eyebrow-primary">todo lo que necesitas</div>
-          <h2 class="land-h2">Una sola app · ocho herramientas</h2>
-          <p class="land-sub">Inspirada en lo bueno de Notion y Obsidian. Hecha para tu día a día.</p>
+          <div class="uppercase-tag eyebrow-primary">everything you need</div>
+          <h2 class="land-h2">One app · eight tools</h2>
+          <p class="land-sub">Inspired by the best of Notion and Obsidian. Built for your daily life.</p>
           <div class="land-features">
             @for (f of features; track f.title) {
               <div class="land-feature">
@@ -208,9 +208,9 @@ const TIERS: PriceTier[] = [
       <!-- ─── Showcase ─── -->
       <section class="land-section land-showcase-section" id="demo">
         <div class="land-container">
-          <div class="uppercase-tag eyebrow-primary">en acción</div>
-          <h2 class="land-h2">Mira cómo se siente</h2>
-          <p class="land-sub">Cada pantalla está pensada para densidad de información sin renunciar a la respiración.</p>
+          <div class="uppercase-tag eyebrow-primary">in action</div>
+          <h2 class="land-h2">See how it feels</h2>
+          <p class="land-sub">Every screen is built for information density without giving up breathing room.</p>
 
           <div class="showcase-tabs">
             @for (t of tabs; track t.id) {
@@ -259,18 +259,18 @@ const TIERS: PriceTier[] = [
                 }
                 @case ('notes') {
                   <div class="notes-pane">
-                    <div class="mono notes-tag">arquitectura · proyecto</div>
-                    <h3 class="notes-title">Arquitectura · OmniDesk v3</h3>
+                    <div class="mono notes-tag">architecture · project</div>
+                    <h3 class="notes-title">Architecture · OmniDesk v3</h3>
                     <p class="notes-p">
-                      Después del incidente del 13 de mayo conviene replantear el módulo de notificaciones.
-                      El scheduler actual corre dentro del proceso principal del API y, ante un spike de eventos
-                      recurrentes, bloquea las peticiones del usuario.
+                      After the May 13 incident it's worth rethinking the notifications module.
+                      The current scheduler runs inside the main API process and, during a spike of
+                      recurring events, blocks user requests.
                     </p>
-                    <h4 class="notes-h">Propuesta</h4>
+                    <h4 class="notes-h">Proposal</h4>
                     <ul class="notes-list">
-                      <li>Extraer el scheduler a un worker Node.js dedicado.</li>
-                      <li>Cola Redis (BullMQ) para encolar disparos individuales.</li>
-                      <li>Backpressure si la cola supera 10k eventos.</li>
+                      <li>Extract the scheduler to a dedicated Node.js worker.</li>
+                      <li>Redis queue (BullMQ) to enqueue individual fires.</li>
+                      <li>Backpressure if the queue exceeds 10k events.</li>
                     </ul>
                     <pre class="mono notes-code">await queue.add('fire', &#123; configId &#125;);</pre>
                   </div>
@@ -303,8 +303,8 @@ const TIERS: PriceTier[] = [
       <section class="land-section" id="pricing">
         <div class="land-container">
           <div class="uppercase-tag eyebrow-primary">pricing</div>
-          <h2 class="land-h2">Gratis. Siempre. En serio.</h2>
-          <p class="land-sub">Cero ads, cero trackers, cero "premium feature". Si te gusta, podés apoyar el proyecto con una donación.</p>
+          <h2 class="land-h2">Free. Forever. Really.</h2>
+          <p class="land-sub">Zero ads, zero trackers, zero "premium feature". If you like it, you can support the project with a donation.</p>
 
           <div class="land-pricing">
             @for (tier of tiers; track tier.eyebrow) {
@@ -332,12 +332,12 @@ const TIERS: PriceTier[] = [
           </div>
 
           <div class="land-honest">
-            <div class="uppercase-tag eyebrow-accent">nota honesta</div>
+            <div class="uppercase-tag eyebrow-accent">honest note</div>
             <p>
-              OmniDesk lo construyo yo solo en mi tiempo libre. No es un negocio.
-              Es una herramienta personal que liberé porque pensé que a alguien más le sería útil.
-              Sin SLA, sin equipo de soporte, sin promesas — pero con código limpio,
-              issues respondidos y un roadmap honesto en GitHub.
+              I build OmniDesk alone in my spare time. It's not a business.
+              It's a personal tool I released because I thought it might be useful to someone else.
+              No SLA, no support team, no promises — but with clean code,
+              answered issues and an honest roadmap on GitHub.
             </p>
           </div>
         </div>
@@ -349,13 +349,13 @@ const TIERS: PriceTier[] = [
           <div class="footer-brand">
             <div class="logo-mark sm">O</div>
             <span>OmniDesk</span>
-            <span class="mono footer-credit">construido en abierto · 2025–2026</span>
+            <span class="mono footer-credit">built in the open · 2025–2026</span>
           </div>
           <div class="mono footer-links">
             <a href="https://github.com" target="_blank" rel="noopener">GitHub</a>
             <a href="#">Docs</a>
-            <a href="#">Privacidad</a>
-            <a href="#">Términos</a>
+            <a href="#">Privacy</a>
+            <a href="#">Terms</a>
           </div>
         </div>
       </footer>
@@ -791,22 +791,22 @@ const TIERS: PriceTier[] = [
 export class LandingComponent {
   protected readonly features = FEATURES;
   protected readonly tiers = TIERS;
-  protected readonly sidebarItems = ['Dashboard', 'Calendario', 'Listas', 'Notas', 'TO-DO', 'Hábitos', 'Finanzas'];
+  protected readonly sidebarItems = ['Dashboard', 'Calendar', 'Lists', 'Notes', 'TO-DO', 'Habits', 'Finance'];
   protected readonly statTiles = [
-    { label: 'BALANCE',     value: '+1.665€', color: 'var(--color-success)' },
-    { label: 'RACHA',       value: '22d',     color: 'var(--color-accent)' },
-    { label: 'TAREAS HOY',  value: '3',       color: 'var(--color-primary)' },
-    { label: 'EVENTOS',     value: '6',       color: 'var(--color-text)' },
+    { label: 'BALANCE',     value: '+€1,665', color: 'var(--color-success)' },
+    { label: 'STREAK',      value: '22d',     color: 'var(--color-accent)' },
+    { label: 'TASKS TODAY', value: '3',       color: 'var(--color-primary)' },
+    { label: 'EVENTS',      value: '6',       color: 'var(--color-text)' },
   ];
   protected readonly tabs: { id: ShowcaseTab; label: string }[] = [
-    { id: 'calendar', label: 'Calendario' },
-    { id: 'lists',    label: 'Listas' },
-    { id: 'notes',    label: 'Notas' },
+    { id: 'calendar', label: 'Calendar' },
+    { id: 'lists',    label: 'Lists' },
+    { id: 'notes',    label: 'Notes' },
     { id: 'wishlist', label: 'Wishlist' },
   ];
   protected readonly tab = signal<ShowcaseTab>('calendar');
 
-  protected readonly weekdayLabels = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+  protected readonly weekdayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
   protected readonly calCells = Array.from({ length: 35 }, (_, i) => {
     const d = i - 4 + 1;
     const day = d >= 1 && d <= 31 ? d : null;
@@ -815,8 +815,8 @@ export class LandingComponent {
         18: [{ t: 'Standup',    c: '#6366f1' }, { t: 'Gym',     c: '#f59e0b' }],
         19: [{ t: '1:1 Marta',  c: '#22c55e' }],
         21: [{ t: 'Deploy',     c: '#ef4444' }],
-        22: [{ t: 'Cena Ana',   c: '#ec4899' }],
-        25: [{ t: 'Médico',     c: '#22c55e' }] } as Record<number, { t: string; c: string }[]>
+        22: [{ t: 'Dinner Ana', c: '#ec4899' }],
+        25: [{ t: 'Doctor',     c: '#22c55e' }] } as Record<number, { t: string; c: string }[]>
     )[day ?? -1] ?? [];
     return { idx: i, day, events };
   });
@@ -834,17 +834,17 @@ export class LandingComponent {
 
   protected readonly demoPots = [
     { name: 'MacBook M5',  icon: '💻', saved: 1200, goal: 2400, color: '#6366f1' },
-    { name: 'Viaje Japón', icon: '🗾', saved: 800,  goal: 3500, color: '#ec4899' },
-    { name: 'Curso DDIA',  icon: '📚', saved: 240,  goal: 300,  color: '#22c55e' },
+    { name: 'Japan Trip',  icon: '🗾', saved: 800,  goal: 3500, color: '#ec4899' },
+    { name: 'DDIA Course', icon: '📚', saved: 240,  goal: 300,  color: '#22c55e' },
     { name: 'Switch 2',    icon: '🎮', saved: 100,  goal: 500,  color: '#f59e0b' },
   ];
 
   protected get today(): string {
-    return new Date().toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' });
+    return new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' });
   }
 
   protected get todayLabel(): string {
-    return new Date().toLocaleDateString('es-CL', { weekday: 'long', day: 'numeric', month: 'short' }).toUpperCase();
+    return new Date().toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'short' }).toUpperCase();
   }
 
   protected currentTabLabel(): string {

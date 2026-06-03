@@ -15,8 +15,8 @@ import type { DashboardData } from './dashboard.types';
   template: `
     <div class="p-6 max-w-7xl mx-auto">
       <header class="mb-6">
-        <h1 class="text-2xl font-semibold mb-1">Hola{{ greeting() }}</h1>
-        <p class="text-text-muted text-sm">Tu día a la vista.</p>
+        <h1 class="text-2xl font-semibold mb-1">Hi{{ greeting() }}</h1>
+        <p class="text-text-muted text-sm">Your day at a glance.</p>
       </header>
 
       @if (data(); as d) {
@@ -25,7 +25,7 @@ import type { DashboardData } from './dashboard.types';
           <a routerLink="/app/calendar" class="widget">
             <header class="widget-header">
               <span class="widget-icon">📅</span>
-              <h2>Próximo evento</h2>
+              <h2>Next event</h2>
             </header>
             @if (d.nextEvent; as e) {
               <div class="widget-body">
@@ -37,7 +37,7 @@ import type { DashboardData } from './dashboard.types';
                 @if (e.location) { <p class="meta">📍 {{ e.location }}</p> }
               </div>
             } @else {
-              <p class="empty">No tienes eventos próximos</p>
+              <p class="empty">No upcoming events</p>
             }
           </a>
 
@@ -45,14 +45,14 @@ import type { DashboardData } from './dashboard.types';
           <a routerLink="/app/todos" class="widget">
             <header class="widget-header">
               <span class="widget-icon">✓</span>
-              <h2>Tareas de hoy</h2>
+              <h2>Today's tasks</h2>
             </header>
             <div class="widget-body">
               @if (d.todayTodos.pending.length === 0 && d.todayTodos.completed.length === 0 && !d.todayTodos.extraNoDate) {
-                <p class="empty">Nada para hoy. Disfruta el día.</p>
+                <p class="empty">Nothing for today. Enjoy your day.</p>
               } @else {
                 @if (d.todayTodos.pending.length) {
-                  <p class="section-title">Pendientes ({{ d.todayTodos.pending.length }})</p>
+                  <p class="section-title">Pending ({{ d.todayTodos.pending.length }})</p>
                   <ul class="todo-list">
                     @for (t of d.todayTodos.pending.slice(0, 4); track t.id) {
                       <li>
@@ -65,7 +65,7 @@ import type { DashboardData } from './dashboard.types';
                   </ul>
                 }
                 @if (d.todayTodos.completed.length) {
-                  <p class="section-title mt-2">Hechas ({{ d.todayTodos.completed.length }})</p>
+                  <p class="section-title mt-2">Done ({{ d.todayTodos.completed.length }})</p>
                   <ul class="todo-list completed">
                     @for (t of d.todayTodos.completed.slice(0, 2); track t.id) {
                       <li>✓ <s>{{ t.title }}</s></li>
@@ -73,7 +73,7 @@ import type { DashboardData } from './dashboard.types';
                   </ul>
                 }
                 @if (d.todayTodos.extraNoDate; as e) {
-                  <p class="section-title mt-2">Sin fecha</p>
+                  <p class="section-title mt-2">No date</p>
                   <p class="todo-extra">○ {{ e.title }}</p>
                 }
               }
@@ -84,15 +84,15 @@ import type { DashboardData } from './dashboard.types';
           <a routerLink="/app/notes" class="widget">
             <header class="widget-header">
               <span class="widget-icon">📝</span>
-              <h2>Última nota</h2>
+              <h2>Latest note</h2>
             </header>
             @if (d.latestNote; as n) {
               <div class="widget-body">
                 <p class="title-line">
                   @if (n.icon) { <span>{{ n.icon }}</span> }
-                  <strong>{{ n.title || 'Sin título' }}</strong>
+                  <strong>{{ n.title || 'Untitled' }}</strong>
                 </p>
-                <p class="meta">Actualizada {{ n.updatedAt | date:'d MMM, HH:mm' }}</p>
+                <p class="meta">Updated {{ n.updatedAt | date:'d MMM, HH:mm' }}</p>
                 @if (n.tags.length) {
                   <div class="tags">
                     @for (t of n.tags.slice(0, 4); track t) {
@@ -102,7 +102,7 @@ import type { DashboardData } from './dashboard.types';
                 }
               </div>
             } @else {
-              <p class="empty">Aún no hay notas</p>
+              <p class="empty">No notes yet</p>
             }
           </a>
 
@@ -110,7 +110,7 @@ import type { DashboardData } from './dashboard.types';
           <a routerLink="/app/finance" class="widget">
             <header class="widget-header">
               <span class="widget-icon">💰</span>
-              <h2>Tu presupuesto</h2>
+              <h2>Your budget</h2>
             </header>
             @if (d.nextFinanceGoal; as g) {
               <div class="widget-body">
@@ -122,10 +122,10 @@ import type { DashboardData } from './dashboard.types';
                   <div class="progress-fill" [style.width.%]="g.percent"
                        [class.over]="g.percent >= 100"></div>
                 </div>
-                <p class="meta">{{ g.percent }}% usado</p>
+                <p class="meta">{{ g.percent }}% used</p>
               </div>
             } @else {
-              <p class="empty">Sin metas configuradas</p>
+              <p class="empty">No goals configured</p>
             }
           </a>
         </div>
@@ -137,7 +137,7 @@ import type { DashboardData } from './dashboard.types';
         >
           <header class="widget-header">
             <span class="widget-icon">🎲</span>
-            <h2>Descubre algo de tus colecciones</h2>
+            <h2>Discover something from your collections</h2>
           </header>
           @if (d.randomItem; as r) {
             <div class="random-content">
@@ -147,16 +147,16 @@ import type { DashboardData } from './dashboard.types';
                 <div class="random-img placeholder">{{ r.list.icon ?? '📚' }}</div>
               }
               <div>
-                <p class="meta">En lista <strong>{{ r.list.name }}</strong></p>
+                <p class="meta">In list <strong>{{ r.list.name }}</strong></p>
                 <p class="title-line"><strong>{{ r.item.title }}</strong></p>
               </div>
             </div>
           } @else {
-            <p class="empty">Crea tu primera lista para ver items aleatorios aquí.</p>
+            <p class="empty">Create your first list to see random items here.</p>
           }
         </a>
       } @else if (loading()) {
-        <p class="text-text-muted">Cargando…</p>
+        <p class="text-text-muted">Loading…</p>
       } @else if (error()) {
         <p class="text-danger">{{ error() }}</p>
       }
@@ -297,7 +297,7 @@ export class DashboardComponent implements OnInit {
       },
       error: () => {
         this.loading.set(false);
-        this.error.set('No se pudo cargar el dashboard');
+        this.error.set('Could not load the dashboard');
       },
     });
   }
