@@ -189,7 +189,7 @@ export class CalendarService {
 
     const { error, value } = createEvents(attrs);
     if (error || !value) {
-      throw new BadRequestException('No se pudo generar el archivo .ics');
+      throw new BadRequestException('Could not generate the .ics file');
     }
     return value;
   }

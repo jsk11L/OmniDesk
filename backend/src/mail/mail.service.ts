@@ -44,13 +44,13 @@ export class MailService implements OnModuleInit {
 
   async sendVerificationEmail(to: string, token: string, displayName?: string | null): Promise<void> {
     const verifyUrl = `${this.frontendUrl}/auth/verify?token=${encodeURIComponent(token)}`;
-    const subject = 'Verifica tu cuenta de OmniDesk';
+    const subject = 'Verify your OmniDesk account';
     const html = `
       <div style="font-family: Inter, sans-serif; max-width: 560px; margin: 0 auto;">
-        <h2>Hola${displayName ? ' ' + this.escapeHtml(displayName) : ''},</h2>
-        <p>Gracias por registrarte en OmniDesk. Para activar tu cuenta, haz clic en el siguiente enlace:</p>
-        <p><a href="${verifyUrl}" style="background:#6366f1;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none;display:inline-block;">Verificar mi cuenta</a></p>
-        <p style="color:#71717a;font-size:13px;">Si el botón no funciona, copia y pega esta URL en tu navegador:<br/>${verifyUrl}</p>
+        <h2>Hi${displayName ? ' ' + this.escapeHtml(displayName) : ''},</h2>
+        <p>Thanks for signing up to OmniDesk. To activate your account, click the link below:</p>
+        <p><a href="${verifyUrl}" style="background:#6366f1;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none;display:inline-block;">Verify my account</a></p>
+        <p style="color:#71717a;font-size:13px;">If the button doesn't work, copy and paste this URL into your browser:<br/>${verifyUrl}</p>
       </div>
     `;
     await this.send(to, subject, html);
@@ -62,13 +62,13 @@ export class MailService implements OnModuleInit {
     displayName?: string | null,
   ): Promise<void> {
     const resetUrl = `${this.frontendUrl}/auth/reset?token=${encodeURIComponent(token)}`;
-    const subject = 'Restablece tu contraseña de OmniDesk';
+    const subject = 'Reset your OmniDesk password';
     const html = `
       <div style="font-family: Inter, sans-serif; max-width: 560px; margin: 0 auto;">
-        <h2>Hola${displayName ? ' ' + this.escapeHtml(displayName) : ''},</h2>
-        <p>Recibimos una solicitud para restablecer tu contraseña. El enlace expira en 1 hora.</p>
-        <p><a href="${resetUrl}" style="background:#6366f1;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none;display:inline-block;">Restablecer contraseña</a></p>
-        <p style="color:#71717a;font-size:13px;">Si no solicitaste este cambio, ignora este correo.<br/>URL directa: ${resetUrl}</p>
+        <h2>Hi${displayName ? ' ' + this.escapeHtml(displayName) : ''},</h2>
+        <p>We received a request to reset your password. This link expires in 1 hour.</p>
+        <p><a href="${resetUrl}" style="background:#6366f1;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none;display:inline-block;">Reset password</a></p>
+        <p style="color:#71717a;font-size:13px;">If you didn't request this change, ignore this email.<br/>Direct URL: ${resetUrl}</p>
       </div>
     `;
     await this.send(to, subject, html);
