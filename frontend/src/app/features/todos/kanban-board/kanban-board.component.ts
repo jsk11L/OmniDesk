@@ -35,10 +35,10 @@ const PRIORITY_COLORS: Record<TodoPriority, string> = {
 };
 
 const PRIORITY_LABEL: Record<TodoPriority, string> = {
-  LOW: 'Baja',
-  MEDIUM: 'Media',
-  HIGH: 'Alta',
-  URGENT: 'Urgente',
+  LOW: 'Low',
+  MEDIUM: 'Medium',
+  HIGH: 'High',
+  URGENT: 'Urgent',
 };
 
 @Component({
@@ -70,7 +70,7 @@ const PRIORITY_LABEL: Record<TodoPriority, string> = {
               (click)="createBoard()"
               class="px-3 py-2 rounded text-sm hover:bg-surface-hover"
             >
-              + Tablero
+              + Board
             </button>
             <button
               type="button"
@@ -78,7 +78,7 @@ const PRIORITY_LABEL: Record<TodoPriority, string> = {
               [disabled]="!board()"
               class="px-3 py-2 rounded text-sm hover:bg-surface-hover disabled:opacity-50"
             >
-              + Columna
+              + Column
             </button>
             <button
               type="button"
@@ -86,7 +86,7 @@ const PRIORITY_LABEL: Record<TodoPriority, string> = {
               [disabled]="!board()?.columns?.length"
               class="px-4 py-2 rounded bg-primary text-white text-sm font-medium hover:opacity-90 disabled:opacity-50"
             >
-              + Tarea
+              + Task
             </button>
           </div>
         </div>
@@ -94,14 +94,14 @@ const PRIORITY_LABEL: Record<TodoPriority, string> = {
 
       <div class="flex-1 overflow-auto p-4">
         @if (loading()) {
-          <p class="text-text-muted">Cargando…</p>
+          <p class="text-text-muted">Loading…</p>
         } @else if (!board()) {
           <p class="text-text-muted text-center py-16">
-            Crea un tablero para empezar.
+            Create a board to get started.
           </p>
         } @else if (!board()!.columns?.length) {
           <p class="text-text-muted text-center py-16">
-            Este tablero no tiene columnas todavía.
+            This board has no columns yet.
           </p>
         } @else {
           <div
@@ -133,8 +133,8 @@ const PRIORITY_LABEL: Record<TodoPriority, string> = {
                       "
                       [title]="
                         col.isCompletionColumn
-                          ? 'Columna de finalización (clic para quitar)'
-                          : 'Marcar como columna de finalización'
+                          ? 'Completion column (click to unset)'
+                          : 'Mark as completion column'
                       "
                     >
                       ✓
@@ -143,7 +143,7 @@ const PRIORITY_LABEL: Record<TodoPriority, string> = {
                       type="button"
                       (click)="addItem(col.id)"
                       class="text-text-muted hover:text-text text-xs"
-                      title="Añadir tarea"
+                      title="Add task"
                     >
                       +
                     </button>
@@ -151,7 +151,7 @@ const PRIORITY_LABEL: Record<TodoPriority, string> = {
                       type="button"
                       (click)="deleteColumn(col)"
                       class="text-text-muted hover:text-danger text-xs"
-                      title="Eliminar columna"
+                      title="Delete column"
                     >
                       ×
                     </button>
@@ -262,7 +262,7 @@ export class KanbanBoardComponent implements OnInit {
   }
 
   protected formatDueDate(iso: string): string {
-    return new Date(iso).toLocaleDateString('es-CL', {
+    return new Date(iso).toLocaleDateString('en-US', {
       day: '2-digit',
       month: 'short',
     });
@@ -295,9 +295,9 @@ export class KanbanBoardComponent implements OnInit {
 
   protected async createBoard(): Promise<void> {
     const name = await this.dialogs.prompt({
-      title: 'Nuevo tablero',
-      label: 'Nombre del tablero',
-      confirmLabel: 'Crear',
+      title: 'New board',
+      label: 'Board name',
+      confirmLabel: 'Create',
     });
     if (!name?.trim()) return;
     this.service.createBoard({ name: name.trim() }).subscribe({
@@ -305,7 +305,7 @@ export class KanbanBoardComponent implements OnInit {
         this.boards.update((arr) => [...arr, board]);
         this.selectedBoardId = board.id;
         this.loadBoard(board.id);
-        this.toastr.success('Tablero creado');
+        this.toastr.success('Board created');
       },
       error: (err: HttpErrorResponse) => this.toastr.error(this.errMsg(err)),
     });
@@ -315,16 +315,16 @@ export class KanbanBoardComponent implements OnInit {
     const board = this.board();
     if (!board) return;
     const name = await this.dialogs.prompt({
-      title: 'Nueva columna',
-      label: 'Nombre de la columna',
-      confirmLabel: 'Crear',
+      title: 'New column',
+      label: 'Column name',
+      confirmLabel: 'Create',
     });
     if (!name?.trim()) return;
     this.service.createColumn(board.id, { name: name.trim() }).subscribe({
       next: (column) => {
         const next = { ...board, columns: [...(board.columns ?? []), { ...column, items: [] }] };
         this.board.set(next);
-        this.toastr.success('Columna creada');
+        this.toastr.success('Column created');
       },
       error: (err: HttpErrorResponse) => this.toastr.error(this.errMsg(err)),
     });
@@ -336,7 +336,7 @@ export class KanbanBoardComponent implements OnInit {
     const newName = (event.target as HTMLInputElement).value.trim();
     if (!newName || newName === col.name) return;
     this.service.updateColumn(board.id, col.id, { name: newName }).subscribe({
-      next: () => this.toastr.success('Columna renombrada'),
+      next: () => this.toastr.success('Column renamed'),
       error: (err: HttpErrorResponse) => this.toastr.error(this.errMsg(err)),
     });
   }
@@ -345,9 +345,9 @@ export class KanbanBoardComponent implements OnInit {
     const board = this.board();
     if (!board) return;
     const ok = await this.dialogs.confirm({
-      title: 'Eliminar columna',
-      message: `¿Eliminar la columna "${col.name}" con sus tareas?`,
-      confirmLabel: 'Eliminar',
+      title: 'Delete column',
+      message: `Delete the column "${col.name}" with its tasks?`,
+      confirmLabel: 'Delete',
       destructive: true,
     });
     if (!ok) return;
@@ -358,7 +358,7 @@ export class KanbanBoardComponent implements OnInit {
           columns: (board.columns ?? []).filter((c) => c.id !== col.id),
         };
         this.board.set(next);
-        this.toastr.success('Columna eliminada');
+        this.toastr.success('Column deleted');
       },
       error: (err: HttpErrorResponse) => this.toastr.error(this.errMsg(err)),
     });
@@ -373,7 +373,7 @@ export class KanbanBoardComponent implements OnInit {
         col.isCompletionColumn = next;
         this.board.set({ ...board });
         this.toastr.success(
-          next ? 'Columna marcada como de finalización' : 'Marca de finalización quitada',
+          next ? 'Column marked as completion' : 'Completion mark removed',
         );
       },
       error: (err: HttpErrorResponse) => this.toastr.error(this.errMsg(err)),
@@ -430,7 +430,7 @@ export class KanbanBoardComponent implements OnInit {
 
     this.service.reorder(payload).subscribe({
       error: (err: HttpErrorResponse) => {
-        this.toastr.error('No se pudo guardar el orden: ' + this.errMsg(err));
+        this.toastr.error('Could not save the order: ' + this.errMsg(err));
         this.loadBoard(board.id);
       },
     });
@@ -441,6 +441,6 @@ export class KanbanBoardComponent implements OnInit {
     const msg = body?.error?.message;
     if (Array.isArray(msg)) return msg.join('. ');
     if (typeof msg === 'string') return msg;
-    return 'Error inesperado';
+    return 'Unexpected error';
   }
 }
