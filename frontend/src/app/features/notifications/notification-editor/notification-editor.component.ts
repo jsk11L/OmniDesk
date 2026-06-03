@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, Inject, inject, signal } from '@ang
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { ToastrService } from 'ngx-toastr';
+import { DialogService } from '../../../shared/services/dialog.service';
 import { HttpErrorResponse } from '@angular/common/http';
 
 import { NotificationsService } from '../services/notifications.service';
@@ -215,6 +216,7 @@ const RECURRING_PRESETS: RecurringPreset[] = [
 export class NotificationEditorComponent {
   private readonly fb = inject(FormBuilder);
   private readonly service = inject(NotificationsService);
+  private readonly dialogs = inject(DialogService);
   private readonly toastr = inject(ToastrService);
 
   protected readonly loading = signal(false);
@@ -333,9 +335,15 @@ export class NotificationEditorComponent {
     });
   }
 
-  remove(): void {
+  async remove(): Promise<void> {
     if (!this.data.config || this.loading()) return;
-    if (!confirm('¿Eliminar esta configuración de notificación?')) return;
+    const ok = await this.dialogs.confirm({
+      title: 'Eliminar notificación',
+      message: '¿Eliminar esta configuración de notificación?',
+      confirmLabel: 'Eliminar',
+      destructive: true,
+    });
+    if (!ok) return;
     this.loading.set(true);
     this.service.delete(this.data.config.id).subscribe({
       next: ({ id }) => {

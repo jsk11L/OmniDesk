@@ -1,4 +1,5 @@
 import {
+  IsBoolean,
   IsHexColor,
   IsInt,
   IsOptional,
@@ -22,4 +23,8 @@ export class CreateColumnDto {
   @IsInt()
   @Min(0)
   position?: number;
+
+  @IsOptional()
+  @IsBoolean()
+  isCompletionColumn?: boolean;
 }

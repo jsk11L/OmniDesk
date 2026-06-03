@@ -13,6 +13,7 @@ import { ToastrService } from 'ngx-toastr';
 import { HttpErrorResponse } from '@angular/common/http';
 
 import { TodosService } from '../services/todos.service';
+import { DialogService } from '../../../shared/services/dialog.service';
 import {
   TodoItemDialogComponent,
   type TodoItemDialogData,
@@ -124,6 +125,22 @@ const PRIORITY_LABEL: Record<TodoPriority, string> = {
                   <div class="flex items-center gap-1">
                     <button
                       type="button"
+                      (click)="toggleCompletionColumn(col)"
+                      [class]="
+                        col.isCompletionColumn
+                          ? 'text-success text-xs'
+                          : 'text-text-muted hover:text-text text-xs opacity-50'
+                      "
+                      [title]="
+                        col.isCompletionColumn
+                          ? 'Columna de finalización (clic para quitar)'
+                          : 'Marcar como columna de finalización'
+                      "
+                    >
+                      ✓
+                    </button>
+                    <button
+                      type="button"
                       (click)="addItem(col.id)"
                       class="text-text-muted hover:text-text text-xs"
                       title="Añadir tarea"
@@ -209,6 +226,7 @@ const PRIORITY_LABEL: Record<TodoPriority, string> = {
 export class KanbanBoardComponent implements OnInit {
   private readonly service = inject(TodosService);
   private readonly dialog = inject(MatDialog);
+  private readonly dialogs = inject(DialogService);
   private readonly toastr = inject(ToastrService);
 
   protected readonly loading = signal(true);
@@ -275,8 +293,12 @@ export class KanbanBoardComponent implements OnInit {
     });
   }
 
-  protected createBoard(): void {
-    const name = prompt('Nombre del tablero:');
+  protected async createBoard(): Promise<void> {
+    const name = await this.dialogs.prompt({
+      title: 'Nuevo tablero',
+      label: 'Nombre del tablero',
+      confirmLabel: 'Crear',
+    });
     if (!name?.trim()) return;
     this.service.createBoard({ name: name.trim() }).subscribe({
       next: (board) => {
@@ -289,10 +311,14 @@ export class KanbanBoardComponent implements OnInit {
     });
   }
 
-  protected addColumn(): void {
+  protected async addColumn(): Promise<void> {
     const board = this.board();
     if (!board) return;
-    const name = prompt('Nombre de la columna:');
+    const name = await this.dialogs.prompt({
+      title: 'Nueva columna',
+      label: 'Nombre de la columna',
+      confirmLabel: 'Crear',
+    });
     if (!name?.trim()) return;
     this.service.createColumn(board.id, { name: name.trim() }).subscribe({
       next: (column) => {
@@ -315,10 +341,16 @@ export class KanbanBoardComponent implements OnInit {
     });
   }
 
-  protected deleteColumn(col: TodoColumn): void {
+  protected async deleteColumn(col: TodoColumn): Promise<void> {
     const board = this.board();
     if (!board) return;
-    if (!confirm(`¿Eliminar la columna "${col.name}" con sus tareas?`)) return;
+    const ok = await this.dialogs.confirm({
+      title: 'Eliminar columna',
+      message: `¿Eliminar la columna "${col.name}" con sus tareas?`,
+      confirmLabel: 'Eliminar',
+      destructive: true,
+    });
+    if (!ok) return;
     this.service.deleteColumn(board.id, col.id).subscribe({
       next: () => {
         const next = {
@@ -327,6 +359,22 @@ export class KanbanBoardComponent implements OnInit {
         };
         this.board.set(next);
         this.toastr.success('Columna eliminada');
+      },
+      error: (err: HttpErrorResponse) => this.toastr.error(this.errMsg(err)),
+    });
+  }
+
+  protected toggleCompletionColumn(col: TodoColumn): void {
+    const board = this.board();
+    if (!board) return;
+    const next = !col.isCompletionColumn;
+    this.service.updateColumn(board.id, col.id, { isCompletionColumn: next }).subscribe({
+      next: () => {
+        col.isCompletionColumn = next;
+        this.board.set({ ...board });
+        this.toastr.success(
+          next ? 'Columna marcada como de finalización' : 'Marca de finalización quitada',
+        );
       },
       error: (err: HttpErrorResponse) => this.toastr.error(this.errMsg(err)),
     });

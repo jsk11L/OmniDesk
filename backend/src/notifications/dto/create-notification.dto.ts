@@ -7,11 +7,13 @@ import {
   IsISO8601,
   IsOptional,
   IsString,
-  IsUrl,
+  Matches,
   MaxLength,
   MinLength,
 } from 'class-validator';
 import { NotificationChannel, NotificationTrigger } from '@prisma/client';
+
+const URL_OR_UPLOAD = /^(?:https?:\/\/|\/uploads\/).+/i;
 
 export class CreateNotificationDto {
   @IsString()
@@ -25,7 +27,8 @@ export class CreateNotificationDto {
   message!: string;
 
   @IsOptional()
-  @IsUrl({ protocols: ['http', 'https'], require_protocol: true })
+  @IsString()
+  @Matches(URL_OR_UPLOAD, { message: 'iconUrl must be a URL or an /uploads/ path' })
   iconUrl?: string;
 
   @IsOptional()

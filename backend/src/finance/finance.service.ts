@@ -13,6 +13,12 @@ import type {
 } from '@prisma/client';
 
 import { PrismaService } from '../prisma/prisma.service';
+import {
+  Paginated,
+  PaginationQuery,
+  buildPageMeta,
+  resolvePagination,
+} from '../common/pagination';
 import { CreateFinanceBoardDto } from './dto/create-finance-board.dto';
 import { UpdateFinanceBoardDto } from './dto/update-finance-board.dto';
 import { CreateCategoryDto } from './dto/create-category.dto';
@@ -22,7 +28,7 @@ import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { CreateBudgetDto } from './dto/create-budget.dto';
 import { UpdateBudgetDto } from './dto/update-budget.dto';
 
-export interface ListTransactionsParams {
+export interface ListTransactionsParams extends PaginationQuery {
   start?: string;
   end?: string;
   type?: string;
@@ -155,7 +161,7 @@ export class FinanceService {
     userId: string,
     boardId: string,
     params: ListTransactionsParams,
-  ): Promise<Transaction[]> {
+  ): Promise<Paginated<Transaction>> {
     await this.assertBoardOwner(userId, boardId);
 
     const where: Prisma.TransactionWhereInput = { boardId };
@@ -172,11 +178,19 @@ export class FinanceService {
       where.categoryId = params.category;
     }
 
-    return this.prisma.transaction.findMany({
-      where,
-      orderBy: { date: 'desc' },
-      include: { category: true },
-    });
+    const pagination = resolvePagination(params);
+    const [data, total] = await Promise.all([
+      this.prisma.transaction.findMany({
+        where,
+        orderBy: { date: 'desc' },
+        include: { category: true },
+        skip: pagination.skip,
+        take: pagination.take,
+      }),
+      this.prisma.transaction.count({ where }),
+    ]);
+
+    return { data, meta: buildPageMeta(pagination, total) };
   }
 
   async createTransaction(

@@ -196,9 +196,58 @@ export class HabitsService {
 
     let longestStreak = Math.max(habit.longestStreak, currentStreak);
 
+    const perfectWeeks = this.countPerfectWeeks(habit.activeDays, entries, today);
+
     await this.prisma.habit.update({
       where: { id: habitId },
-      data: { currentStreak, longestStreak },
+      data: { currentStreak, longestStreak, perfectWeeks },
     });
+  }
+
+  /**
+   * A "perfect week" is one where every active day of that week has a DONE or
+   * RECOVERED entry. Only fully-elapsed weeks count: if any active day of the
+   * week is still in the future, the week is not counted yet (avoids marking an
+   * in-progress week as perfect prematurely). Weeks are Sunday-aligned to match
+   * `Date.getUTCDay()` (0 = Sunday).
+   */
+  private countPerfectWeeks(
+    activeDays: number[],
+    entries: { date: Date | string; status: HabitEntryStatus }[],
+    today: Date,
+  ): number {
+    if (entries.length === 0 || activeDays.length === 0) return 0;
+
+    const completed = new Set(
+      entries
+        .filter((e) => e.status === HabitEntryStatus.DONE || e.status === HabitEntryStatus.RECOVERED)
+        .map((e) => new Date(e.date).toISOString().slice(0, 10)),
+    );
+
+    // entries are ordered date desc, so the last element is the earliest.
+    const earliest = new Date(entries[entries.length - 1].date);
+    earliest.setUTCHours(0, 0, 0, 0);
+
+    const weekStart = new Date(earliest);
+    weekStart.setUTCDate(weekStart.getUTCDate() - weekStart.getUTCDay());
+
+    let perfectWeeks = 0;
+    for (const ws = new Date(weekStart); ws <= today; ws.setUTCDate(ws.getUTCDate() + 7)) {
+      let allDone = true;
+      for (const dow of activeDays) {
+        const day = new Date(ws);
+        day.setUTCDate(day.getUTCDate() + dow);
+        if (day > today) {
+          allDone = false; // week not fully elapsed yet
+          break;
+        }
+        if (!completed.has(day.toISOString().slice(0, 10))) {
+          allDone = false;
+          break;
+        }
+      }
+      if (allDone) perfectWeeks++;
+    }
+    return perfectWeeks;
   }
 }

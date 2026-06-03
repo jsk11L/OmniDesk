@@ -7,6 +7,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { join, isAbsolute } from 'path';
 
 import { AppController } from './app.controller';
+import { validateEnv } from './config/env.validation';
 import { PrismaModule } from './prisma/prisma.module';
 import { MailModule } from './mail/mail.module';
 import { UsersModule } from './users/users.module';
@@ -28,6 +29,7 @@ import { HabitsModule } from './habits/habits.module';
       isGlobal: true,
       cache: true,
       expandVariables: true,
+      validate: validateEnv,
     }),
     ServeStaticModule.forRootAsync({
       imports: [ConfigModule],

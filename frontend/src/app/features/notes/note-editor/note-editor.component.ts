@@ -22,6 +22,7 @@ import { ToastrService } from 'ngx-toastr';
 import { HttpErrorResponse } from '@angular/common/http';
 
 import { NotesService } from '../services/notes.service';
+import { DialogService } from '../../../shared/services/dialog.service';
 import { EmojiPickerComponent } from '../../../shared/components/emoji-picker/emoji-picker.component';
 import {
   NoteSettingsDialogComponent,
@@ -237,6 +238,7 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
   private readonly service = inject(NotesService);
   private readonly toastr = inject(ToastrService);
   private readonly dialog = inject(MatDialog);
+  private readonly dialogs = inject(DialogService);
 
   readonly note = input.required<Note>();
   readonly noteDeleted = output<string>();
@@ -335,14 +337,26 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
     this.editor?.chain().focus().toggleHeading({ level }).run();
   }
 
-  protected insertLink(): void {
-    const url = prompt('URL del link:');
+  protected async insertLink(): Promise<void> {
+    const url = await this.dialogs.prompt({
+      title: 'Insertar link',
+      label: 'URL del link',
+      inputType: 'url',
+      placeholder: 'https://…',
+      confirmLabel: 'Insertar',
+    });
     if (!url) return;
     this.editor?.chain().focus().setLink({ href: url }).run();
   }
 
-  protected insertImage(): void {
-    const url = prompt('URL de la imagen:');
+  protected async insertImage(): Promise<void> {
+    const url = await this.dialogs.prompt({
+      title: 'Insertar imagen',
+      label: 'URL de la imagen',
+      inputType: 'url',
+      placeholder: 'https://…',
+      confirmLabel: 'Insertar',
+    });
     if (!url) return;
     this.editor?.chain().focus().setImage({ src: url }).run();
   }
@@ -407,9 +421,15 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
     this.flush({ tags: next });
   }
 
-  protected deleteSelected(): void {
+  protected async deleteSelected(): Promise<void> {
     const n = this.note();
-    if (!confirm(`¿Eliminar la nota "${n.title}"? Esta acción no se puede deshacer.`)) return;
+    const ok = await this.dialogs.confirm({
+      title: 'Eliminar nota',
+      message: `¿Eliminar la nota "${n.title}"? Esta acción no se puede deshacer.`,
+      confirmLabel: 'Eliminar',
+      destructive: true,
+    });
+    if (!ok) return;
     this.service.delete(n.id).subscribe({
       next: () => {
         this.toastr.success('Nota eliminada');

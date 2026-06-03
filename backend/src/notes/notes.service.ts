@@ -2,11 +2,17 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import type { Note, NoteNotification, Prisma } from '@prisma/client';
 
 import { PrismaService } from '../prisma/prisma.service';
+import {
+  Paginated,
+  PaginationQuery,
+  buildPageMeta,
+  resolvePagination,
+} from '../common/pagination';
 import { CreateNoteDto } from './dto/create-note.dto';
 import { UpdateNoteDto } from './dto/update-note.dto';
 import { AttachNoteNotificationDto } from './dto/attach-note-notification.dto';
 
-export interface ListNotesParams {
+export interface ListNotesParams extends PaginationQuery {
   q?: string;
   tag?: string;
   pinned?: string;
@@ -16,13 +22,13 @@ export interface ListNotesParams {
 export class NotesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  list(userId: string, params: ListNotesParams): Promise<Note[]> {
+  async list(userId: string, params: ListNotesParams): Promise<Paginated<Note>> {
     const where: Prisma.NoteWhereInput = { userId };
 
     if (params.q) {
       where.OR = [
         { title: { contains: params.q, mode: 'insensitive' } },
-        { content: { contains: params.q, mode: 'insensitive' } },
+        { plainText: { contains: params.q, mode: 'insensitive' } },
       ];
     }
     if (params.tag) {
@@ -32,11 +38,19 @@ export class NotesService {
       where.isPinned = params.pinned === 'true';
     }
 
-    return this.prisma.note.findMany({
-      where,
-      orderBy: [{ isPinned: 'desc' }, { updatedAt: 'desc' }],
-      include: { notifications: true },
-    });
+    const pagination = resolvePagination(params);
+    const [data, total] = await Promise.all([
+      this.prisma.note.findMany({
+        where,
+        orderBy: [{ isPinned: 'desc' }, { updatedAt: 'desc' }],
+        include: { notifications: true },
+        skip: pagination.skip,
+        take: pagination.take,
+      }),
+      this.prisma.note.count({ where }),
+    ]);
+
+    return { data, meta: buildPageMeta(pagination, total) };
   }
 
   async findById(userId: string, id: string): Promise<Note> {
@@ -51,11 +65,13 @@ export class NotesService {
   }
 
   create(userId: string, dto: CreateNoteDto): Promise<Note> {
+    const content = dto.content ?? '';
     return this.prisma.note.create({
       data: {
         userId,
         title: dto.title,
-        content: dto.content ?? '',
+        content,
+        plainText: this.derivePlainText(content),
         description: dto.description ?? null,
         icon: dto.icon ?? null,
         coverImageUrl: dto.coverImageUrl ?? null,
@@ -67,11 +83,13 @@ export class NotesService {
 
   async update(userId: string, id: string, dto: UpdateNoteDto): Promise<Note> {
     const note = await this.findById(userId, id);
+    const content = dto.content ?? note.content;
     return this.prisma.note.update({
       where: { id },
       data: {
         title: dto.title ?? note.title,
-        content: dto.content ?? note.content,
+        content,
+        plainText: this.derivePlainText(content),
         description: dto.description ?? note.description,
         icon: dto.icon ?? note.icon,
         coverImageUrl: dto.coverImageUrl ?? note.coverImageUrl,
@@ -79,6 +97,36 @@ export class NotesService {
         tags: dto.tags ?? note.tags,
       },
     });
+  }
+
+  /**
+   * Derives a flat, searchable plain-text representation from a note's content.
+   * Notes are stored as a serialized TipTap JSON document; we walk the node
+   * tree collecting `text` leaves. If the content is not JSON (legacy or empty
+   * notes) it is treated as already-plain text.
+   */
+  private derivePlainText(content: string | null | undefined): string {
+    if (!content) return '';
+
+    let doc: unknown;
+    try {
+      doc = JSON.parse(content);
+    } catch {
+      return content.replace(/\s+/g, ' ').trim();
+    }
+
+    const parts: string[] = [];
+    const walk = (node: unknown): void => {
+      if (!node || typeof node !== 'object') return;
+      const n = node as { text?: unknown; content?: unknown };
+      if (typeof n.text === 'string') parts.push(n.text);
+      if (Array.isArray(n.content)) {
+        for (const child of n.content) walk(child);
+      }
+    };
+    walk(doc);
+
+    return parts.join(' ').replace(/\s+/g, ' ').trim();
   }
 
   async delete(userId: string, id: string): Promise<{ id: string }> {

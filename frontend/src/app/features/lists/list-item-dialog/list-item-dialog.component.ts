@@ -5,6 +5,7 @@ import { ToastrService } from 'ngx-toastr';
 import { HttpErrorResponse } from '@angular/common/http';
 
 import { ListsService } from '../services/lists.service';
+import { DialogService } from '../../../shared/services/dialog.service';
 import { ImageInputComponent } from '../../../shared/components/image-input/image-input.component';
 import type { List, ListField, ListItem } from '../lists.types';
 
@@ -226,6 +227,7 @@ export type ListItemDialogResult = ListItem | undefined;
 export class ListItemDialogComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly service = inject(ListsService);
+  private readonly dialogs = inject(DialogService);
   private readonly toastr = inject(ToastrService);
 
   protected readonly loading = signal(false);
@@ -436,9 +438,15 @@ export class ListItemDialogComponent implements OnInit {
     });
   }
 
-  remove(): void {
+  async remove(): Promise<void> {
     if (!this.data.item || this.loading()) return;
-    if (!confirm('¿Eliminar este ítem? Esta acción no se puede deshacer.')) return;
+    const ok = await this.dialogs.confirm({
+      title: 'Eliminar ítem',
+      message: '¿Eliminar este ítem? Esta acción no se puede deshacer.',
+      confirmLabel: 'Eliminar',
+      destructive: true,
+    });
+    if (!ok) return;
     this.loading.set(true);
     this.service.deleteItem(this.data.list.id, this.data.item.id).subscribe({
       next: () => {

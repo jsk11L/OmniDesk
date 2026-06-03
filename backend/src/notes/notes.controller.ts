@@ -29,8 +29,10 @@ export class NotesController {
     @Query('q') q?: string,
     @Query('tag') tag?: string,
     @Query('pinned') pinned?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
   ) {
-    return this.notes.list(user.id, { q, tag, pinned });
+    return this.notes.list(user.id, { q, tag, pinned, page, limit });
   }
 
   @Post()

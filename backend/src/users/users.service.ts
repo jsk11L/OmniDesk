@@ -62,7 +62,7 @@ export class UsersService {
             { name: 'Backlog', color: '#71717a', position: 0 },
             { name: 'En Progreso', color: '#3b82f6', position: 1 },
             { name: 'En Revisión', color: '#f59e0b', position: 2 },
-            { name: 'Completado', color: '#22c55e', position: 3 },
+            { name: 'Completado', color: '#22c55e', position: 3, isCompletionColumn: true },
           ],
         },
       },

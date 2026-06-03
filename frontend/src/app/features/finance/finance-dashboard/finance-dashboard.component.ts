@@ -7,6 +7,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import type { ChartConfiguration, ChartData } from 'chart.js';
 
 import { FinanceService } from '../services/finance.service';
+import { DialogService } from '../../../shared/services/dialog.service';
 import {
   TransactionDialogComponent,
   type TransactionDialogData,
@@ -229,6 +230,7 @@ import type {
 export class FinanceDashboardComponent implements OnInit {
   private readonly service = inject(FinanceService);
   private readonly dialog = inject(MatDialog);
+  private readonly dialogs = inject(DialogService);
   private readonly toastr = inject(ToastrService);
 
   protected readonly Math = Math;
@@ -336,8 +338,12 @@ export class FinanceDashboardComponent implements OnInit {
     if (id) this.loadData(id);
   }
 
-  protected createBoard(): void {
-    const name = prompt('Nombre del tablero:');
+  protected async createBoard(): Promise<void> {
+    const name = await this.dialogs.prompt({
+      title: 'Nuevo tablero',
+      label: 'Nombre del tablero',
+      confirmLabel: 'Crear',
+    });
     if (!name?.trim()) return;
     this.service.createBoard({ name: name.trim() }).subscribe({
       next: (board) => {
@@ -376,12 +382,22 @@ export class FinanceDashboardComponent implements OnInit {
     });
   }
 
-  protected addBudget(): void {
+  protected async addBudget(): Promise<void> {
     const board = this.board();
     if (!board) return;
-    const name = prompt('Nombre del presupuesto (ej: Alimentación):');
+    const name = await this.dialogs.prompt({
+      title: 'Nuevo presupuesto',
+      label: 'Nombre del presupuesto',
+      placeholder: 'ej: Alimentación',
+      confirmLabel: 'Continuar',
+    });
     if (!name?.trim()) return;
-    const amountStr = prompt('Monto:');
+    const amountStr = await this.dialogs.prompt({
+      title: 'Nuevo presupuesto',
+      label: 'Monto',
+      inputType: 'number',
+      confirmLabel: 'Crear',
+    });
     const amount = amountStr ? Number(amountStr) : NaN;
     if (!Number.isFinite(amount) || amount <= 0) {
       this.toastr.error('Monto inválido');

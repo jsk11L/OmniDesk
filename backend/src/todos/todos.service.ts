@@ -87,6 +87,7 @@ export class TodosService {
         name: dto.name,
         color: dto.color ?? '#94a3b8',
         position,
+        isCompletionColumn: dto.isCompletionColumn ?? false,
       },
     });
   }
@@ -104,6 +105,7 @@ export class TodosService {
         name: dto.name ?? column.name,
         color: dto.color ?? column.color,
         position: dto.position ?? column.position,
+        isCompletionColumn: dto.isCompletionColumn ?? column.isCompletionColumn,
       },
     });
   }

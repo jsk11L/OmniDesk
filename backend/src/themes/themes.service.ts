@@ -63,11 +63,18 @@ export class ThemesService {
 
   async update(userId: string, id: string, dto: UpdateThemeDto): Promise<Theme> {
     const theme = await this.prisma.theme.findUnique({ where: { id } });
-    if (!theme || theme.userId !== userId) {
+    if (!theme) {
       throw new NotFoundException('Theme not found');
     }
+    // System themes are visible to every user (see findAll), so a read-only
+    // attempt must report 403, not 404 — otherwise we'd deny the existence of
+    // a theme the user can plainly see. Checked before ownership because system
+    // themes belong to the system user, never the requester.
     if (theme.isDefault) {
       throw new ForbiddenException('System themes are read-only');
+    }
+    if (theme.userId !== userId) {
+      throw new NotFoundException('Theme not found');
     }
     return this.prisma.theme.update({
       where: { id },
@@ -81,11 +88,14 @@ export class ThemesService {
 
   async delete(userId: string, id: string): Promise<{ id: string }> {
     const theme = await this.prisma.theme.findUnique({ where: { id } });
-    if (!theme || theme.userId !== userId) {
+    if (!theme) {
       throw new NotFoundException('Theme not found');
     }
     if (theme.isDefault) {
       throw new ForbiddenException('System themes cannot be deleted');
+    }
+    if (theme.userId !== userId) {
+      throw new NotFoundException('Theme not found');
     }
     await this.prisma.$transaction(async (tx) => {
       await tx.user.updateMany({
