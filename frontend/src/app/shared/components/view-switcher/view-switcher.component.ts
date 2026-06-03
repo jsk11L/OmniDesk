@@ -39,8 +39,8 @@ export class ViewSwitcherComponent {
 
   protected readonly options: ViewOption[] = [
     { value: 'GRID', label: 'Grid', icon: '▦' },
-    { value: 'TABLE', label: 'Tabla', icon: '☰' },
-    { value: 'GALLERY', label: 'Galería', icon: '◫' },
-    { value: 'LIST', label: 'Lista', icon: '≡' },
+    { value: 'TABLE', label: 'Table', icon: '☰' },
+    { value: 'GALLERY', label: 'Gallery', icon: '◫' },
+    { value: 'LIST', label: 'List', icon: '≡' },
   ];
 }

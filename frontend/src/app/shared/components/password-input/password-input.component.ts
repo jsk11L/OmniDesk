@@ -15,10 +15,10 @@ interface PasswordCheck {
 }
 
 const CHECKS: PasswordCheck[] = [
-  { key: 'len', label: 'Al menos 8 caracteres', test: (v) => v.length >= 8 },
-  { key: 'upper', label: 'Una mayúscula', test: (v) => /[A-Z]/.test(v) },
-  { key: 'digit', label: 'Un número', test: (v) => /\d/.test(v) },
-  { key: 'special', label: 'Un carácter especial (!@#$%&*?)', test: (v) => /[!@#$%&*?]/.test(v) },
+  { key: 'len', label: 'At least 8 characters', test: (v) => v.length >= 8 },
+  { key: 'upper', label: 'One uppercase letter', test: (v) => /[A-Z]/.test(v) },
+  { key: 'digit', label: 'One number', test: (v) => /\d/.test(v) },
+  { key: 'special', label: 'One special character (!@#$%&*?)', test: (v) => /[!@#$%&*?]/.test(v) },
 ];
 
 @Component({
@@ -40,7 +40,7 @@ const CHECKS: PasswordCheck[] = [
           type="button"
           (click)="toggleVisible()"
           class="absolute right-2 top-1/2 -translate-y-1/2 text-text-muted hover:text-text text-xs"
-          [attr.aria-label]="visible() ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+          [attr.aria-label]="visible() ? 'Hide password' : 'Show password'"
         >
           {{ visible() ? '👁' : '👁‍🗨' }}
         </button>

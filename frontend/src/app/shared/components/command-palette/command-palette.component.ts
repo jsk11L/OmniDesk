@@ -39,7 +39,7 @@ interface Command {
               [(ngModel)]="query"
               (ngModelChange)="onQueryChange()"
               (keydown)="onKey($event)"
-              placeholder="Escribe un comando o búsqueda…"
+              placeholder="Type a command or search…"
               class="relative z-10 w-full px-4 py-3 bg-transparent text-text placeholder:text-text-muted outline-none"
               autofocus
             />
@@ -47,7 +47,7 @@ interface Command {
 
           <ul class="max-h-[50vh] overflow-y-auto py-2">
             @if (filtered().length === 0) {
-              <li class="px-4 py-3 text-sm text-text-muted text-center">Sin resultados</li>
+              <li class="px-4 py-3 text-sm text-text-muted text-center">No results</li>
             } @else {
               @for (cmd of filtered(); track cmd.id; let i = $index) {
                 <li
@@ -71,8 +71,8 @@ interface Command {
           </ul>
 
           <div class="border-t border-border px-4 py-2 text-xs text-text-muted flex justify-between">
-            <span>↑↓ navegar · ↵ ejecutar · Tab aceptar · Esc cerrar</span>
-            <span>{{ filtered().length }} de {{ allCommands.length }}</span>
+            <span>↑↓ navigate · ↵ run · Tab accept · Esc close</span>
+            <span>{{ filtered().length }} of {{ allCommands.length }}</span>
           </div>
         </div>
       </div>
@@ -102,22 +102,22 @@ export class CommandPaletteComponent {
   protected readonly queryReactive = signal('');
 
   protected readonly allCommands: Command[] = [
-    { id: 'nav-dashboard', label: 'Ir a Dashboard', category: 'Navegación', shortcut: 'G D', action: () => this.go('/app') },
-    { id: 'nav-calendar', label: 'Ir a Calendario', category: 'Navegación', shortcut: 'G C', action: () => this.go('/app/calendar') },
-    { id: 'nav-lists', label: 'Ir a Listas', category: 'Navegación', shortcut: 'G L', action: () => this.go('/app/lists') },
-    { id: 'nav-notes', label: 'Ir a Notas', category: 'Navegación', shortcut: 'G N', action: () => this.go('/app/notes') },
-    { id: 'nav-todos', label: 'Ir a TO-DO', category: 'Navegación', shortcut: 'G T', action: () => this.go('/app/todos') },
-    { id: 'nav-habits', label: 'Ir a Hábitos', category: 'Navegación', shortcut: 'G H', action: () => this.go('/app/habits') },
-    { id: 'nav-finance', label: 'Ir a Finanzas', category: 'Navegación', shortcut: 'G F', action: () => this.go('/app/finance') },
-    { id: 'nav-notifications', label: 'Ir a Notificaciones', category: 'Navegación', action: () => this.go('/app/notifications') },
-    { id: 'nav-settings', label: 'Ir a Ajustes', category: 'Navegación', shortcut: 'G S', action: () => this.go('/app/settings') },
-    { id: 'create-event', label: 'Nuevo Evento', category: 'Crear', action: () => this.go('/app/calendar') },
-    { id: 'create-note', label: 'Nueva Nota', category: 'Crear', action: () => this.go('/app/notes') },
-    { id: 'create-list', label: 'Nueva Lista', category: 'Crear', action: () => this.go('/app/lists') },
-    { id: 'create-todo', label: 'Nueva Tarea', category: 'Crear', action: () => this.go('/app/todos') },
-    { id: 'create-habit', label: 'Nuevo Hábito', category: 'Crear', action: () => this.go('/app/habits') },
-    { id: 'create-wishlist', label: 'Nuevo Deseo (Wishlist)', category: 'Crear', action: () => this.go('/app/finance') },
-    { id: 'create-saving', label: 'Nueva Meta de Ahorro', category: 'Crear', action: () => this.go('/app/finance') },
+    { id: 'nav-dashboard', label: 'Go to Dashboard', category: 'Navigation', shortcut: 'G D', action: () => this.go('/app') },
+    { id: 'nav-calendar', label: 'Go to Calendar', category: 'Navigation', shortcut: 'G C', action: () => this.go('/app/calendar') },
+    { id: 'nav-lists', label: 'Go to Lists', category: 'Navigation', shortcut: 'G L', action: () => this.go('/app/lists') },
+    { id: 'nav-notes', label: 'Go to Notes', category: 'Navigation', shortcut: 'G N', action: () => this.go('/app/notes') },
+    { id: 'nav-todos', label: 'Go to TO-DO', category: 'Navigation', shortcut: 'G T', action: () => this.go('/app/todos') },
+    { id: 'nav-habits', label: 'Go to Habits', category: 'Navigation', shortcut: 'G H', action: () => this.go('/app/habits') },
+    { id: 'nav-finance', label: 'Go to Finance', category: 'Navigation', shortcut: 'G F', action: () => this.go('/app/finance') },
+    { id: 'nav-notifications', label: 'Go to Notifications', category: 'Navigation', action: () => this.go('/app/notifications') },
+    { id: 'nav-settings', label: 'Go to Settings', category: 'Navigation', shortcut: 'G S', action: () => this.go('/app/settings') },
+    { id: 'create-event', label: 'New Event', category: 'Create', action: () => this.go('/app/calendar') },
+    { id: 'create-note', label: 'New Note', category: 'Create', action: () => this.go('/app/notes') },
+    { id: 'create-list', label: 'New List', category: 'Create', action: () => this.go('/app/lists') },
+    { id: 'create-todo', label: 'New Task', category: 'Create', action: () => this.go('/app/todos') },
+    { id: 'create-habit', label: 'New Habit', category: 'Create', action: () => this.go('/app/habits') },
+    { id: 'create-wishlist', label: 'New Wish (Wishlist)', category: 'Create', action: () => this.go('/app/finance') },
+    { id: 'create-saving', label: 'New Savings Goal', category: 'Create', action: () => this.go('/app/finance') },
   ];
 
   protected readonly filtered = computed<Command[]>(() => {
