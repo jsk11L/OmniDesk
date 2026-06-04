@@ -31,12 +31,12 @@ function toLocalInput(date: Date): string {
   template: `
     <div class="bg-surface text-text p-6 w-[min(560px,95vw)]">
       <h2 class="text-lg font-semibold mb-4">
-        {{ data.event ? 'Editar evento' : 'Nuevo evento' }}
+        {{ data.event ? 'Edit event' : 'New event' }}
       </h2>
 
       <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-4">
         <label class="block">
-          <span class="block text-xs text-text-muted mb-1">Título *</span>
+          <span class="block text-xs text-text-muted mb-1">Title *</span>
           <input
             type="text"
             formControlName="title"
@@ -47,7 +47,7 @@ function toLocalInput(date: Date): string {
         </label>
 
         <label class="block">
-          <span class="block text-xs text-text-muted mb-1">Descripción</span>
+          <span class="block text-xs text-text-muted mb-1">Description</span>
           <textarea
             formControlName="description"
             rows="2"
@@ -57,7 +57,7 @@ function toLocalInput(date: Date): string {
 
         <div class="grid grid-cols-2 gap-3">
           <label class="block">
-            <span class="block text-xs text-text-muted mb-1">Inicio</span>
+            <span class="block text-xs text-text-muted mb-1">Start</span>
             <input
               type="datetime-local"
               formControlName="startDate"
@@ -65,7 +65,7 @@ function toLocalInput(date: Date): string {
             />
           </label>
           <label class="block">
-            <span class="block text-xs text-text-muted mb-1">Fin</span>
+            <span class="block text-xs text-text-muted mb-1">End</span>
             <input
               type="datetime-local"
               formControlName="endDate"
@@ -76,7 +76,7 @@ function toLocalInput(date: Date): string {
 
         <label class="flex items-center gap-2 cursor-pointer">
           <input type="checkbox" formControlName="allDay" class="accent-primary" />
-          <span class="text-sm">Todo el día</span>
+          <span class="text-sm">All day</span>
         </label>
 
         <div class="grid grid-cols-2 gap-3">
@@ -89,7 +89,7 @@ function toLocalInput(date: Date): string {
             />
           </label>
           <label class="block">
-            <span class="block text-xs text-text-muted mb-1">Lugar</span>
+            <span class="block text-xs text-text-muted mb-1">Location</span>
             <input
               type="text"
               formControlName="location"
@@ -101,16 +101,16 @@ function toLocalInput(date: Date): string {
 
         @if (data.event?.notifications?.length) {
           <div class="border-t border-border pt-3">
-            <p class="text-xs text-text-muted mb-2">Notificaciones vinculadas:</p>
+            <p class="text-xs text-text-muted mb-2">Linked notifications:</p>
             <ul class="space-y-1">
               @for (n of data.event!.notifications!; track n.id) {
                 <li class="flex items-center justify-between text-sm bg-background px-3 py-1.5 rounded">
-                  <span>{{ n.minutesBefore }} min antes del evento</span>
+                  <span>{{ n.minutesBefore }} min before the event</span>
                   <button
                     type="button"
                     (click)="detachNotification(n.id)"
                     class="text-text-muted hover:text-danger"
-                    aria-label="Eliminar notificación"
+                    aria-label="Remove notification"
                   >
                     ×
                   </button>
@@ -118,7 +118,7 @@ function toLocalInput(date: Date): string {
               }
             </ul>
             <p class="text-xs text-text-muted mt-2">
-              Vincula nuevas notificaciones desde el módulo Notificaciones.
+              Link new notifications from the Notifications module.
             </p>
           </div>
         }
@@ -135,7 +135,7 @@ function toLocalInput(date: Date): string {
               [disabled]="loading()"
               class="text-sm text-danger hover:underline"
             >
-              Eliminar evento
+              Delete event
             </button>
           } @else {
             <span></span>
@@ -146,14 +146,14 @@ function toLocalInput(date: Date): string {
               (click)="ref.close()"
               class="px-4 py-2 text-sm rounded hover:bg-surface-hover"
             >
-              Cancelar
+              Cancel
             </button>
             <button
               type="submit"
               [disabled]="form.invalid || loading()"
               class="px-4 py-2 text-sm rounded bg-primary text-white hover:opacity-90 disabled:opacity-50"
             >
-              {{ loading() ? 'Guardando…' : 'Guardar' }}
+              {{ loading() ? 'Saving…' : 'Save' }}
             </button>
           </div>
         </div>
@@ -204,7 +204,7 @@ export class EventDialogComponent {
 
     if (new Date(endISO) < new Date(startISO)) {
       this.loading.set(false);
-      this.error.set('La fecha de fin debe ser >= la de inicio');
+      this.error.set('The end date must be >= the start date');
       return;
     }
 
@@ -224,7 +224,7 @@ export class EventDialogComponent {
 
     request$.subscribe({
       next: (event) => {
-        this.toastr.success(this.data.event ? 'Evento actualizado' : 'Evento creado');
+        this.toastr.success(this.data.event ? 'Event updated' : 'Event created');
         this.ref.close({ kind: this.data.event ? 'updated' : 'created', event });
       },
       error: (err: HttpErrorResponse) => {
@@ -237,9 +237,9 @@ export class EventDialogComponent {
   async remove(): Promise<void> {
     if (!this.data.event || this.loading()) return;
     const ok = await this.dialogs.confirm({
-      title: 'Eliminar evento',
-      message: '¿Eliminar este evento? Esta acción no se puede deshacer.',
-      confirmLabel: 'Eliminar',
+      title: 'Delete event',
+      message: 'Delete this event? This action cannot be undone.',
+      confirmLabel: 'Delete',
       destructive: true,
     });
     if (!ok) return;
@@ -247,7 +247,7 @@ export class EventDialogComponent {
     this.loading.set(true);
     this.service.delete(this.data.event.id).subscribe({
       next: ({ id }) => {
-        this.toastr.success('Evento eliminado');
+        this.toastr.success('Event deleted');
         this.ref.close({ kind: 'deleted', id });
       },
       error: (err: HttpErrorResponse) => {
@@ -261,7 +261,7 @@ export class EventDialogComponent {
     if (!this.data.event) return;
     this.service.detachNotification(this.data.event.id, notifId).subscribe({
       next: () => {
-        this.toastr.success('Notificación desvinculada');
+        this.toastr.success('Notification unlinked');
         if (this.data.event?.notifications) {
           this.data.event.notifications = this.data.event.notifications.filter(
             (n) => n.id !== notifId,
@@ -277,6 +277,6 @@ export class EventDialogComponent {
     const msg = body?.error?.message;
     if (Array.isArray(msg)) return msg.join('. ');
     if (typeof msg === 'string') return msg;
-    return 'Error inesperado';
+    return 'Unexpected error';
   }
 }

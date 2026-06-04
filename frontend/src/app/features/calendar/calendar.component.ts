@@ -45,8 +45,8 @@ interface SlotMenu {
     <div class="h-full flex flex-col" [class.rounded]="rounded()">
       <header class="px-6 py-3 border-b border-border flex items-center justify-between">
         <div>
-          <h1 class="text-xl font-semibold">Calendario</h1>
-          <p class="text-xs text-text-muted">Click en un slot para crear o ver eventos.</p>
+          <h1 class="text-xl font-semibold">Calendar</h1>
+          <p class="text-xs text-text-muted">Click a slot to create or view events.</p>
         </div>
         <div class="flex items-center gap-2">
           <button
@@ -54,13 +54,13 @@ interface SlotMenu {
             (click)="openCreate()"
             class="px-3 py-1.5 rounded bg-primary text-white text-sm font-medium hover:opacity-90"
           >
-            + Nuevo
+            + New
           </button>
           <button
             type="button"
             (click)="openSettings()"
             class="px-3 py-1.5 rounded hover:bg-surface-hover text-sm"
-            title="Configuración"
+            title="Settings"
           >
             ⚙
           </button>
@@ -78,10 +78,10 @@ interface SlotMenu {
           [style.top.px]="slotMenu().y"
           (click)="$event.stopPropagation()"
         >
-          <button type="button" (click)="createFromSlot()">+ Crear evento</button>
+          <button type="button" (click)="createFromSlot()">+ Create event</button>
           @if (slotMenu().eventsAtSlot.length > 0) {
             <hr />
-            <p class="menu-section">Eventos en este slot</p>
+            <p class="menu-section">Events in this slot</p>
             @for (e of slotMenu().eventsAtSlot; track e.id) {
               <button type="button" (click)="editEvent(e)" class="event-item">
                 <span class="dot" [style.background-color]="e.color"></span>
@@ -201,7 +201,7 @@ export class CalendarComponent implements OnInit {
       right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek',
     },
     height: '100%',
-    locale: 'es',
+    locale: 'en',
     firstDay: 1,
     selectable: true,
     editable: true,
@@ -249,7 +249,7 @@ export class CalendarComponent implements OnInit {
           api.addEventSource(mapped);
         }
       },
-      error: () => this.toastr.error('No se pudieron cargar los eventos'),
+      error: () => this.toastr.error('Could not load events'),
     });
   }
 
@@ -328,10 +328,10 @@ export class CalendarComponent implements OnInit {
     const start = info.event.start.toISOString();
     const end = (info.event.end ?? info.event.start).toISOString();
     this.service.update(source.id, { startDate: start, endDate: end }).subscribe({
-      next: () => this.toastr.success('Evento movido'),
+      next: () => this.toastr.success('Event moved'),
       error: () => {
         info.revert();
-        this.toastr.error('No se pudo mover el evento');
+        this.toastr.error('Could not move the event');
       },
     });
   }
