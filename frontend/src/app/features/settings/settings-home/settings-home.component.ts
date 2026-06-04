@@ -13,7 +13,7 @@ type Tab = 'theme' | 'profile';
   template: `
     <div class="h-full flex flex-col">
       <header class="px-6 py-4 border-b border-border">
-        <h1 class="text-2xl font-semibold mb-3">Ajustes</h1>
+        <h1 class="text-2xl font-semibold mb-3">Settings</h1>
         <nav class="flex gap-2">
           @for (t of tabs; track t.id) {
             <button
@@ -48,7 +48,7 @@ type Tab = 'theme' | 'profile';
 export class SettingsHomeComponent {
   protected readonly active = signal<Tab>('theme');
   protected readonly tabs: { id: Tab; label: string }[] = [
-    { id: 'theme', label: 'Apariencia / Temas' },
-    { id: 'profile', label: 'Perfil' },
+    { id: 'theme', label: 'Appearance / Themes' },
+    { id: 'profile', label: 'Profile' },
   ];
 }
