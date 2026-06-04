@@ -27,7 +27,7 @@ export type TransactionDialogResult = Transaction | { deleted: string } | undefi
   template: `
     <div class="bg-surface text-text p-6 w-[min(520px,95vw)]">
       <h2 class="text-lg font-semibold mb-4">
-        {{ data.transaction ? 'Editar transacción' : 'Nueva transacción' }}
+        {{ data.transaction ? 'Edit transaction' : 'New transaction' }}
       </h2>
 
       <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-4">
@@ -42,7 +42,7 @@ export type TransactionDialogResult = Transaction | { deleted: string } | undefi
                 : 'bg-background text-text-muted hover:text-text')
             "
           >
-            ↑ Ingreso
+            ↑ Income
           </button>
           <button
             type="button"
@@ -54,12 +54,12 @@ export type TransactionDialogResult = Transaction | { deleted: string } | undefi
                 : 'bg-background text-text-muted hover:text-text')
             "
           >
-            ↓ Gasto
+            ↓ Expense
           </button>
         </div>
 
         <label class="block">
-          <span class="block text-xs text-text-muted mb-1">Título *</span>
+          <span class="block text-xs text-text-muted mb-1">Title *</span>
           <input
             type="text"
             formControlName="title"
@@ -71,7 +71,7 @@ export type TransactionDialogResult = Transaction | { deleted: string } | undefi
 
         <div class="grid grid-cols-2 gap-3">
           <label class="block">
-            <span class="block text-xs text-text-muted mb-1">Monto *</span>
+            <span class="block text-xs text-text-muted mb-1">Amount *</span>
             <input
               type="number"
               formControlName="amount"
@@ -81,7 +81,7 @@ export type TransactionDialogResult = Transaction | { deleted: string } | undefi
             />
           </label>
           <label class="block">
-            <span class="block text-xs text-text-muted mb-1">Fecha *</span>
+            <span class="block text-xs text-text-muted mb-1">Date *</span>
             <input
               type="date"
               formControlName="date"
@@ -91,12 +91,12 @@ export type TransactionDialogResult = Transaction | { deleted: string } | undefi
         </div>
 
         <label class="block">
-          <span class="block text-xs text-text-muted mb-1">Categoría</span>
+          <span class="block text-xs text-text-muted mb-1">Category</span>
           <select
             formControlName="categoryId"
             class="w-full px-3 py-2 bg-background border border-border rounded outline-none focus:border-primary"
           >
-            <option value="">Sin categoría</option>
+            <option value="">No category</option>
             @for (c of filteredCategories(); track c.id) {
               <option [value]="c.id">{{ c.name }}</option>
             }
@@ -104,7 +104,7 @@ export type TransactionDialogResult = Transaction | { deleted: string } | undefi
         </label>
 
         <label class="block">
-          <span class="block text-xs text-text-muted mb-1">Notas</span>
+          <span class="block text-xs text-text-muted mb-1">Notes</span>
           <textarea
             formControlName="notes"
             rows="2"
@@ -113,7 +113,7 @@ export type TransactionDialogResult = Transaction | { deleted: string } | undefi
         </label>
 
         <label class="block">
-          <span class="block text-xs text-text-muted mb-1">Tags (separados por coma)</span>
+          <span class="block text-xs text-text-muted mb-1">Tags (comma-separated)</span>
           <input
             type="text"
             formControlName="tags"
@@ -134,7 +134,7 @@ export type TransactionDialogResult = Transaction | { deleted: string } | undefi
               [disabled]="loading()"
               class="text-sm text-danger hover:underline"
             >
-              Eliminar
+              Delete
             </button>
           } @else {
             <span></span>
@@ -145,14 +145,14 @@ export type TransactionDialogResult = Transaction | { deleted: string } | undefi
               (click)="ref.close()"
               class="px-4 py-2 text-sm rounded hover:bg-surface-hover"
             >
-              Cancelar
+              Cancel
             </button>
             <button
               type="submit"
               [disabled]="form.invalid || loading()"
               class="px-4 py-2 text-sm rounded bg-primary text-white hover:opacity-90 disabled:opacity-50"
             >
-              {{ loading() ? 'Guardando…' : 'Guardar' }}
+              {{ loading() ? 'Saving…' : 'Save' }}
             </button>
           </div>
         </div>
@@ -224,7 +224,7 @@ export class TransactionDialogComponent {
 
     request$.subscribe({
       next: (transaction) => {
-        this.toastr.success(this.data.transaction ? 'Transacción actualizada' : 'Transacción creada');
+        this.toastr.success(this.data.transaction ? 'Transaction updated' : 'Transaction created');
         this.ref.close(transaction);
       },
       error: (err: HttpErrorResponse) => {
@@ -237,9 +237,9 @@ export class TransactionDialogComponent {
   async remove(): Promise<void> {
     if (!this.data.transaction || this.loading()) return;
     const ok = await this.dialogs.confirm({
-      title: 'Eliminar transacción',
-      message: '¿Eliminar esta transacción?',
-      confirmLabel: 'Eliminar',
+      title: 'Delete transaction',
+      message: 'Delete this transaction?',
+      confirmLabel: 'Delete',
       destructive: true,
     });
     if (!ok) return;
@@ -248,7 +248,7 @@ export class TransactionDialogComponent {
       .deleteTransaction(this.data.board.id, this.data.transaction.id)
       .subscribe({
         next: ({ id }) => {
-          this.toastr.success('Transacción eliminada');
+          this.toastr.success('Transaction deleted');
           this.ref.close({ deleted: id });
         },
         error: (err: HttpErrorResponse) => {
@@ -263,6 +263,6 @@ export class TransactionDialogComponent {
     const msg = body?.error?.message;
     if (Array.isArray(msg)) return msg.join('. ');
     if (typeof msg === 'string') return msg;
-    return 'Error inesperado';
+    return 'Unexpected error';
   }
 }
