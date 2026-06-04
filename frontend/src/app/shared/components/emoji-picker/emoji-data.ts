@@ -7,7 +7,7 @@ export interface EmojiCategory {
 export const EMOJI_CATEGORIES: EmojiCategory[] = [
   {
     key: 'smileys',
-    label: 'Caras',
+    label: 'Faces',
     emojis: [
       '😀', '😃', '😄', '😁', '😆', '😅', '🤣', '😂', '🙂', '🙃', '😉', '😊',
       '😇', '🥰', '😍', '🤩', '😘', '😗', '😚', '😙', '🥲', '😋', '😛', '😜',
@@ -19,7 +19,7 @@ export const EMOJI_CATEGORIES: EmojiCategory[] = [
   },
   {
     key: 'people',
-    label: 'Personas',
+    label: 'People',
     emojis: [
       '👍', '👎', '👌', '🤌', '🤏', '✌️', '🤞', '🤟', '🤘', '🤙', '👈', '👉',
       '👆', '🖕', '👇', '☝️', '👋', '🤚', '🖐', '✋', '🖖', '👏', '🙌', '👐',
@@ -30,7 +30,7 @@ export const EMOJI_CATEGORIES: EmojiCategory[] = [
   },
   {
     key: 'animals',
-    label: 'Animales',
+    label: 'Animals',
     emojis: [
       '🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐻‍❄️', '🐨', '🐯', '🦁',
       '🐮', '🐷', '🐽', '🐸', '🐵', '🙈', '🙉', '🙊', '🐒', '🐔', '🐧', '🐦',
@@ -42,7 +42,7 @@ export const EMOJI_CATEGORIES: EmojiCategory[] = [
   },
   {
     key: 'food',
-    label: 'Comida',
+    label: 'Food',
     emojis: [
       '🍎', '🍐', '🍊', '🍋', '🍌', '🍉', '🍇', '🍓', '🫐', '🍈', '🍒', '🍑',
       '🥭', '🍍', '🥥', '🥝', '🍅', '🍆', '🥑', '🥦', '🥬', '🥒', '🌶', '🫑',
@@ -57,7 +57,7 @@ export const EMOJI_CATEGORIES: EmojiCategory[] = [
   },
   {
     key: 'activities',
-    label: 'Actividades',
+    label: 'Activities',
     emojis: [
       '⚽', '🏀', '🏈', '⚾', '🥎', '🎾', '🏐', '🏉', '🥏', '🎱', '🪀', '🏓',
       '🏸', '🏒', '🏑', '🥍', '🏏', '🥅', '⛳', '🪁', '🏹', '🎣', '🤿', '🥊',
@@ -70,7 +70,7 @@ export const EMOJI_CATEGORIES: EmojiCategory[] = [
   },
   {
     key: 'travel',
-    label: 'Viajes',
+    label: 'Travel',
     emojis: [
       '🚗', '🚕', '🚙', '🚌', '🚎', '🏎', '🚓', '🚑', '🚒', '🚐', '🛻', '🚚',
       '🚛', '🚜', '🛵', '🏍', '🛺', '🚲', '🛴', '🛹', '🚁', '🛸', '✈️', '🛫',
@@ -82,7 +82,7 @@ export const EMOJI_CATEGORIES: EmojiCategory[] = [
   },
   {
     key: 'objects',
-    label: 'Objetos',
+    label: 'Objects',
     emojis: [
       '⌚', '📱', '📲', '💻', '⌨️', '🖥', '🖨', '🖱', '🖲', '🕹', '🗜', '💽',
       '💾', '💿', '📀', '📼', '📷', '📸', '📹', '🎥', '📽', '🎞', '📞', '☎️',
@@ -97,7 +97,7 @@ export const EMOJI_CATEGORIES: EmojiCategory[] = [
   },
   {
     key: 'symbols',
-    label: 'Símbolos',
+    label: 'Symbols',
     emojis: [
       '❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '🤎', '💔', '❣️', '💕',
       '💞', '💓', '💗', '💖', '💘', '💝', '💟', '☮️', '✝️', '☪️', '🕉', '☸️',

@@ -24,27 +24,27 @@ interface HabitTodayState {
     <div class="h-full flex flex-col">
       <header class="px-6 py-4 border-b border-border flex items-center justify-between">
         <div>
-          <h1 class="text-2xl font-semibold">Hábitos</h1>
-          <p class="text-sm text-text-muted">Construye rachas y observa tu progreso.</p>
+          <h1 class="text-2xl font-semibold">Habits</h1>
+          <p class="text-sm text-text-muted">Build streaks and watch your progress.</p>
         </div>
         <button
           type="button"
           (click)="openCreate()"
           class="px-4 py-2 rounded bg-primary text-white text-sm font-medium hover:opacity-90"
         >
-          + Nuevo hábito
+          + New habit
         </button>
       </header>
 
       <div class="flex-1 overflow-auto p-6">
         @if (loading()) {
-          <p class="text-text-muted">Cargando…</p>
+          <p class="text-text-muted">Loading…</p>
         } @else if (habits().length === 0) {
           <div class="text-center py-16 text-text-muted">
-            <p class="mb-4">Aún no tienes hábitos. Crea el primero para empezar a construir rachas.</p>
+            <p class="mb-4">You don't have any habits yet. Create your first to start building streaks.</p>
             <button type="button" (click)="openCreate()"
               class="px-4 py-2 rounded bg-primary text-white text-sm font-medium hover:opacity-90">
-              + Crear primer hábito
+              + Create first habit
             </button>
           </div>
         } @else {
@@ -60,7 +60,7 @@ interface HabitTodayState {
                   <button
                     type="button"
                     (click)="toggleToday(habit)"
-                    [title]="isDoneToday(habit) ? 'Quitar marca de hoy' : 'Marcar como hecho hoy'"
+                    [title]="isDoneToday(habit) ? 'Unmark today' : 'Mark as done today'"
                     [class]="
                       'w-10 h-10 rounded-full text-lg font-bold transition-colors ' +
                       (isDoneToday(habit) ? 'bg-success text-white' : 'border-2 border-border text-text-muted hover:border-primary')
@@ -75,15 +75,15 @@ interface HabitTodayState {
                 <div class="grid grid-cols-3 gap-2 text-center mb-3">
                   <div>
                     <p class="text-xl font-bold">{{ habit.currentStreak }}</p>
-                    <p class="text-xs text-text-muted">Racha</p>
+                    <p class="text-xs text-text-muted">Streak</p>
                   </div>
                   <div>
                     <p class="text-xl font-bold">{{ habit.longestStreak }}</p>
-                    <p class="text-xs text-text-muted">Máxima</p>
+                    <p class="text-xs text-text-muted">Longest</p>
                   </div>
                   <div>
                     <p class="text-xl font-bold">{{ habit.perfectWeeks }}</p>
-                    <p class="text-xs text-text-muted">Sem ✓</p>
+                    <p class="text-xs text-text-muted">Wk ✓</p>
                   </div>
                 </div>
 
@@ -117,13 +117,13 @@ export class HabitsHomeComponent implements OnInit {
   protected readonly todayMarks = signal<Map<string, boolean>>(new Map());
 
   protected readonly dayLabels = [
-    { value: 1, label: 'L' },
-    { value: 2, label: 'M' },
-    { value: 3, label: 'X' },
-    { value: 4, label: 'J' },
-    { value: 5, label: 'V' },
+    { value: 1, label: 'M' },
+    { value: 2, label: 'T' },
+    { value: 3, label: 'W' },
+    { value: 4, label: 'T' },
+    { value: 5, label: 'F' },
     { value: 6, label: 'S' },
-    { value: 0, label: 'D' },
+    { value: 0, label: 'S' },
   ];
 
   ngOnInit(): void {
@@ -140,7 +140,7 @@ export class HabitsHomeComponent implements OnInit {
       },
       error: () => {
         this.loading.set(false);
-        this.toastr.error('No se pudieron cargar los hábitos');
+        this.toastr.error('Could not load habits');
       },
     });
   }
@@ -181,7 +181,7 @@ export class HabitsHomeComponent implements OnInit {
           });
           this.reload();
         },
-        error: () => this.toastr.error('No se pudo desmarcar'),
+        error: () => this.toastr.error('Could not unmark'),
       });
     } else {
       this.service.markEntry(habit.id, { date: today, status: 'DONE' }).subscribe({
@@ -193,7 +193,7 @@ export class HabitsHomeComponent implements OnInit {
           });
           this.reload();
         },
-        error: () => this.toastr.error('No se pudo marcar'),
+        error: () => this.toastr.error('Could not mark'),
       });
     }
   }

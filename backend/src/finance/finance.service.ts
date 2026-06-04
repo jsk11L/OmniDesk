@@ -346,7 +346,7 @@ export class FinanceService {
       } else {
         byCategoryMap.set(key, {
           categoryId: t.categoryId,
-          categoryName: t.category?.name ?? 'Sin categoría',
+          categoryName: t.category?.name ?? 'Uncategorized',
           categoryColor: t.category?.color ?? '#94a3b8',
           total: t.amount,
         });

@@ -48,14 +48,14 @@ export interface PromptDialogData {
           (click)="ref.close(null)"
           class="px-4 py-2 rounded text-sm hover:bg-surface-hover transition-colors"
         >
-          {{ data.cancelLabel ?? 'Cancelar' }}
+          {{ data.cancelLabel ?? 'Cancel' }}
         </button>
         <button
           type="submit"
           [disabled]="isInvalid()"
           class="px-4 py-2 rounded text-sm bg-primary text-white hover:opacity-90 disabled:opacity-50"
         >
-          {{ data.confirmLabel ?? 'Aceptar' }}
+          {{ data.confirmLabel ?? 'OK' }}
         </button>
       </div>
     </form>

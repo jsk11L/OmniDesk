@@ -54,15 +54,15 @@ export class UsersService {
     await client.todoBoard.create({
       data: {
         userId,
-        name: 'Tablero Personal',
+        name: 'Personal Board',
         isDefault: true,
         isSystem: true,
         columns: {
           create: [
             { name: 'Backlog', color: '#71717a', position: 0 },
-            { name: 'En Progreso', color: '#3b82f6', position: 1 },
-            { name: 'En Revisión', color: '#f59e0b', position: 2 },
-            { name: 'Completado', color: '#22c55e', position: 3, isCompletionColumn: true },
+            { name: 'In Progress', color: '#3b82f6', position: 1 },
+            { name: 'In Review', color: '#f59e0b', position: 2 },
+            { name: 'Done', color: '#22c55e', position: 3, isCompletionColumn: true },
           ],
         },
       },
@@ -71,21 +71,21 @@ export class UsersService {
     await client.financeBoard.create({
       data: {
         userId,
-        name: 'Finanzas Personales',
+        name: 'Personal Finances',
         currency: 'USD',
         isDefault: true,
         categories: {
           create: [
-            { name: 'Salario', color: '#22c55e', categoryType: 'INCOME' },
+            { name: 'Salary', color: '#22c55e', categoryType: 'INCOME' },
             { name: 'Freelance', color: '#16a34a', categoryType: 'INCOME' },
-            { name: 'Otros Ingresos', color: '#84cc16', categoryType: 'INCOME' },
-            { name: 'Alimentación', color: '#f59e0b', categoryType: 'EXPENSE' },
-            { name: 'Transporte', color: '#3b82f6', categoryType: 'EXPENSE' },
-            { name: 'Vivienda', color: '#8b5cf6', categoryType: 'EXPENSE' },
-            { name: 'Entretenimiento', color: '#ec4899', categoryType: 'EXPENSE' },
-            { name: 'Salud', color: '#ef4444', categoryType: 'EXPENSE' },
-            { name: 'Educación', color: '#06b6d4', categoryType: 'EXPENSE' },
-            { name: 'Otros', color: '#94a3b8', categoryType: 'EXPENSE' },
+            { name: 'Other Income', color: '#84cc16', categoryType: 'INCOME' },
+            { name: 'Food', color: '#f59e0b', categoryType: 'EXPENSE' },
+            { name: 'Transport', color: '#3b82f6', categoryType: 'EXPENSE' },
+            { name: 'Housing', color: '#8b5cf6', categoryType: 'EXPENSE' },
+            { name: 'Entertainment', color: '#ec4899', categoryType: 'EXPENSE' },
+            { name: 'Health', color: '#ef4444', categoryType: 'EXPENSE' },
+            { name: 'Education', color: '#06b6d4', categoryType: 'EXPENSE' },
+            { name: 'Other', color: '#94a3b8', categoryType: 'EXPENSE' },
           ],
         },
       },

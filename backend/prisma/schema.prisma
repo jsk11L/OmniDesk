@@ -2,6 +2,21 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// Generates plain TypeScript interfaces for the models into the shared
+// workspace package (D-011, Stage 1). Plain interfaces — no zod, no
+// @prisma/client import — so the non-Prisma frontend can consume them type-only
+// to kill frontend↔backend drift. Dates are emitted as strings to match the
+// JSON the REST API actually sends. Backend Zod DTOs are a separate Stage 2.
+generator interfaces {
+  provider     = "prisma-generator-typescript-interfaces"
+  output       = "../../shared/src/generated/models.ts"
+  modelType    = "interface"
+  enumType     = "stringUnion"
+  dateType     = "string"
+  jsonType     = "unknown"
+  relations    = "none"
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")

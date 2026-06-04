@@ -1,16 +1,6 @@
-export interface Note {
-  id: string;
-  userId: string;
-  title: string;
-  content: string;
-  description: string | null;
-  icon: string | null;
-  coverImageUrl: string | null;
-  isPinned: boolean;
-  tags: string[];
-  createdAt: string;
-  updatedAt: string;
-}
+// Entity shape is generated from the Prisma schema (D-011) and re-exported so
+// existing imports from this module keep working.
+export type { Note } from '@omnidesk/shared';
 
 export interface CreateNoteDto {
   title: string;

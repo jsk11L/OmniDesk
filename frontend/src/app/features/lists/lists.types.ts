@@ -1,15 +1,10 @@
-export type ListViewType = 'GRID' | 'TABLE' | 'GALLERY' | 'LIST';
-export type SortDirection = 'ASC' | 'DESC';
-export type ListFieldType =
-  | 'TEXT'
-  | 'NUMBER'
-  | 'DATE'
-  | 'URL'
-  | 'BOOLEAN'
-  | 'SELECT'
-  | 'MULTI_SELECT'
-  | 'RATING'
-  | 'IMAGE_URL';
+// Enums and the relation-free ListTag come from the Prisma-generated source
+// (D-011). List, ListField and ListItem stay local: they expose the JSON
+// columns (gridConfig, viewConfig, options, customFields) as frontend-specific
+// shapes rather than the generated `unknown`.
+import type { ListViewType, SortDirection, ListFieldType, ListTag } from '@omnidesk/shared';
+
+export type { ListViewType, SortDirection, ListFieldType, ListTag };
 
 export interface ListField {
   id: string;
@@ -20,13 +15,6 @@ export interface ListField {
   position: number;
   options: Record<string, unknown> | null;
   defaultValue: string | null;
-}
-
-export interface ListTag {
-  id: string;
-  listId: string;
-  name: string;
-  color: string;
 }
 
 export interface ListItemTagLink {

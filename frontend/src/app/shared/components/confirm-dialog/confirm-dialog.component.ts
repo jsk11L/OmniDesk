@@ -24,7 +24,7 @@ export interface ConfirmDialogData {
           (click)="ref.close(false)"
           class="px-4 py-2 rounded text-sm hover:bg-surface-hover transition-colors"
         >
-          {{ data.cancelLabel ?? 'Cancelar' }}
+          {{ data.cancelLabel ?? 'Cancel' }}
         </button>
         <button
           type="button"
@@ -35,7 +35,7 @@ export interface ConfirmDialogData {
               : 'px-4 py-2 rounded text-sm bg-primary text-white hover:opacity-90'
           "
         >
-          {{ data.confirmLabel ?? 'Confirmar' }}
+          {{ data.confirmLabel ?? 'Confirm' }}
         </button>
       </div>
     </div>

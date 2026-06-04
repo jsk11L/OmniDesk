@@ -1,29 +1,7 @@
-export type HabitEntryStatus = 'DONE' | 'MISSED' | 'RECOVERED' | 'REST';
+// Entity shapes from the Prisma-generated source (D-011).
+export type { Habit, HabitEntry, HabitEntryStatus } from '@omnidesk/shared';
 
-export interface Habit {
-  id: string;
-  userId: string;
-  name: string;
-  description: string | null;
-  icon: string | null;
-  color: string;
-  activeDays: number[];
-  weeklyGoal: number | null;
-  currentStreak: number;
-  longestStreak: number;
-  perfectWeeks: number;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface HabitEntry {
-  id: string;
-  habitId: string;
-  date: string;
-  status: HabitEntryStatus;
-  notes: string | null;
-  createdAt: string;
-}
+import type { HabitEntryStatus } from '@omnidesk/shared';
 
 export interface HabitStats {
   currentStreak: number;

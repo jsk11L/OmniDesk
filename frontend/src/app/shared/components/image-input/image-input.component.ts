@@ -26,7 +26,7 @@ type Mode = 'url' | 'upload';
           type="button"
           (click)="setMode('upload')"
           [class.active]="mode() === 'upload'"
-        >Subir archivo</button>
+        >Upload file</button>
         <button
           type="button"
           (click)="setMode('url')"
@@ -51,10 +51,10 @@ type Mode = 'url' | 'upload';
           [class.uploading]="uploading()"
         >
           @if (uploading()) {
-            <span>Subiendo…</span>
+            <span>Uploading…</span>
           } @else {
-            <span>Click o arrastra una imagen aquí</span>
-            <span class="hint">JPG, PNG, WEBP o GIF · máx 5MB</span>
+            <span>Click or drag an image here</span>
+            <span class="hint">JPG, PNG, WEBP or GIF · max 5MB</span>
           }
         </div>
         <input
@@ -69,7 +69,7 @@ type Mode = 'url' | 'upload';
       @if (resolvedPreview()) {
         <div class="preview-wrap">
           <img [src]="resolvedPreview()!" alt="" class="preview" />
-          <button type="button" (click)="clear()" class="clear-btn">Quitar imagen</button>
+          <button type="button" (click)="clear()" class="clear-btn">Remove image</button>
         </div>
       }
 
@@ -194,7 +194,7 @@ export class ImageInputComponent {
         this.uploading.set(false);
         const body = err.error as { error?: { message?: string | string[] } } | null;
         const msg = body?.error?.message;
-        const text = Array.isArray(msg) ? msg.join('. ') : typeof msg === 'string' ? msg : 'Error al subir';
+        const text = Array.isArray(msg) ? msg.join('. ') : typeof msg === 'string' ? msg : 'Upload failed';
         this.error.set(text);
         this.toastr.error(text);
       },

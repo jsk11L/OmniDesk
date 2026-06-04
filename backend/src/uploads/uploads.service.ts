@@ -26,12 +26,12 @@ export class UploadsService {
   }
 
   async process(file: Express.Multer.File, userId: string): Promise<UploadedImage> {
-    if (!file) throw new BadRequestException('Archivo requerido');
+    if (!file) throw new BadRequestException('File required');
     if (file.size > this.maxBytes) {
-      throw new BadRequestException(`Tamaño máximo ${this.maxBytes} bytes`);
+      throw new BadRequestException(`Maximum size ${this.maxBytes} bytes`);
     }
     if (!ALLOWED_MIME.has(file.mimetype)) {
-      throw new BadRequestException(`Tipo no permitido: ${file.mimetype}`);
+      throw new BadRequestException(`File type not allowed: ${file.mimetype}`);
     }
 
     const userDir = join(this.uploadsDir, userId);
@@ -68,7 +68,7 @@ export class UploadsService {
       const thumb = fullPath.replace(/\.webp$/, '-thumb.webp');
       await fs.unlink(thumb).catch(() => undefined);
     } catch (err) {
-      this.logger.warn(`No se pudo eliminar archivo ${fullPath}: ${(err as Error).message}`);
+      this.logger.warn(`Could not delete file ${fullPath}: ${(err as Error).message}`);
     }
   }
 }

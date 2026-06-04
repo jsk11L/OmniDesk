@@ -50,8 +50,8 @@ interface NavItem {
           (click)="logout()"
           class="w-full text-left mt-2 px-3 py-2 rounded text-sm text-text-muted hover:text-danger hover:bg-surface-hover transition-colors"
         >
-          {{ userEmail() ?? 'Salir' }}
-          <span class="block text-xs opacity-60">Cerrar sesión</span>
+          {{ userEmail() ?? 'Sign out' }}
+          <span class="block text-xs opacity-60">Sign out</span>
         </button>
       </div>
     </aside>
@@ -65,17 +65,17 @@ export class SidebarComponent {
 
   readonly mainNav: NavItem[] = [
     { path: '/app', label: 'Dashboard', exact: true },
-    { path: '/app/calendar', label: 'Calendario' },
-    { path: '/app/lists', label: 'Listas' },
-    { path: '/app/notes', label: 'Notas' },
+    { path: '/app/calendar', label: 'Calendar' },
+    { path: '/app/lists', label: 'Lists' },
+    { path: '/app/notes', label: 'Notes' },
     { path: '/app/todos', label: 'TO-DO' },
-    { path: '/app/habits', label: 'Hábitos' },
-    { path: '/app/finance', label: 'Finanzas' },
+    { path: '/app/habits', label: 'Habits' },
+    { path: '/app/finance', label: 'Finance' },
   ];
 
   readonly footerNav: NavItem[] = [
-    { path: '/app/notifications', label: 'Notificaciones' },
-    { path: '/app/settings', label: 'Ajustes' },
+    { path: '/app/notifications', label: 'Notifications' },
+    { path: '/app/settings', label: 'Settings' },
   ];
 
   logout(): void {

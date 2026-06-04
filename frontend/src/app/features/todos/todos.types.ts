@@ -1,38 +1,19 @@
-export type TodoPriority = 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
+// Entity shapes come from the Prisma-generated source (D-011). Relation fields
+// the API nests (column.items, board.columns) are composed here.
+import type {
+  TodoColumn as TodoColumnBase,
+  TodoBoard as TodoBoardBase,
+  TodoItem,
+  TodoPriority,
+} from '@omnidesk/shared';
 
-export interface TodoItem {
-  id: string;
-  columnId: string;
-  title: string;
-  description: string | null;
-  dueDate: string | null;
-  hasDueDate: boolean;
-  priority: TodoPriority;
-  hasPriority: boolean;
-  tags: string[];
-  position: number;
-  createdAt: string;
-  updatedAt: string;
-}
+export type { TodoItem, TodoPriority };
 
-export interface TodoColumn {
-  id: string;
-  boardId: string;
-  name: string;
-  color: string;
-  position: number;
-  isCompletionColumn: boolean;
+export interface TodoColumn extends TodoColumnBase {
   items: TodoItem[];
 }
 
-export interface TodoBoard {
-  id: string;
-  userId: string;
-  name: string;
-  isDefault: boolean;
-  isSystem: boolean;
-  createdAt: string;
-  updatedAt: string;
+export interface TodoBoard extends TodoBoardBase {
   columns?: TodoColumn[];
 }
 

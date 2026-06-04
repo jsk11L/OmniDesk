@@ -16,29 +16,29 @@ import { PasswordInputComponent } from '../../../shared/components/password-inpu
     <div class="relative min-h-screen flex items-center justify-center bg-background px-4 py-8 overflow-hidden">
       <app-animated-bg />
       <div class="relative z-10 w-full max-w-md bg-surface/85 backdrop-blur-md border border-border rounded-xl p-8 shadow-2xl">
-        <a routerLink="/" class="inline-block mb-6 text-text-muted hover:text-text text-xs">← Volver</a>
-        <h1 class="text-2xl font-semibold mb-1">Crear cuenta</h1>
-        <p class="text-sm text-text-muted mb-6">Comienza tu organizador personal</p>
+        <a routerLink="/" class="inline-block mb-6 text-text-muted hover:text-text text-xs">← Back</a>
+        <h1 class="text-2xl font-semibold mb-1">Create account</h1>
+        <p class="text-sm text-text-muted mb-6">Start your personal organizer</p>
 
         @if (success()) {
           <div class="bg-success/10 border border-success/30 rounded p-4 mb-4">
             <p class="text-sm text-success font-medium">{{ success() }}</p>
             <p class="text-xs text-text-muted mt-2">
-              Revisa tu casilla de correo (o la consola del backend en modo dev) y haz clic en el
-              enlace de verificación para activar la cuenta.
+              Check your inbox (or the backend console in dev mode) and click the
+              verification link to activate your account.
             </p>
           </div>
         }
 
         <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-4">
           <label class="block">
-            <span class="block text-xs font-medium text-text-muted mb-1.5">Nombre (opcional)</span>
+            <span class="block text-xs font-medium text-text-muted mb-1.5">Name (optional)</span>
             <input
               type="text"
               formControlName="displayName"
               autocomplete="name"
               class="w-full px-3 py-2 bg-background border border-border rounded text-text placeholder:text-text-muted focus:border-primary outline-none"
-              placeholder="Tu nombre"
+              placeholder="Your name"
             />
           </label>
 
@@ -49,12 +49,12 @@ import { PasswordInputComponent } from '../../../shared/components/password-inpu
               formControlName="email"
               autocomplete="email"
               class="w-full px-3 py-2 bg-background border border-border rounded text-text placeholder:text-text-muted focus:border-primary outline-none"
-              placeholder="tu@email.com"
+              placeholder="you@email.com"
             />
           </label>
 
           <div class="block">
-            <span class="block text-xs font-medium text-text-muted mb-1.5">Contraseña</span>
+            <span class="block text-xs font-medium text-text-muted mb-1.5">Password</span>
             <app-password-input
               [showChecks]="true"
               autocomplete="new-password"
@@ -72,13 +72,13 @@ import { PasswordInputComponent } from '../../../shared/components/password-inpu
             [disabled]="!canSubmit() || loading()"
             class="w-full py-2 rounded bg-primary text-white font-medium hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
           >
-            {{ loading() ? 'Creando…' : 'Crear cuenta' }}
+            {{ loading() ? 'Creating…' : 'Create account' }}
           </button>
         </form>
 
         <p class="text-sm text-text-muted mt-6 text-center">
-          ¿Ya tienes cuenta?
-          <a routerLink="/auth/login" class="text-primary hover:underline">Inicia sesión</a>
+          Already have an account?
+          <a routerLink="/auth/login" class="text-primary hover:underline">Sign in</a>
         </p>
       </div>
     </div>
@@ -146,7 +146,7 @@ export class RegisterComponent {
     const msg = body?.error?.message;
     if (Array.isArray(msg)) return msg.join('. ');
     if (typeof msg === 'string') return msg;
-    if (err.status === 0) return 'No se pudo conectar al servidor';
-    return 'No se pudo crear la cuenta';
+    if (err.status === 0) return 'Could not connect to the server';
+    return 'Could not create the account';
   }
 }

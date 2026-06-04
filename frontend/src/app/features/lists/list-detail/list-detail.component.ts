@@ -63,11 +63,11 @@ interface ItemGroup {
           </div>
           <div class="flex items-center gap-2">
             <button type="button" (click)="openSettings()" class="px-3 py-2 rounded text-sm hover:bg-surface-hover">
-              ⚙ Ajustes
+              ⚙ Settings
             </button>
             <button type="button" (click)="openCreateItem()" [disabled]="!list()"
               class="px-4 py-2 rounded bg-primary text-white text-sm font-medium hover:opacity-90 disabled:opacity-50">
-              + Nuevo ítem
+              + New item
             </button>
           </div>
         </div>
@@ -77,35 +77,35 @@ interface ItemGroup {
             type="search"
             [(ngModel)]="search"
             (ngModelChange)="reload()"
-            placeholder="Buscar…"
+            placeholder="Search…"
             class="px-3 py-2 bg-surface border border-border rounded text-sm outline-none focus:border-primary w-64"
           />
 
           <select [ngModel]="gridConfig().template" (ngModelChange)="setTemplate($event)"
             class="px-3 py-2 bg-surface border border-border rounded text-sm outline-none focus:border-primary">
-            <option value="card-large">Tarjeta grande</option>
-            <option value="card-compact">Tarjeta compacta</option>
-            <option value="card-cover">Tarjeta cover (Obsidian)</option>
-            <option value="dense-list">Lista densa</option>
-            <option value="gallery-no-image">Galería sin imagen</option>
-            <option value="table">Tabla</option>
+            <option value="card-large">Large card</option>
+            <option value="card-compact">Compact card</option>
+            <option value="card-cover">Cover card (Obsidian)</option>
+            <option value="dense-list">Dense list</option>
+            <option value="gallery-no-image">Gallery without image</option>
+            <option value="table">Table</option>
           </select>
 
           @if ((list()?.fields?.length ?? 0) > 0) {
             <select [ngModel]="viewConfig().groupBy ?? ''" (ngModelChange)="setGroupBy($event || null)"
               class="px-3 py-2 bg-surface border border-border rounded text-sm outline-none focus:border-primary">
-              <option value="">Sin agrupar</option>
+              <option value="">No grouping</option>
               @for (f of list()!.fields!; track f.id) {
-                <option [value]="f.id">Agrupar por {{ f.name }}</option>
+                <option [value]="f.id">Group by {{ f.name }}</option>
               }
             </select>
 
             <select [ngModel]="viewConfig().sortBy" (ngModelChange)="setSortBy($event)"
               class="px-3 py-2 bg-surface border border-border rounded text-sm outline-none focus:border-primary">
-              <option value="createdAt">Ordenar: creación</option>
-              <option value="title">Ordenar: título</option>
+              <option value="createdAt">Sort: created</option>
+              <option value="title">Sort: title</option>
               @for (f of list()!.fields!; track f.id) {
-                <option [value]="f.id">Ordenar: {{ f.name }}</option>
+                <option [value]="f.id">Sort: {{ f.name }}</option>
               }
             </select>
 
@@ -115,19 +115,19 @@ interface ItemGroup {
             </button>
           }
 
-          <span class="text-xs text-text-muted ml-auto">{{ filteredItems().length }} ítems</span>
+          <span class="text-xs text-text-muted ml-auto">{{ filteredItems().length }} items</span>
         </div>
       </header>
 
       <div class="flex-1 overflow-auto p-6">
         @if (loading()) {
-          <p class="text-text-muted">Cargando…</p>
+          <p class="text-text-muted">Loading…</p>
         } @else if (filteredItems().length === 0) {
           <div class="text-center py-16 text-text-muted">
-            <p class="mb-4">Esta lista aún no tiene ítems.</p>
+            <p class="mb-4">This list has no items yet.</p>
             <button type="button" (click)="openCreateItem()"
               class="px-4 py-2 rounded bg-primary text-white text-sm font-medium hover:opacity-90">
-              + Crear el primer ítem
+              + Create the first item
             </button>
           </div>
         } @else {
@@ -283,7 +283,7 @@ interface ItemGroup {
                   <table class="w-full text-sm">
                     <thead class="bg-surface text-text-muted text-xs uppercase">
                       <tr>
-                        <th class="px-3 py-2 text-left">Título</th>
+                        <th class="px-3 py-2 text-left">Title</th>
                         @for (f of list()?.fields ?? []; track f.id) {
                           <th class="px-3 py-2 text-left">{{ f.name }}</th>
                         }
@@ -411,7 +411,7 @@ export class ListDetailComponent implements OnInit {
 
     return sortedKeys.map((k) => ({
       key: k,
-      label: k === '__none__' ? 'Sin clasificar' : k,
+      label: k === '__none__' ? 'Unclassified' : k,
       items: groups.get(k)!,
     }));
   });
@@ -431,7 +431,7 @@ export class ListDetailComponent implements OnInit {
   protected formatField(value: unknown): string {
     if (value === null || value === undefined || value === '') return '—';
     if (Array.isArray(value)) return value.join(', ');
-    if (typeof value === 'boolean') return value ? 'Sí' : 'No';
+    if (typeof value === 'boolean') return value ? 'Yes' : 'No';
     return String(value);
   }
 
@@ -478,7 +478,7 @@ export class ListDetailComponent implements OnInit {
     if (!list) return;
     this.list.set({ ...list, gridConfig: next });
     this.service.update(this.id, { gridConfig: next }).subscribe({
-      error: () => this.toastr.error('No se pudo guardar la configuración'),
+      error: () => this.toastr.error('Could not save the settings'),
     });
   }
 
@@ -489,7 +489,7 @@ export class ListDetailComponent implements OnInit {
     if (!list) return;
     this.list.set({ ...list, viewConfig: next });
     this.service.update(this.id, { viewConfig: next }).subscribe({
-      error: () => this.toastr.error('No se pudo guardar la configuración'),
+      error: () => this.toastr.error('Could not save the settings'),
     });
   }
 
@@ -577,6 +577,6 @@ export class ListDetailComponent implements OnInit {
     const msg = body?.error?.message;
     if (Array.isArray(msg)) return msg.join('. ');
     if (typeof msg === 'string') return msg;
-    return 'Error inesperado';
+    return 'Unexpected error';
   }
 }
