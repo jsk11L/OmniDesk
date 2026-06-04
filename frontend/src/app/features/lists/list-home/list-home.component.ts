@@ -22,16 +22,16 @@ import type { List } from '../lists.types';
     <div class="h-full flex flex-col">
       <header class="px-6 py-4 border-b border-border flex items-center justify-between gap-4">
         <div>
-          <h1 class="text-2xl font-semibold">Listas</h1>
+          <h1 class="text-2xl font-semibold">Lists</h1>
           <p class="text-sm text-text-muted">
-            Bibliotecas personalizadas con campos e imágenes por ítem
+            Custom libraries with fields and images per item
           </p>
         </div>
         <div class="flex items-center gap-3">
           <input
             type="search"
             [(ngModel)]="search"
-            placeholder="Buscar lista…"
+            placeholder="Search lists…"
             class="px-3 py-2 bg-surface border border-border rounded text-sm outline-none focus:border-primary w-64"
           />
           <button
@@ -39,26 +39,26 @@ import type { List } from '../lists.types';
             (click)="openCreate()"
             class="px-4 py-2 rounded bg-primary text-white text-sm font-medium hover:opacity-90"
           >
-            + Nueva lista
+            + New list
           </button>
         </div>
       </header>
 
       <div class="flex-1 overflow-auto p-6">
         @if (loading()) {
-          <p class="text-text-muted">Cargando…</p>
+          <p class="text-text-muted">Loading…</p>
         } @else if (filtered().length === 0) {
           <div class="text-center py-16 text-text-muted">
             @if (search) {
-              <p>No se encontró ninguna lista que coincida con "{{ search }}".</p>
+              <p>No list matches "{{ search }}".</p>
             } @else {
-              <p class="mb-4">Aún no tienes listas. Crea la primera para comenzar.</p>
+              <p class="mb-4">You don't have any lists yet. Create your first to get started.</p>
               <button
                 type="button"
                 (click)="openCreate()"
                 class="px-4 py-2 rounded bg-primary text-white text-sm font-medium hover:opacity-90"
               >
-                + Crear lista
+                + Create list
               </button>
             }
           </div>
@@ -144,6 +144,6 @@ export class ListHomeComponent implements OnInit {
     const msg = body?.error?.message;
     if (Array.isArray(msg)) return msg.join('. ');
     if (typeof msg === 'string') return msg;
-    return 'Error inesperado';
+    return 'Unexpected error';
   }
 }

@@ -13,15 +13,15 @@ export interface ListSettingsData {
 }
 
 const FIELD_TYPES: { value: ListFieldType; label: string }[] = [
-  { value: 'TEXT', label: 'Texto' },
-  { value: 'NUMBER', label: 'Número' },
-  { value: 'DATE', label: 'Fecha' },
+  { value: 'TEXT', label: 'Text' },
+  { value: 'NUMBER', label: 'Number' },
+  { value: 'DATE', label: 'Date' },
   { value: 'URL', label: 'URL' },
-  { value: 'BOOLEAN', label: 'Sí/No' },
+  { value: 'BOOLEAN', label: 'Yes/No' },
   { value: 'SELECT', label: 'Select' },
   { value: 'MULTI_SELECT', label: 'Multi-select' },
   { value: 'RATING', label: 'Rating 0-10' },
-  { value: 'IMAGE_URL', label: 'URL de imagen' },
+  { value: 'IMAGE_URL', label: 'Image URL' },
 ];
 
 @Component({
@@ -32,21 +32,21 @@ const FIELD_TYPES: { value: ListFieldType; label: string }[] = [
   template: `
     <div class="bg-surface text-text p-6 w-[min(640px,95vw)] max-h-[90vh] overflow-y-auto">
       <div class="flex items-start justify-between mb-4">
-        <h2 class="text-lg font-semibold">Ajustes de lista</h2>
+        <h2 class="text-lg font-semibold">List settings</h2>
         <button
           type="button"
           (click)="deleteList()"
           class="text-sm text-danger hover:underline"
         >
-          Eliminar lista
+          Delete list
         </button>
       </div>
 
       <section class="mb-6">
-        <h3 class="text-sm font-medium mb-3">Detalles</h3>
+        <h3 class="text-sm font-medium mb-3">Details</h3>
         <form [formGroup]="listForm" (ngSubmit)="saveList()" class="space-y-3">
           <label class="block">
-            <span class="block text-xs text-text-muted mb-1">Nombre</span>
+            <span class="block text-xs text-text-muted mb-1">Name</span>
             <input
               type="text"
               formControlName="name"
@@ -55,7 +55,7 @@ const FIELD_TYPES: { value: ListFieldType; label: string }[] = [
             />
           </label>
           <label class="block">
-            <span class="block text-xs text-text-muted mb-1">Descripción</span>
+            <span class="block text-xs text-text-muted mb-1">Description</span>
             <textarea
               formControlName="description"
               rows="2"
@@ -64,7 +64,7 @@ const FIELD_TYPES: { value: ListFieldType; label: string }[] = [
           </label>
           <div class="grid grid-cols-2 gap-3">
             <label class="block">
-              <span class="block text-xs text-text-muted mb-1">Icono</span>
+              <span class="block text-xs text-text-muted mb-1">Icon</span>
               <input
                 type="text"
                 formControlName="icon"
@@ -73,20 +73,20 @@ const FIELD_TYPES: { value: ListFieldType; label: string }[] = [
               />
             </label>
             <label class="block">
-              <span class="block text-xs text-text-muted mb-1">Vista por defecto</span>
+              <span class="block text-xs text-text-muted mb-1">Default view</span>
               <select
                 formControlName="defaultView"
                 class="w-full px-3 py-2 bg-background border border-border rounded outline-none focus:border-primary"
               >
                 <option value="GRID">Grid</option>
-                <option value="TABLE">Tabla</option>
-                <option value="GALLERY">Galería</option>
-                <option value="LIST">Lista</option>
+                <option value="TABLE">Table</option>
+                <option value="GALLERY">Gallery</option>
+                <option value="LIST">List</option>
               </select>
             </label>
           </div>
           <label class="block">
-            <span class="block text-xs text-text-muted mb-1">URL de portada</span>
+            <span class="block text-xs text-text-muted mb-1">Cover URL</span>
             <input
               type="url"
               formControlName="coverImageUrl"
@@ -99,15 +99,15 @@ const FIELD_TYPES: { value: ListFieldType; label: string }[] = [
             [disabled]="listForm.invalid || savingList()"
             class="px-3 py-1.5 text-sm rounded bg-primary text-white hover:opacity-90 disabled:opacity-50"
           >
-            {{ savingList() ? 'Guardando…' : 'Guardar detalles' }}
+            {{ savingList() ? 'Saving…' : 'Save details' }}
           </button>
         </form>
       </section>
 
       <section class="mb-6">
-        <h3 class="text-sm font-medium mb-3">Campos personalizados</h3>
+        <h3 class="text-sm font-medium mb-3">Custom fields</h3>
         @if (fields().length === 0) {
-          <p class="text-xs text-text-muted mb-3">Aún no hay campos personalizados.</p>
+          <p class="text-xs text-text-muted mb-3">No custom fields yet.</p>
         } @else {
           <ul class="space-y-1 mb-3">
             @for (f of fields(); track f.id) {
@@ -125,7 +125,7 @@ const FIELD_TYPES: { value: ListFieldType; label: string }[] = [
                   type="button"
                   (click)="deleteField(f.id)"
                   class="text-text-muted hover:text-danger"
-                  aria-label="Eliminar campo"
+                  aria-label="Delete field"
                 >
                   ×
                 </button>
@@ -137,7 +137,7 @@ const FIELD_TYPES: { value: ListFieldType; label: string }[] = [
           <input
             type="text"
             formControlName="name"
-            placeholder="Nombre del campo"
+            placeholder="Field name"
             maxlength="100"
             class="col-span-2 px-3 py-2 bg-background border border-border rounded outline-none focus:border-primary text-sm"
           />
@@ -154,15 +154,15 @@ const FIELD_TYPES: { value: ListFieldType; label: string }[] = [
             [disabled]="fieldForm.invalid"
             class="col-span-3 px-3 py-1.5 text-sm rounded bg-primary text-white hover:opacity-90 disabled:opacity-50"
           >
-            + Añadir campo
+            + Add field
           </button>
         </form>
       </section>
 
       <section class="mb-2">
-        <h3 class="text-sm font-medium mb-3">Tags predefinidos</h3>
+        <h3 class="text-sm font-medium mb-3">Predefined tags</h3>
         @if (tags().length === 0) {
-          <p class="text-xs text-text-muted mb-3">Sin tags todavía.</p>
+          <p class="text-xs text-text-muted mb-3">No tags yet.</p>
         } @else {
           <ul class="space-y-1 mb-3">
             @for (t of tags(); track t.id) {
@@ -180,7 +180,7 @@ const FIELD_TYPES: { value: ListFieldType; label: string }[] = [
                   type="button"
                   (click)="deleteTag(t.id)"
                   class="text-text-muted hover:text-danger"
-                  aria-label="Eliminar tag"
+                  aria-label="Remove tag"
                 >
                   ×
                 </button>
@@ -192,7 +192,7 @@ const FIELD_TYPES: { value: ListFieldType; label: string }[] = [
           <input
             type="text"
             formControlName="name"
-            placeholder="Nombre del tag"
+            placeholder="Tag name"
             maxlength="50"
             class="col-span-2 px-3 py-2 bg-background border border-border rounded outline-none focus:border-primary text-sm"
           />
@@ -206,7 +206,7 @@ const FIELD_TYPES: { value: ListFieldType; label: string }[] = [
             [disabled]="tagForm.invalid"
             class="col-span-3 px-3 py-1.5 text-sm rounded bg-primary text-white hover:opacity-90 disabled:opacity-50"
           >
-            + Añadir tag
+            + Add tag
           </button>
         </form>
       </section>
@@ -280,7 +280,7 @@ export class ListSettingsComponent {
       .subscribe({
         next: () => {
           this.savingList.set(false);
-          this.toastr.success('Detalles guardados');
+          this.toastr.success('Details saved');
         },
         error: (err: HttpErrorResponse) => {
           this.savingList.set(false);
@@ -301,7 +301,7 @@ export class ListSettingsComponent {
         next: (field) => {
           this.fields.update((arr) => [...arr, field]);
           this.fieldForm.reset({ name: '', fieldType: 'TEXT' });
-          this.toastr.success('Campo añadido');
+          this.toastr.success('Field added');
         },
         error: (err: HttpErrorResponse) => this.toastr.error(this.errMsg(err)),
       });
@@ -309,16 +309,16 @@ export class ListSettingsComponent {
 
   async deleteField(fieldId: string): Promise<void> {
     const ok = await this.dialogs.confirm({
-      title: 'Eliminar campo',
-      message: '¿Eliminar este campo? Los valores en los ítems quedarán huérfanos.',
-      confirmLabel: 'Eliminar',
+      title: 'Delete field',
+      message: 'Delete this field? Values on items will be orphaned.',
+      confirmLabel: 'Delete',
       destructive: true,
     });
     if (!ok) return;
     this.service.deleteField(this.data.list.id, fieldId).subscribe({
       next: () => {
         this.fields.update((arr) => arr.filter((f) => f.id !== fieldId));
-        this.toastr.success('Campo eliminado');
+        this.toastr.success('Field deleted');
       },
       error: (err: HttpErrorResponse) => this.toastr.error(this.errMsg(err)),
     });
@@ -333,7 +333,7 @@ export class ListSettingsComponent {
         next: (tag) => {
           this.tags.update((arr) => [...arr, tag]);
           this.tagForm.reset({ name: '', color: '#94a3b8' });
-          this.toastr.success('Tag añadido');
+          this.toastr.success('Tag added');
         },
         error: (err: HttpErrorResponse) => this.toastr.error(this.errMsg(err)),
       });
@@ -341,16 +341,16 @@ export class ListSettingsComponent {
 
   async deleteTag(tagId: string): Promise<void> {
     const ok = await this.dialogs.confirm({
-      title: 'Eliminar tag',
-      message: '¿Eliminar este tag?',
-      confirmLabel: 'Eliminar',
+      title: 'Delete tag',
+      message: 'Delete this tag?',
+      confirmLabel: 'Delete',
       destructive: true,
     });
     if (!ok) return;
     this.service.deleteTag(this.data.list.id, tagId).subscribe({
       next: () => {
         this.tags.update((arr) => arr.filter((t) => t.id !== tagId));
-        this.toastr.success('Tag eliminado');
+        this.toastr.success('Tag deleted');
       },
       error: (err: HttpErrorResponse) => this.toastr.error(this.errMsg(err)),
     });
@@ -358,15 +358,15 @@ export class ListSettingsComponent {
 
   async deleteList(): Promise<void> {
     const ok = await this.dialogs.confirm({
-      title: 'Eliminar lista',
-      message: `¿Eliminar la lista "${this.data.list.name}" con todos sus ítems?`,
-      confirmLabel: 'Eliminar',
+      title: 'Delete list',
+      message: `Delete the list "${this.data.list.name}" with all its items?`,
+      confirmLabel: 'Delete',
       destructive: true,
     });
     if (!ok) return;
     this.service.delete(this.data.list.id).subscribe({
       next: () => {
-        this.toastr.success('Lista eliminada');
+        this.toastr.success('List deleted');
         this.ref.close('deleted');
       },
       error: (err: HttpErrorResponse) => this.toastr.error(this.errMsg(err)),
@@ -378,6 +378,6 @@ export class ListSettingsComponent {
     const msg = body?.error?.message;
     if (Array.isArray(msg)) return msg.join('. ');
     if (typeof msg === 'string') return msg;
-    return 'Error inesperado';
+    return 'Unexpected error';
   }
 }
