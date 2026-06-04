@@ -27,7 +27,7 @@ export class NotificationPushService {
 
     const permission = await Notification.requestPermission();
     if (permission !== 'granted') {
-      throw new Error('Permiso de notificación denegado');
+      throw new Error('Notification permission denied');
     }
 
     const registration = await navigator.serviceWorker.ready;
@@ -38,7 +38,7 @@ export class NotificationPushService {
 
     const json = subscription.toJSON();
     if (!json.endpoint || !json.keys) {
-      throw new Error('Suscripción inválida del navegador');
+      throw new Error('Invalid browser subscription');
     }
 
     const body: PushSubscribeBody = {

@@ -1,7 +1,7 @@
 /* eslint-disable */
-// OmniDesk — Service Worker para web push notifications.
-// La Fase 4 lo registrará desde main.ts vía navigator.serviceWorker.register('/sw.js').
-// El payload viene del backend NotificationsService.sendPushToUser (notifications.service.ts).
+// OmniDesk — Service Worker for web push notifications.
+// Registered from main.ts via navigator.serviceWorker.register('/sw.js').
+// The payload comes from the backend NotificationsService.sendPushToUser (notifications.service.ts).
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

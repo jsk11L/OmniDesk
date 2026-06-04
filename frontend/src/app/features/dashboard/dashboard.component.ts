@@ -21,7 +21,7 @@ import type { DashboardData } from './dashboard.types';
 
       @if (data(); as d) {
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <!-- Próximo evento -->
+          <!-- Next event -->
           <a routerLink="/app/calendar" class="widget">
             <header class="widget-header">
               <span class="widget-icon">📅</span>
@@ -41,7 +41,7 @@ import type { DashboardData } from './dashboard.types';
             }
           </a>
 
-          <!-- TO-DOs de hoy -->
+          <!-- Today's TO-DOs -->
           <a routerLink="/app/todos" class="widget">
             <header class="widget-header">
               <span class="widget-icon">✓</span>
@@ -80,7 +80,7 @@ import type { DashboardData } from './dashboard.types';
             </div>
           </a>
 
-          <!-- Última nota -->
+          <!-- Latest note -->
           <a routerLink="/app/notes" class="widget">
             <header class="widget-header">
               <span class="widget-icon">📝</span>
@@ -106,7 +106,7 @@ import type { DashboardData } from './dashboard.types';
             }
           </a>
 
-          <!-- Pr. meta financiera -->
+          <!-- Next finance goal -->
           <a routerLink="/app/finance" class="widget">
             <header class="widget-header">
               <span class="widget-icon">💰</span>
@@ -130,7 +130,7 @@ import type { DashboardData } from './dashboard.types';
           </a>
         </div>
 
-        <!-- Item aleatorio -->
+        <!-- Random item -->
         <a
           class="widget mt-4 random-item"
           [routerLink]="d.randomItem ? ['/app/lists', d.randomItem.list.id] : null"
