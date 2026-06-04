@@ -1,55 +1,55 @@
-# OmniDesk Web
+# OmniDesk
 
-Organizador personal integral en una sola SPA: calendario, listas tipo biblioteca, notas con editor rich-text, tablero Kanban TO-DO, gestión financiera, notificaciones (in-app, push del navegador y email) y temas totalmente personalizables.
+An all-in-one personal organizer in a single SPA: calendar, library-style lists, notes with a rich-text editor, a Kanban TO-DO board, finance management, notifications (in-app, browser push and email) and fully customizable themes.
 
-Pensado para uso personal: una única cuenta por instalación, sin colaboración multiusuario, autohospedable de extremo a extremo.
-
----
-
-## Funcionalidades
-
-- **Calendario** — vistas mensual, semanal, diaria y de agenda; eventos all-day o con rango; recordatorios programables por evento con notificación push y/o email.
-- **Listas** — bibliotecas personalizadas (juegos, libros, música, películas, lo que quieras) con campos definibles por el usuario, tags coloreadas, cover images por ítem (vía URL) y vistas grilla o tabla.
-- **Notas** — editor TipTap con autoguardado debounced cada 2 segundos, soporte de imágenes y links, pin de notas favoritas, búsqueda en tiempo real y atajo `Ctrl+N` para nueva nota.
-- **TO-DO Kanban** — tablero con columnas configurables, drag & drop entre columnas (Angular CDK), reordenamiento de items, dueDate y prioridad por tarjeta.
-- **Finanzas** — múltiples boards (cuentas), categorías de ingreso/egreso, presupuestos por categoría, transacciones recurrentes opcionales, dashboard con gráficos de balance y composición (Chart.js).
-- **Notificaciones** — tres canales: bandeja in-app, push del navegador (Web Push API + VAPID) y email (Nodemailer). Reglas con `recurringRule` estilo cron, evaluadas por un scheduler que corre cada minuto.
-- **Temas** — 5 temas predefinidos (Obsidian Dark, Notion Light, Midnight Blue, Forest, Sunset) más temas personalizados ilimitados; cada color, fuente y radio de borde se mapea a CSS custom properties inyectadas en `:root`.
-- **Command palette** — abrir con `Ctrl+K` desde cualquier vista para navegar rápido entre módulos.
+Built for personal use: a single account per installation, no multi-user collaboration, self-hostable end to end.
 
 ---
 
-## Stack técnico
+## Features
+
+- **Calendar** — month, week, day and agenda views; all-day or ranged events; per-event scheduled reminders with push and/or email notification.
+- **Lists** — custom libraries (games, books, music, movies, whatever you want) with user-defined fields, colored tags, per-item cover images (via URL) and grid or table views.
+- **Notes** — TipTap editor with debounced auto-save every 2 seconds, image and link support, pinning of favorite notes, real-time search and a `Ctrl+N` shortcut for a new note.
+- **TO-DO Kanban** — board with configurable columns, drag & drop between columns (Angular CDK), item reordering, due date and priority per card.
+- **Finance** — multiple boards (accounts), income/expense categories, per-category budgets, optional recurring transactions, dashboard with balance and composition charts (Chart.js).
+- **Notifications** — three channels: in-app inbox, browser push (Web Push API + VAPID) and email (Nodemailer). Cron-style `recurringRule` rules, evaluated by a scheduler that runs every minute.
+- **Themes** — preset themes (Obsidian Dark, Notion Light, Midnight Blue, Forest, Sunset, …) plus unlimited custom themes; every color, font and border radius maps to CSS custom properties injected into `:root`.
+- **Command palette** — open with `Ctrl+K` from any view to navigate quickly between modules.
+
+---
+
+## Tech stack
 
 **Backend** (NestJS 10 standalone modules)
-- TypeScript estricto, Prisma 5 + PostgreSQL 18
-- Passport JWT (access + refresh) con bcrypt 12 rounds
-- `class-validator` con DTOs estrictos en TODOS los endpoints (`whitelist: true`, `forbidNonWhitelisted: true`)
-- `@nestjs/throttler` con rate limit global 100/15min y `/auth/*` reducido a 10/15min
-- `@nestjs/schedule` con `@Cron(EVERY_MINUTE)` para evaluar y disparar notificaciones
-- `web-push` con VAPID para push del navegador
-- `nodemailer` con fallback a modo consola si el host SMTP es el placeholder
-- Helmet con CSP estricta (`default-src 'none'`), HSTS en producción, CORS con validador funcional
-- Sanitización de JSONB contra prototype pollution (caps de profundidad, keys, arrays, strings)
+- Strict TypeScript, Prisma 5 + PostgreSQL 18
+- Passport JWT (access + refresh) with bcrypt 12 rounds
+- `class-validator` with strict DTOs on ALL endpoints (`whitelist: true`, `forbidNonWhitelisted: true`)
+- `@nestjs/throttler` with a global rate limit of 100/15min and `/auth/*` reduced to 10/15min
+- `@nestjs/schedule` with `@Cron(EVERY_MINUTE)` to evaluate and fire notifications
+- `web-push` with VAPID for browser push
+- `nodemailer` with a fallback to console mode if the SMTP host is the placeholder
+- Helmet with strict CSP (`default-src 'none'`), HSTS in production, CORS with a functional validator
+- JSONB sanitization against prototype pollution (depth, key, array and string caps)
 
 **Frontend** (Angular 18 standalone components)
-- Signals + `computed()` + nuevo control flow (`@if` / `@for` / `@switch` / `@let`)
-- `ChangeDetectionStrategy.OnPush` en todos los componentes
-- Tailwind CSS sobre CSS custom properties (los temas re-pintan toda la app sin recompilar)
-- Angular Material Dialog para modales, `@angular/cdk` DragDrop para Kanban
+- Signals + `computed()` + the new control flow (`@if` / `@for` / `@switch` / `@let`)
+- `ChangeDetectionStrategy.OnPush` on every component
+- Tailwind CSS on top of CSS custom properties (themes repaint the whole app without recompiling)
+- Angular Material Dialog for modals, `@angular/cdk` DragDrop for the Kanban
 - FullCalendar 6 (dayGrid + timeGrid + list + interaction)
-- TipTap 2 (StarterKit + Image + Link) con autoguardado vía RxJS `Subject + debounceTime`
-- Chart.js 4 + `ng2-charts` 6 para gráficos del dashboard de finanzas
-- `ngx-toastr` para feedback de errores y éxitos
-- Service Worker propio (`sw.js`) para recibir push del navegador
+- TipTap 2 (StarterKit + Image + Link) with auto-save via RxJS `Subject + debounceTime`
+- Chart.js 4 + `ng2-charts` 6 for the finance dashboard charts
+- `ngx-toastr` for error and success feedback
+- A dedicated Service Worker (`sw.js`) to receive browser push
 
-**Infraestructura**
-- Monorepo `pnpm workspace` (raíz + `backend` + `frontend`)
+**Infrastructure**
+- `pnpm workspace` monorepo (root + `backend` + `frontend`)
 - Node.js 20 LTS, PostgreSQL 18
 
 ---
 
-## Arquitectura
+## Architecture
 
 ```
 ┌──────────────────────────────────────────────────────┐
@@ -57,7 +57,7 @@ Pensado para uso personal: una única cuenta por instalación, sin colaboración
 │   Auth · Calendar · Lists · Notes · Todos · Finance  │
 │         Notifications · Settings · Themes            │
 └──────────────────────┬───────────────────────────────┘
-                       │ HTTP (JWT en Authorization)
+                       │ HTTP (JWT in Authorization)
                        │ Web Push (VAPID)
                        ▼
 ┌──────────────────────────────────────────────────────┐
@@ -65,74 +65,75 @@ Pensado para uso personal: una única cuenta por instalación, sin colaboración
 │  AuthGuard → DTO validation → Service → Prisma → DB  │
 │                                                      │
 │  + @Cron(EVERY_MINUTE) scheduler:                    │
-│    evalúa NotificationConfig vencidas,               │
-│    crea InAppNotification, manda push y email        │
+│    evaluates due NotificationConfig records,         │
+│    creates InAppNotification, sends push and email   │
 └──────────────────────┬───────────────────────────────┘
                        │
                        ▼
                   PostgreSQL 18
-                  (21 modelos Prisma)
+                  (Prisma models)
 ```
 
-Todas las respuestas REST tienen forma `{ data, meta?, error? }`. El `userId` siempre se extrae del JWT vía decorator `@CurrentUser()`, NUNCA del body de la request. Las imágenes son SIEMPRE strings URL validados con `@IsUrl()` — el servidor no acepta uploads de archivos.
+Every REST response has the shape `{ data, meta?, error? }`. The `userId` is always extracted from the JWT via the `@CurrentUser()` decorator, NEVER from the request body. Images are ALWAYS validated URL strings — relative `/uploads/...` paths are also accepted for files served by the backend.
 
 ---
 
-## Estructura del repo
+## Repo structure
 
 ```
 .
-├── backend/                  Aplicación NestJS
-│   ├── prisma/               schema.prisma (21 modelos) + seed.ts (5 temas)
+├── backend/                  NestJS application
+│   ├── prisma/               schema.prisma + seed.ts (system themes)
 │   ├── src/
 │   │   ├── auth/             Register, verify-email, login, refresh, me
 │   │   ├── users/            PATCH /users/me
 │   │   ├── themes/           CRUD + activate
-│   │   ├── calendar/         Eventos + recordatorios
-│   │   ├── notes/            CRUD + adjuntar notificaciones
-│   │   ├── todos/            Boards, columnas, items, reorder
+│   │   ├── calendar/         Events + reminders
+│   │   ├── notes/            CRUD + attach notifications
+│   │   ├── todos/            Boards, columns, items, reorder
 │   │   ├── lists/            Lists + items + fields + tags
 │   │   ├── finance/          Boards, transactions, categories, budgets, summary
 │   │   ├── notifications/    CRUD, scheduler, push subscriptions, inbox
-│   │   ├── mail/             Nodemailer con fallback consola
-│   │   ├── prisma/           PrismaService global
+│   │   ├── mail/             Nodemailer with console fallback
+│   │   ├── prisma/           Global PrismaService
 │   │   └── common/           Filters, interceptors, decorators, utils
-│   └── test/                 Tests E2E (auth + themes)
-└── frontend/                 Aplicación Angular 18
+│   └── test/                 E2E tests (auth, themes, multi-tenant, …)
+├── shared/                   Generated entity types shared with the frontend (D-011)
+└── frontend/                 Angular 18 application
     ├── src/app/
     │   ├── core/             Auth guard, interceptor, services, models
     │   ├── shared/           main-layout, sidebar, command palette, dialogs
-    │   └── features/         Un módulo por dominio (auth, calendar, lists, …)
-    ├── src/sw.js             Service worker para push
+    │   └── features/         One module per domain (auth, calendar, lists, …)
+    ├── src/sw.js             Service worker for push
     └── src/styles.scss       Tailwind + CSS custom properties
 ```
 
 ---
 
-## Requisitos
+## Requirements
 
 - Node.js 20 LTS
-- pnpm 9+ (preferentemente vía `corepack enable && corepack prepare pnpm@latest --activate`)
-- PostgreSQL 18 (local, Docker o gestionado)
-- Un cliente Postgres para crear la base manualmente (pgAdmin 4, DBeaver, `psql`, etc.)
+- pnpm 9+ (preferably via `corepack enable && corepack prepare pnpm@latest --activate`)
+- PostgreSQL 18 (local, Docker or managed)
+- A Postgres client to create the database manually (pgAdmin 4, DBeaver, `psql`, etc.)
 
 ---
 
-## Uso
+## Usage
 
-Una vez instalado y configurado (la guía paso a paso de instalación local no se publica en este repo), el flujo es:
+Once installed and configured (the step-by-step local install guide is not published in this repo), the flow is:
 
-1. **Registro** en `/auth/register`. Se envía un email de verificación (o se imprime por consola si no configuraste SMTP real).
-2. **Verificar email** con el token recibido — el servidor exige email verificado para hacer login.
-3. **Login** → se obtienen `accessToken` (15 min) y `refreshToken` (7 días).
-4. **Dashboard** con accesos rápidos a los 6 módulos. `Ctrl+K` abre la paleta de comandos.
-5. **Settings → Theme editor** para crear tu propio tema o activar uno de los 5 predefinidos.
-6. **Settings → Profile** para cambiar displayName, password o suscribirte a push del navegador.
+1. **Register** at `/auth/register`. A verification email is sent (or printed to the console if you didn't configure a real SMTP host).
+2. **Verify the email** with the received token — the server requires a verified email to log in.
+3. **Log in** → you get an `accessToken` (15 min) and a `refreshToken` (7 days).
+4. **Dashboard** with quick access to the modules. `Ctrl+K` opens the command palette.
+5. **Settings → Theme editor** to create your own theme or activate one of the presets.
+6. **Settings → Profile** to change displayName, password or subscribe to browser push.
 
-El scheduler corre dentro del mismo proceso NestJS — no necesitas un cron externo.
+The scheduler runs inside the same NestJS process — you don't need an external cron.
 
 ---
 
-## Licencia
+## License
 
 [MIT](./LICENSE).

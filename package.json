@@ -2,7 +2,7 @@
   "name": "omnidesk",
   "version": "1.0.0",
   "private": true,
-  "description": "OmniDesk — organizador personal integral (calendar, lists, notes, todos, finance, notifications, themes)",
+  "description": "OmniDesk — all-in-one personal organizer (calendar, lists, notes, todos, finance, notifications, themes)",
   "packageManager": "pnpm@9.12.0",
   "engines": {
     "node": ">=20.0.0",
