@@ -28,11 +28,11 @@ interface RecurringPreset {
 }
 
 const RECURRING_PRESETS: RecurringPreset[] = [
-  { label: 'Diariamente a las 9:00', rule: '0 9 * * *' },
-  { label: 'Diariamente a las 18:00', rule: '0 18 * * *' },
-  { label: 'Cada lunes a las 9:00', rule: '0 9 * * 1' },
-  { label: 'Primer día del mes a las 9:00', rule: '0 9 1 * *' },
-  { label: 'Cada hora', rule: '0 * * * *' },
+  { label: 'Daily at 9:00', rule: '0 9 * * *' },
+  { label: 'Daily at 18:00', rule: '0 18 * * *' },
+  { label: 'Every Monday at 9:00', rule: '0 9 * * 1' },
+  { label: 'First day of the month at 9:00', rule: '0 9 1 * *' },
+  { label: 'Every hour', rule: '0 * * * *' },
 ];
 
 @Component({
@@ -43,12 +43,12 @@ const RECURRING_PRESETS: RecurringPreset[] = [
   template: `
     <div class="bg-surface text-text p-6 w-[min(600px,95vw)] max-h-[90vh] overflow-y-auto">
       <h2 class="text-lg font-semibold mb-4">
-        {{ data.config ? 'Editar notificación' : 'Nueva notificación' }}
+        {{ data.config ? 'Edit notification' : 'New notification' }}
       </h2>
 
       <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-4">
         <label class="block">
-          <span class="block text-xs text-text-muted mb-1">Título *</span>
+          <span class="block text-xs text-text-muted mb-1">Title *</span>
           <input
             type="text"
             formControlName="title"
@@ -59,7 +59,7 @@ const RECURRING_PRESETS: RecurringPreset[] = [
         </label>
 
         <label class="block">
-          <span class="block text-xs text-text-muted mb-1">Mensaje *</span>
+          <span class="block text-xs text-text-muted mb-1">Message *</span>
           <textarea
             formControlName="message"
             rows="3"
@@ -70,7 +70,7 @@ const RECURRING_PRESETS: RecurringPreset[] = [
 
         <div class="grid grid-cols-2 gap-3">
           <label class="block">
-            <span class="block text-xs text-text-muted mb-1">URL del ícono</span>
+            <span class="block text-xs text-text-muted mb-1">Icon URL</span>
             <input
               type="url"
               formControlName="iconUrl"
@@ -79,7 +79,7 @@ const RECURRING_PRESETS: RecurringPreset[] = [
             />
           </label>
           <label class="block">
-            <span class="block text-xs text-text-muted mb-1">Color de acento</span>
+            <span class="block text-xs text-text-muted mb-1">Accent color</span>
             <input
               type="color"
               formControlName="accentColor"
@@ -89,25 +89,25 @@ const RECURRING_PRESETS: RecurringPreset[] = [
         </div>
 
         <fieldset class="border border-border rounded p-3">
-          <legend class="text-xs text-text-muted px-1">Tipo de disparo</legend>
+          <legend class="text-xs text-text-muted px-1">Trigger type</legend>
           <div class="space-y-2 mt-2">
             <label class="flex items-center gap-2 cursor-pointer text-sm">
               <input type="radio" formControlName="triggerType" value="MANUAL" />
-              <span>Manual (la disparas tú con un botón)</span>
+              <span>Manual (you fire it with a button)</span>
             </label>
             <label class="flex items-center gap-2 cursor-pointer text-sm">
               <input type="radio" formControlName="triggerType" value="SCHEDULED" />
-              <span>Fecha/hora específica</span>
+              <span>Specific date/time</span>
             </label>
             <label class="flex items-center gap-2 cursor-pointer text-sm">
               <input type="radio" formControlName="triggerType" value="RECURRING" />
-              <span>Recurrente (cron)</span>
+              <span>Recurring (cron)</span>
             </label>
           </div>
 
           @if (form.value.triggerType === 'SCHEDULED') {
             <label class="block mt-3">
-              <span class="block text-xs text-text-muted mb-1">Fecha y hora</span>
+              <span class="block text-xs text-text-muted mb-1">Date and time</span>
               <input
                 type="datetime-local"
                 formControlName="scheduledAt"
@@ -119,12 +119,12 @@ const RECURRING_PRESETS: RecurringPreset[] = [
           @if (form.value.triggerType === 'RECURRING') {
             <div class="mt-3 space-y-2">
               <label class="block">
-                <span class="block text-xs text-text-muted mb-1">Atajos</span>
+                <span class="block text-xs text-text-muted mb-1">Shortcuts</span>
                 <select
                   (change)="applyPreset($event)"
                   class="w-full px-3 py-2 bg-background border border-border rounded outline-none focus:border-primary"
                 >
-                  <option value="">— Selecciona un preset o escribe manualmente —</option>
+                  <option value="">— Pick a preset or type manually —</option>
                   @for (p of presets; track p.rule) {
                     <option [value]="p.rule">{{ p.label }}</option>
                   }
@@ -132,7 +132,7 @@ const RECURRING_PRESETS: RecurringPreset[] = [
               </label>
               <label class="block">
                 <span class="block text-xs text-text-muted mb-1">
-                  Cron string (5 campos: minuto hora día mes día-semana)
+                  Cron string (5 fields: minute hour day month day-of-week)
                 </span>
                 <input
                   type="text"
@@ -146,7 +146,7 @@ const RECURRING_PRESETS: RecurringPreset[] = [
         </fieldset>
 
         <fieldset class="border border-border rounded p-3">
-          <legend class="text-xs text-text-muted px-1">Enviar por</legend>
+          <legend class="text-xs text-text-muted px-1">Send via</legend>
           <div class="space-y-2 mt-2">
             @for (ch of allChannels; track ch.value) {
               <label class="flex items-center gap-2 cursor-pointer text-sm">
@@ -164,7 +164,7 @@ const RECURRING_PRESETS: RecurringPreset[] = [
 
         <label class="flex items-center gap-2 cursor-pointer text-sm">
           <input type="checkbox" formControlName="isActive" class="accent-primary" />
-          <span>Activa</span>
+          <span>Active</span>
         </label>
 
         @if (error()) {
@@ -180,7 +180,7 @@ const RECURRING_PRESETS: RecurringPreset[] = [
                 [disabled]="loading()"
                 class="text-primary hover:underline"
               >
-                Disparar ahora
+                Fire now
               </button>
               <button
                 type="button"
@@ -188,7 +188,7 @@ const RECURRING_PRESETS: RecurringPreset[] = [
                 [disabled]="loading()"
                 class="text-danger hover:underline"
               >
-                Eliminar
+                Delete
               </button>
             }
           </div>
@@ -198,14 +198,14 @@ const RECURRING_PRESETS: RecurringPreset[] = [
               (click)="ref.close()"
               class="px-4 py-2 text-sm rounded hover:bg-surface-hover"
             >
-              Cancelar
+              Cancel
             </button>
             <button
               type="submit"
               [disabled]="form.invalid || loading() || selectedChannels().size === 0"
               class="px-4 py-2 text-sm rounded bg-primary text-white hover:opacity-90 disabled:opacity-50"
             >
-              {{ loading() ? 'Guardando…' : 'Guardar' }}
+              {{ loading() ? 'Saving…' : 'Save' }}
             </button>
           </div>
         </div>
@@ -274,15 +274,15 @@ export class NotificationEditorComponent {
     const raw = this.form.getRawValue();
     const channels = Array.from(this.selectedChannels());
     if (channels.length === 0) {
-      this.error.set('Selecciona al menos un canal');
+      this.error.set('Select at least one channel');
       return;
     }
     if (raw.triggerType === 'SCHEDULED' && !raw.scheduledAt) {
-      this.error.set('Especifica la fecha y hora para una notificación programada');
+      this.error.set('Specify the date and time for a scheduled notification');
       return;
     }
     if (raw.triggerType === 'RECURRING' && !raw.recurringRule.trim()) {
-      this.error.set('Especifica el cron string para una notificación recurrente');
+      this.error.set('Specify the cron string for a recurring notification');
       return;
     }
 
@@ -308,7 +308,7 @@ export class NotificationEditorComponent {
 
     req$.subscribe({
       next: (config) => {
-        this.toastr.success(this.data.config ? 'Notificación actualizada' : 'Notificación creada');
+        this.toastr.success(this.data.config ? 'Notification updated' : 'Notification created');
         this.ref.close(config);
       },
       error: (err: HttpErrorResponse) => {
@@ -338,16 +338,16 @@ export class NotificationEditorComponent {
   async remove(): Promise<void> {
     if (!this.data.config || this.loading()) return;
     const ok = await this.dialogs.confirm({
-      title: 'Eliminar notificación',
-      message: '¿Eliminar esta configuración de notificación?',
-      confirmLabel: 'Eliminar',
+      title: 'Delete notification',
+      message: 'Delete this notification configuration?',
+      confirmLabel: 'Delete',
       destructive: true,
     });
     if (!ok) return;
     this.loading.set(true);
     this.service.delete(this.data.config.id).subscribe({
       next: ({ id }) => {
-        this.toastr.success('Notificación eliminada');
+        this.toastr.success('Notification deleted');
         this.ref.close({ deleted: id });
       },
       error: (err: HttpErrorResponse) => {
@@ -367,6 +367,6 @@ export class NotificationEditorComponent {
     const msg = body?.error?.message;
     if (Array.isArray(msg)) return msg.join('. ');
     if (typeof msg === 'string') return msg;
-    return 'Error inesperado';
+    return 'Unexpected error';
   }
 }
