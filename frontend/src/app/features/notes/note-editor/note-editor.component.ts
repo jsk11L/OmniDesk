@@ -45,16 +45,16 @@ type SaveStatus = 'saved' | 'saving' | 'dirty' | 'error';
           <span>
             @switch (status()) {
               @case ('saving') { Guardando… }
-              @case ('saved') { ✓ Guardado }
-              @case ('dirty') { Cambios sin guardar }
-              @case ('error') { ✗ Error al guardar }
+              @case ('saved') { ✓ Saved }
+              @case ('dirty') { Unsaved changes }
+              @case ('error') { ✗ Save error }
             }
           </span>
           <div class="flex items-center gap-3">
             <button
               type="button"
               (click)="togglePin()"
-              [title]="pinned() ? 'Desfijar' : 'Fijar'"
+              [title]="pinned() ? 'Unpin' : 'Pin'"
               class="hover:text-text"
             >
               {{ pinned() ? '★' : '☆' }}
@@ -63,7 +63,7 @@ type SaveStatus = 'saved' | 'saving' | 'dirty' | 'error';
               type="button"
               (click)="deleteSelected()"
               class="hover:text-danger"
-              title="Eliminar nota"
+              title="Delete note"
             >
               🗑
             </button>
@@ -81,14 +81,14 @@ type SaveStatus = 'saved' | 'saving' | 'dirty' | 'error';
             [(ngModel)]="title"
             (ngModelChange)="onMetaChange()"
             maxlength="200"
-            placeholder="Sin título"
+            placeholder="Untitled"
             class="flex-1 text-2xl font-semibold bg-transparent outline-none placeholder:text-text-muted"
           />
           <button
             type="button"
             (click)="openSettings()"
             class="px-2 py-1 rounded hover:bg-surface-hover text-sm"
-            title="Configuración de la nota"
+            title="Note settings"
           >⚙</button>
         </div>
 
@@ -97,7 +97,7 @@ type SaveStatus = 'saved' | 'saving' | 'dirty' | 'error';
           [(ngModel)]="description"
           (ngModelChange)="onMetaChange()"
           maxlength="280"
-          placeholder="Descripción breve…"
+          placeholder="Short description…"
           class="w-full px-2 py-1 text-sm bg-transparent text-text-muted outline-none focus:text-text mb-1"
         />
 
@@ -111,7 +111,7 @@ type SaveStatus = 'saved' | 'saving' | 'dirty' | 'error';
                 type="button"
                 (click)="removeTag(i)"
                 class="opacity-60 hover:opacity-100"
-                aria-label="Eliminar tag"
+                aria-label="Remove tag"
               >
                 ×
               </button>
@@ -128,13 +128,13 @@ type SaveStatus = 'saved' | 'saving' | 'dirty' | 'error';
       </header>
 
       <div class="border-b border-border px-6 py-2 flex items-center gap-1 flex-wrap">
-        <button type="button" (click)="cmd('toggleBold')" class="px-2 py-1 rounded hover:bg-surface-hover text-sm" title="Negrita">
+        <button type="button" (click)="cmd('toggleBold')" class="px-2 py-1 rounded hover:bg-surface-hover text-sm" title="Bold">
           <strong>B</strong>
         </button>
-        <button type="button" (click)="cmd('toggleItalic')" class="px-2 py-1 rounded hover:bg-surface-hover text-sm italic" title="Cursiva">
+        <button type="button" (click)="cmd('toggleItalic')" class="px-2 py-1 rounded hover:bg-surface-hover text-sm italic" title="Italic">
           I
         </button>
-        <button type="button" (click)="cmd('toggleStrike')" class="px-2 py-1 rounded hover:bg-surface-hover text-sm line-through" title="Tachado">
+        <button type="button" (click)="cmd('toggleStrike')" class="px-2 py-1 rounded hover:bg-surface-hover text-sm line-through" title="Strikethrough">
           S
         </button>
         <span class="w-px h-5 bg-border mx-1"></span>
@@ -142,14 +142,14 @@ type SaveStatus = 'saved' | 'saving' | 'dirty' | 'error';
         <button type="button" (click)="setHeading(2)" class="px-2 py-1 rounded hover:bg-surface-hover text-sm" title="Heading 2">H2</button>
         <button type="button" (click)="setHeading(3)" class="px-2 py-1 rounded hover:bg-surface-hover text-sm" title="Heading 3">H3</button>
         <span class="w-px h-5 bg-border mx-1"></span>
-        <button type="button" (click)="cmd('toggleBulletList')" class="px-2 py-1 rounded hover:bg-surface-hover text-sm w-8" title="Lista con viñetas">•</button>
-        <button type="button" (click)="cmd('toggleOrderedList')" class="px-2 py-1 rounded hover:bg-surface-hover text-sm w-8" title="Lista numerada">1.</button>
-        <button type="button" (click)="cmd('toggleBlockquote')" class="px-2 py-1 rounded hover:bg-surface-hover text-sm" title="Cita">"</button>
-        <button type="button" (click)="cmd('toggleCodeBlock')" class="px-2 py-1 rounded hover:bg-surface-hover text-sm font-mono" title="Código">{{ '<>' }}</button>
+        <button type="button" (click)="cmd('toggleBulletList')" class="px-2 py-1 rounded hover:bg-surface-hover text-sm w-8" title="Bullet list">•</button>
+        <button type="button" (click)="cmd('toggleOrderedList')" class="px-2 py-1 rounded hover:bg-surface-hover text-sm w-8" title="Numbered list">1.</button>
+        <button type="button" (click)="cmd('toggleBlockquote')" class="px-2 py-1 rounded hover:bg-surface-hover text-sm" title="Quote">"</button>
+        <button type="button" (click)="cmd('toggleCodeBlock')" class="px-2 py-1 rounded hover:bg-surface-hover text-sm font-mono" title="Code">{{ '<>' }}</button>
         <span class="w-px h-5 bg-border mx-1"></span>
         <button type="button" (click)="insertLink()" class="px-2 py-1 rounded hover:bg-surface-hover text-sm" title="Link">🔗</button>
-        <button type="button" (click)="insertImage()" class="px-2 py-1 rounded hover:bg-surface-hover text-sm" title="Imagen">🖼</button>
-        <button type="button" (click)="cmd('setHorizontalRule')" class="px-2 py-1 rounded hover:bg-surface-hover text-sm" title="Divisor">―</button>
+        <button type="button" (click)="insertImage()" class="px-2 py-1 rounded hover:bg-surface-hover text-sm" title="Image">🖼</button>
+        <button type="button" (click)="cmd('setHorizontalRule')" class="px-2 py-1 rounded hover:bg-surface-hover text-sm" title="Divider">―</button>
       </div>
 
       <div
@@ -364,7 +364,7 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
   protected onMetaChange(): void {
     this.status.set('dirty');
     this.save$.next({
-      title: this.title.trim() || 'Sin título',
+      title: this.title.trim() || 'Untitled',
       icon: this.icon?.trim() || undefined,
       description: this.description.trim() || undefined,
       coverImageUrl: this.coverImageUrl.trim() || undefined,
@@ -424,15 +424,15 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
   protected async deleteSelected(): Promise<void> {
     const n = this.note();
     const ok = await this.dialogs.confirm({
-      title: 'Eliminar nota',
-      message: `¿Eliminar la nota "${n.title}"? Esta acción no se puede deshacer.`,
-      confirmLabel: 'Eliminar',
+      title: 'Delete note',
+      message: `Delete the note "${n.title}"? This action cannot be undone.`,
+      confirmLabel: 'Delete',
       destructive: true,
     });
     if (!ok) return;
     this.service.delete(n.id).subscribe({
       next: () => {
-        this.toastr.success('Nota eliminada');
+        this.toastr.success('Note deleted');
         this.noteDeleted.emit(n.id);
       },
       error: (err: HttpErrorResponse) => this.toastr.error(this.errMsg(err)),
@@ -455,6 +455,6 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
     const msg = body?.error?.message;
     if (Array.isArray(msg)) return msg.join('. ');
     if (typeof msg === 'string') return msg;
-    return 'Error inesperado';
+    return 'Unexpected error';
   }
 }

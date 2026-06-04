@@ -25,34 +25,34 @@ import type { Note } from '../notes.types';
       <aside class="w-[320px] shrink-0 border-r border-border flex flex-col bg-background">
         <div class="p-4 border-b border-border">
           <div class="flex items-center justify-between mb-3">
-            <h1 class="text-xl font-semibold">Notas</h1>
+            <h1 class="text-xl font-semibold">Notes</h1>
             <button
               type="button"
               (click)="createNote()"
               class="px-3 py-1.5 rounded bg-primary text-white text-xs font-medium hover:opacity-90"
-              title="Nueva nota (Ctrl+N)"
+              title="New note (Ctrl+N)"
             >
-              + Nueva
+              + New
             </button>
           </div>
           <input
             type="search"
             [(ngModel)]="search"
             (ngModelChange)="reload()"
-            placeholder="Buscar…"
+            placeholder="Search…"
             class="w-full px-3 py-2 bg-surface border border-border rounded text-sm outline-none focus:border-primary"
           />
         </div>
 
         <ul class="flex-1 overflow-y-auto p-2 space-y-1">
           @if (loading()) {
-            <p class="text-text-muted text-sm p-2">Cargando…</p>
+            <p class="text-text-muted text-sm p-2">Loading…</p>
           } @else if (notes().length === 0) {
             <p class="text-text-muted text-sm p-2 text-center">
               @if (search) {
-                Sin resultados para "{{ search }}"
+                No results for "{{ search }}"
               } @else {
-                Crea tu primera nota
+                Create your first note
               }
             </p>
           } @else {
@@ -75,7 +75,7 @@ import type { Note } from '../notes.types';
                     @if (note.icon) {
                       <span>{{ note.icon }}</span>
                     }
-                    <span class="font-medium truncate">{{ note.title || 'Sin título' }}</span>
+                    <span class="font-medium truncate">{{ note.title || 'Untitled' }}</span>
                   </div>
                   @if (note.tags.length) {
                     <div class="flex flex-wrap gap-1 mt-1">
@@ -105,7 +105,7 @@ import type { Note } from '../notes.types';
           <div class="h-full flex items-center justify-center text-text-muted">
             <div class="text-center">
               <p class="text-lg mb-2">📝</p>
-              <p>Selecciona una nota o crea una nueva</p>
+              <p>Select a note or create a new one</p>
             </div>
           </div>
         }
@@ -167,11 +167,11 @@ export class NotesHomeComponent implements OnInit {
   }
 
   protected createNote(): void {
-    this.service.create({ title: 'Nueva nota' }).subscribe({
+    this.service.create({ title: 'New note' }).subscribe({
       next: (note) => {
         this.notes.update((arr) => [note, ...arr]);
         this.selectedId.set(note.id);
-        this.toastr.success('Nota creada');
+        this.toastr.success('Note created');
       },
       error: (err: HttpErrorResponse) => this.toastr.error(this.errMsg(err)),
     });
@@ -187,7 +187,7 @@ export class NotesHomeComponent implements OnInit {
   }
 
   protected formatDate(iso: string): string {
-    return new Date(iso).toLocaleString('es-CL', {
+    return new Date(iso).toLocaleString('en-US', {
       day: '2-digit',
       month: 'short',
       hour: '2-digit',
@@ -200,6 +200,6 @@ export class NotesHomeComponent implements OnInit {
     const msg = body?.error?.message;
     if (Array.isArray(msg)) return msg.join('. ');
     if (typeof msg === 'string') return msg;
-    return 'Error inesperado';
+    return 'Unexpected error';
   }
 }
