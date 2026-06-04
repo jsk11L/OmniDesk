@@ -16,13 +16,13 @@ export interface HabitDialogData {
 export type HabitDialogResult = Habit | { deleted: string } | undefined;
 
 const DAYS = [
-  { value: 1, label: 'L' },
-  { value: 2, label: 'M' },
-  { value: 3, label: 'X' },
-  { value: 4, label: 'J' },
-  { value: 5, label: 'V' },
+  { value: 1, label: 'M' },
+  { value: 2, label: 'T' },
+  { value: 3, label: 'W' },
+  { value: 4, label: 'T' },
+  { value: 5, label: 'F' },
   { value: 6, label: 'S' },
-  { value: 0, label: 'D' },
+  { value: 0, label: 'S' },
 ];
 
 @Component({
@@ -32,12 +32,12 @@ const DAYS = [
   imports: [ReactiveFormsModule, MatDialogModule, EmojiPickerComponent],
   template: `
     <div class="bg-surface text-text p-6 w-[min(480px,95vw)]">
-      <h2 class="text-lg font-semibold mb-4">{{ data.habit ? 'Editar hábito' : 'Nuevo hábito' }}</h2>
+      <h2 class="text-lg font-semibold mb-4">{{ data.habit ? 'Edit habit' : 'New habit' }}</h2>
 
       <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-4">
         <div class="flex gap-3 items-start">
           <div>
-            <span class="block text-xs text-text-muted mb-1">Icono</span>
+            <span class="block text-xs text-text-muted mb-1">Icon</span>
             <app-emoji-picker
               [initialValue]="icon()"
               placeholder="🔥"
@@ -45,7 +45,7 @@ const DAYS = [
             />
           </div>
           <label class="flex-1 block">
-            <span class="block text-xs text-text-muted mb-1">Nombre *</span>
+            <span class="block text-xs text-text-muted mb-1">Name *</span>
             <input
               type="text"
               formControlName="name"
@@ -57,7 +57,7 @@ const DAYS = [
         </div>
 
         <label class="block">
-          <span class="block text-xs text-text-muted mb-1">Descripción</span>
+          <span class="block text-xs text-text-muted mb-1">Description</span>
           <textarea
             formControlName="description"
             rows="2"
@@ -67,7 +67,7 @@ const DAYS = [
         </label>
 
         <div>
-          <span class="block text-xs text-text-muted mb-1">Días activos</span>
+          <span class="block text-xs text-text-muted mb-1">Active days</span>
           <div class="flex gap-2">
             @for (d of days; track d.value) {
               <button
@@ -80,17 +80,17 @@ const DAYS = [
               >{{ d.label }}</button>
             }
           </div>
-          <p class="text-xs text-text-muted mt-1">Los días no marcados son de descanso y no rompen la racha.</p>
+          <p class="text-xs text-text-muted mt-1">Unmarked days are rest days and don't break the streak.</p>
         </div>
 
         <label class="block">
-          <span class="block text-xs text-text-muted mb-1">Meta semanal (opcional)</span>
+          <span class="block text-xs text-text-muted mb-1">Weekly goal (optional)</span>
           <input
             type="number"
             min="1"
             max="7"
             formControlName="weeklyGoal"
-            placeholder="N veces / semana"
+            placeholder="N times / week"
             class="w-full px-3 py-2 bg-background border border-border rounded outline-none focus:border-primary"
           />
         </label>
@@ -109,18 +109,18 @@ const DAYS = [
         <div class="flex justify-between items-center pt-2">
           @if (data.habit) {
             <button type="button" (click)="remove()" [disabled]="loading()" class="text-sm text-danger hover:underline">
-              Eliminar hábito
+              Delete habit
             </button>
           } @else {
             <span></span>
           }
           <div class="flex gap-2">
             <button type="button" (click)="ref.close()" class="px-4 py-2 text-sm rounded hover:bg-surface-hover">
-              Cancelar
+              Cancel
             </button>
             <button type="submit" [disabled]="form.invalid || activeDays().size === 0 || loading()"
               class="px-4 py-2 text-sm rounded bg-primary text-white hover:opacity-90 disabled:opacity-50">
-              {{ loading() ? 'Guardando…' : 'Guardar' }}
+              {{ loading() ? 'Saving…' : 'Save' }}
             </button>
           </div>
         </div>
@@ -191,7 +191,7 @@ export class HabitDialogComponent {
 
     req$.subscribe({
       next: (habit) => {
-        this.toastr.success(this.data.habit ? 'Hábito actualizado' : 'Hábito creado');
+        this.toastr.success(this.data.habit ? 'Habit updated' : 'Habit created');
         this.ref.close(habit);
       },
       error: (err: HttpErrorResponse) => {
@@ -206,21 +206,21 @@ export class HabitDialogComponent {
   async remove(): Promise<void> {
     if (!this.data.habit || this.loading()) return;
     const ok = await this.dialogs.confirm({
-      title: 'Eliminar hábito',
-      message: `¿Eliminar el hábito "${this.data.habit.name}"? Se perderá todo el histórico.`,
-      confirmLabel: 'Eliminar',
+      title: 'Delete habit',
+      message: `Delete the habit "${this.data.habit.name}"? All history will be lost.`,
+      confirmLabel: 'Delete',
       destructive: true,
     });
     if (!ok) return;
     this.loading.set(true);
     this.service.delete(this.data.habit.id).subscribe({
       next: ({ id }) => {
-        this.toastr.success('Hábito eliminado');
+        this.toastr.success('Habit deleted');
         this.ref.close({ deleted: id });
       },
       error: () => {
         this.loading.set(false);
-        this.toastr.error('No se pudo eliminar');
+        this.toastr.error('Could not delete');
       },
     });
   }
