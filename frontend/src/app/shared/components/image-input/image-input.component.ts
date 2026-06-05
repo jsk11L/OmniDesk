@@ -138,7 +138,10 @@ export class ImageInputComponent {
 
   @Input() set initialValue(v: string | null) {
     this.value.set(v ?? null);
-    this.mode.set(v && /^https?:\/\//i.test(v) ? 'url' : 'upload');
+    // Default to URL mode: pasting/typing a link is the common case and works
+    // natively. Only open in upload mode when the stored value is a relative
+    // uploaded asset (e.g. "/uploads/..."), not an absolute http(s) URL.
+    this.mode.set(v && !/^https?:\/\//i.test(v) ? 'upload' : 'url');
   }
 
   @Output() valueChange = new EventEmitter<string | null>();

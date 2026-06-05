@@ -217,7 +217,7 @@ const FIELD_TYPES: { value: ListFieldType; label: string }[] = [
           (click)="ref.close('changed')"
           class="px-4 py-2 text-sm rounded bg-primary text-white hover:opacity-90"
         >
-          Cerrar
+          Close
         </button>
       </div>
     </div>

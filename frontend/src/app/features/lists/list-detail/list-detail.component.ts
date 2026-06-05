@@ -539,7 +539,7 @@ export class ListDetailComponent implements OnInit {
     if (!list) return;
     const ref = this.dialog.open<ListItemDialogComponent, ListItemDialogData, ListItemDialogResult>(
       ListItemDialogComponent,
-      { data: { list } },
+      { data: { list }, width: 'min(620px, 95vw)', maxWidth: '95vw' },
     );
     ref.afterClosed().subscribe((item) => {
       if (item !== undefined) this.reload();
@@ -551,7 +551,7 @@ export class ListDetailComponent implements OnInit {
     if (!list) return;
     const ref = this.dialog.open<ListItemDialogComponent, ListItemDialogData, ListItemDialogResult>(
       ListItemDialogComponent,
-      { data: { list, item } },
+      { data: { list, item }, width: 'min(620px, 95vw)', maxWidth: '95vw' },
     );
     ref.afterClosed().subscribe(() => this.reload());
   }
@@ -561,7 +561,7 @@ export class ListDetailComponent implements OnInit {
     if (!list) return;
     const ref = this.dialog.open<ListSettingsComponent, ListSettingsData, 'changed' | 'deleted' | undefined>(
       ListSettingsComponent,
-      { data: { list } },
+      { data: { list }, width: 'min(680px, 95vw)', maxWidth: '95vw' },
     );
     ref.afterClosed().subscribe((result) => {
       if (result === 'deleted') {

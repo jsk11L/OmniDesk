@@ -330,7 +330,7 @@ export class ListItemDialogComponent implements OnInit {
     const target = this.targetList();
     if (!target) return;
     const now = new Date();
-    const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
     const monthLabel = months[now.getMonth()];
     const year = now.getFullYear();
 
