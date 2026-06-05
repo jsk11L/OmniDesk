@@ -17,6 +17,8 @@ import { Editor } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
 import Link from '@tiptap/extension-link';
+import TextStyle from '@tiptap/extension-text-style';
+import FontFamily from '@tiptap/extension-font-family';
 import { Subject, debounceTime, takeUntil } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -32,6 +34,24 @@ import {
 import type { Note, UpdateNoteDto } from '../notes.types';
 
 type SaveStatus = 'saved' | 'saving' | 'dirty' | 'error';
+
+/**
+ * Image extension augmented with a `width` attribute (rendered as an inline
+ * style) so embedded images can be resized from the editor (DF-10).
+ */
+const ResizableImage = Image.extend({
+  addAttributes() {
+    return {
+      ...this.parent?.(),
+      width: {
+        default: null,
+        parseHTML: (el: HTMLElement) => el.style.width || null,
+        renderHTML: (attrs: Record<string, unknown>) =>
+          attrs['width'] ? { style: `width: ${attrs['width'] as string}` } : {},
+      },
+    };
+  },
+});
 
 @Component({
   selector: 'app-note-editor',
@@ -150,7 +170,31 @@ type SaveStatus = 'saved' | 'saving' | 'dirty' | 'error';
         <button type="button" (click)="insertLink()" class="px-2 py-1 rounded hover:bg-surface-hover text-sm" title="Link">🔗</button>
         <button type="button" (click)="insertImage()" class="px-2 py-1 rounded hover:bg-surface-hover text-sm" title="Image">🖼</button>
         <button type="button" (click)="cmd('setHorizontalRule')" class="px-2 py-1 rounded hover:bg-surface-hover text-sm" title="Divider">―</button>
+        <span class="w-px h-5 bg-border mx-1"></span>
+        <select
+          (change)="setFont($event)"
+          title="Font"
+          class="px-2 py-1 rounded bg-transparent hover:bg-surface-hover text-sm outline-none border border-border focus:border-primary"
+        >
+          @for (f of fonts; track f.value) {
+            <option [value]="f.value">{{ f.label }}</option>
+          }
+        </select>
       </div>
+
+      @if (imageSelected()) {
+        <div
+          class="border-b border-border px-6 py-2 flex items-center gap-1.5 flex-wrap bg-surface-hover text-sm"
+        >
+          <span class="text-xs text-text-muted mr-1">Selected image:</span>
+          <button type="button" (click)="setImageWidth('25%')" class="px-2 py-1 rounded hover:bg-surface text-xs" title="Small">25%</button>
+          <button type="button" (click)="setImageWidth('50%')" class="px-2 py-1 rounded hover:bg-surface text-xs" title="Medium">50%</button>
+          <button type="button" (click)="setImageWidth('75%')" class="px-2 py-1 rounded hover:bg-surface text-xs" title="Large">75%</button>
+          <button type="button" (click)="setImageWidth(null)" class="px-2 py-1 rounded hover:bg-surface text-xs" title="Full width">Full</button>
+          <span class="w-px h-5 bg-border mx-1"></span>
+          <button type="button" (click)="deleteImage()" class="px-2 py-1 rounded hover:bg-surface text-xs text-danger" title="Remove image">🗑 Remove</button>
+        </div>
+      }
 
       <div
         #editorEl
@@ -238,6 +282,11 @@ type SaveStatus = 'saved' | 'saving' | 'dirty' | 'error';
       :host ::ng-deep .ProseMirror img {
         max-width: 100%;
         border-radius: 0.375rem;
+        cursor: pointer;
+      }
+      :host ::ng-deep .ProseMirror img.ProseMirror-selectednode {
+        outline: 2px solid var(--color-primary);
+        outline-offset: 2px;
       }
       :host ::ng-deep .ProseMirror hr {
         border: 0;
@@ -261,6 +310,7 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
 
   protected readonly status = signal<SaveStatus>('saved');
   protected readonly pinned = signal(false);
+  protected readonly imageSelected = signal(false);
   protected readonly tags = signal<string[]>([]);
   protected title = '';
   protected icon: string | null = '';
@@ -307,7 +357,9 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
       element: this.editorEl.nativeElement,
       extensions: [
         StarterKit,
-        Image.configure({ inline: false }),
+        TextStyle,
+        FontFamily,
+        ResizableImage.configure({ inline: false }),
         Link.configure({ openOnClick: false, autolink: true }),
       ],
       content: '<p></p>',
@@ -315,6 +367,9 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
         this.status.set('dirty');
         const json = editor.getJSON();
         this.save$.next({ id: this.note().id, payload: { content: JSON.stringify(json) } });
+      },
+      onSelectionUpdate: ({ editor }) => {
+        this.imageSelected.set(editor.isActive('image'));
       },
     });
     this.applyNoteToEditor(this.note());
@@ -359,6 +414,31 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
 
   protected setHeading(level: 1 | 2 | 3): void {
     this.editor?.chain().focus().toggleHeading({ level }).run();
+  }
+
+  protected readonly fonts: { value: string; label: string }[] = [
+    { value: '', label: 'Default font' },
+    { value: 'Inter, sans-serif', label: 'Sans' },
+    { value: 'Georgia, serif', label: 'Serif' },
+    { value: "'JetBrains Mono', monospace", label: 'Mono' },
+    { value: 'Arial, sans-serif', label: 'Arial' },
+    { value: "'Times New Roman', serif", label: 'Times' },
+  ];
+
+  protected setFont(event: Event): void {
+    const value = (event.target as HTMLSelectElement).value;
+    const chain = this.editor?.chain().focus();
+    if (!chain) return;
+    if (value) chain.setFontFamily(value).run();
+    else chain.unsetFontFamily().run();
+  }
+
+  protected setImageWidth(width: string | null): void {
+    this.editor?.chain().focus().updateAttributes('image', { width }).run();
+  }
+
+  protected deleteImage(): void {
+    this.editor?.chain().focus().deleteSelection().run();
   }
 
   protected async insertLink(): Promise<void> {
