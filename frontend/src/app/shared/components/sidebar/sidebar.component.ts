@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/c
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 
 import { AuthService } from '../../../core/services/auth.service';
+import { UploadsService } from '../../services/uploads.service';
 
 interface NavItem {
   path: string;
@@ -35,7 +36,32 @@ interface NavItem {
         }
       </nav>
 
-      <div class="border-t border-border p-3">
+      <div class="border-t border-border p-3 space-y-1">
+        <a
+          routerLink="/app/settings"
+          routerLinkActive="bg-surface-hover"
+          class="flex items-center gap-3 px-3 py-2 rounded hover:bg-surface-hover transition-colors"
+          title="Profile & settings"
+        >
+          @if (avatarSrc(); as src) {
+            <img
+              [src]="src"
+              alt=""
+              class="w-9 h-9 rounded-full object-cover border border-border shrink-0"
+            />
+          } @else {
+            <span
+              class="w-9 h-9 rounded-full bg-surface-hover text-text flex items-center justify-center text-sm font-semibold shrink-0"
+            >
+              {{ initials() }}
+            </span>
+          }
+          <span class="min-w-0 flex-1">
+            <span class="block text-sm text-text truncate">{{ displayName() }}</span>
+            <span class="block text-xs text-text-muted truncate">{{ userEmail() }}</span>
+          </span>
+        </a>
+
         @for (item of footerNav; track item.path) {
           <a
             [routerLink]="item.path"
@@ -48,10 +74,9 @@ interface NavItem {
         <button
           type="button"
           (click)="logout()"
-          class="w-full text-left mt-2 px-3 py-2 rounded text-sm text-text-muted hover:text-danger hover:bg-surface-hover transition-colors"
+          class="w-full text-left mt-1 px-3 py-2 rounded text-sm text-text-muted hover:text-danger hover:bg-surface-hover transition-colors"
         >
-          {{ userEmail() ?? 'Sign out' }}
-          <span class="block text-xs opacity-60">Sign out</span>
+          Sign out
         </button>
       </div>
     </aside>
@@ -60,8 +85,21 @@ interface NavItem {
 export class SidebarComponent {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly uploads = inject(UploadsService);
 
   readonly userEmail = computed(() => this.auth.user()?.email ?? null);
+  readonly avatarSrc = computed(() => this.uploads.resolveUrl(this.auth.user()?.avatarUrl ?? null));
+  readonly displayName = computed(() => {
+    const u = this.auth.user();
+    return u?.displayName?.trim() || u?.email?.split('@')[0] || 'Account';
+  });
+  readonly initials = computed(() => {
+    const u = this.auth.user();
+    const base = u?.displayName?.trim() || u?.email || '?';
+    const parts = base.split(/\s+/).filter(Boolean);
+    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+    return base.slice(0, 2).toUpperCase();
+  });
 
   readonly mainNav: NavItem[] = [
     { path: '/app', label: 'Dashboard', exact: true },
