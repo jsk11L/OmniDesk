@@ -33,6 +33,10 @@ WORKDIR /app
 ENV NODE_ENV=production
 
 COPY --from=builder /app ./
+# Regenerate the Prisma client against the deployed node_modules (pnpm deploy
+# does not always carry over the generated client). --generator client skips the
+# dev-only typescript-interfaces generator.
+RUN node_modules/.bin/prisma generate --generator client
 RUN chmod +x ./scripts/entrypoint.sh
 
 EXPOSE 3000
