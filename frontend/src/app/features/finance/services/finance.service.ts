@@ -14,6 +14,7 @@ import type {
   FinanceCategory,
   FinanceSummary,
   Transaction,
+  UpdateBudgetDto,
   UpdateTransactionDto,
 } from '../finance.types';
 
@@ -110,6 +111,12 @@ export class FinanceService {
   createBudget(boardId: string, dto: CreateBudgetDto): Observable<Budget> {
     return this.http
       .post<ApiResponse<Budget>>(`${this.base}/boards/${boardId}/budgets`, dto)
+      .pipe(map((r) => r.data));
+  }
+
+  updateBudget(boardId: string, budId: string, dto: UpdateBudgetDto): Observable<Budget> {
+    return this.http
+      .patch<ApiResponse<Budget>>(`${this.base}/boards/${boardId}/budgets/${budId}`, dto)
       .pipe(map((r) => r.data));
   }
 

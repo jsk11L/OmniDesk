@@ -79,6 +79,8 @@ export interface CreateBudgetDto {
   categoryId?: string;
 }
 
+export type UpdateBudgetDto = Partial<CreateBudgetDto>;
+
 // ─── Organizer ─────────────────────────────────────────
 // WishlistItem, PlannedPurchase and SavingsContribution come from the shared
 // generated source (re-exported at the top of this file).

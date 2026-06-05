@@ -13,8 +13,14 @@ import {
   type TransactionDialogData,
   type TransactionDialogResult,
 } from '../transaction-dialog/transaction-dialog.component';
+import {
+  BudgetDialogComponent,
+  type BudgetDialogData,
+  type BudgetDialogResult,
+} from '../budget-dialog/budget-dialog.component';
 import type {
   Budget,
+  BudgetPeriod,
   FinanceBoard,
   FinanceSummary,
   Transaction,
@@ -142,10 +148,25 @@ import type {
             } @else {
               <div class="space-y-2">
                 @for (b of board()!.budgets!; track b.id) {
-                  <div class="bg-surface border border-border rounded p-3">
+                  <button
+                    type="button"
+                    (click)="editBudget(b)"
+                    class="w-full text-left bg-surface border border-border rounded p-3 hover:border-primary transition-colors"
+                  >
                     <div class="flex items-center justify-between text-sm mb-1">
-                      <span class="font-medium">{{ b.name }}</span>
-                      <span class="text-xs text-text-muted">
+                      <span class="font-medium flex items-center gap-2">
+                        {{ b.name }}
+                        <span class="text-xs font-normal px-1.5 py-0.5 rounded bg-background text-text-muted">
+                          {{ periodLabel(b.period) }}
+                        </span>
+                        @if (categoryName(b); as cat) {
+                          <span class="text-xs font-normal text-text-faint">· {{ cat }}</span>
+                        }
+                      </span>
+                      <span
+                        class="text-xs"
+                        [class]="percent(b) > 100 ? 'text-danger font-medium' : 'text-text-muted'"
+                      >
                         {{ formatCurrency(budgetSpent(b)) }} / {{ formatCurrency(b.amount) }}
                         ({{ percent(b) }}%)
                       </span>
@@ -157,7 +178,14 @@ import type {
                         [style.background]="percent(b) > 100 ? 'var(--color-danger)' : 'var(--color-primary)'"
                       ></div>
                     </div>
-                  </div>
+                    <p class="text-xs text-text-faint mt-1">
+                      @if (remaining(b) >= 0) {
+                        {{ formatCurrency(remaining(b)) }} left
+                      } @else {
+                        {{ formatCurrency(-remaining(b)) }} over budget
+                      }
+                    </p>
+                  </button>
                 }
                 <button
                   type="button"
@@ -382,33 +410,27 @@ export class FinanceDashboardComponent implements OnInit {
     });
   }
 
-  protected async addBudget(): Promise<void> {
+  protected addBudget(): void {
     const board = this.board();
     if (!board) return;
-    const name = await this.dialogs.prompt({
-      title: 'New budget',
-      label: 'Budget name',
-      placeholder: 'e.g. Food',
-      confirmLabel: 'Continue',
+    const ref = this.dialog.open<BudgetDialogComponent, BudgetDialogData, BudgetDialogResult>(
+      BudgetDialogComponent,
+      { data: { boardId: board.id, categories: board.categories ?? [] } },
+    );
+    ref.afterClosed().subscribe((result) => {
+      if (result === 'changed') this.loadBoard(board.id);
     });
-    if (!name?.trim()) return;
-    const amountStr = await this.dialogs.prompt({
-      title: 'New budget',
-      label: 'Amount',
-      inputType: 'number',
-      confirmLabel: 'Create',
-    });
-    const amount = amountStr ? Number(amountStr) : NaN;
-    if (!Number.isFinite(amount) || amount <= 0) {
-      this.toastr.error('Invalid amount');
-      return;
-    }
-    this.service.createBudget(board.id, { name: name.trim(), amount }).subscribe({
-      next: () => {
-        this.toastr.success('Budget created');
-        this.loadBoard(board.id);
-      },
-      error: (err: HttpErrorResponse) => this.toastr.error(this.errMsg(err)),
+  }
+
+  protected editBudget(budget: Budget): void {
+    const board = this.board();
+    if (!board) return;
+    const ref = this.dialog.open<BudgetDialogComponent, BudgetDialogData, BudgetDialogResult>(
+      BudgetDialogComponent,
+      { data: { boardId: board.id, categories: board.categories ?? [], budget } },
+    );
+    ref.afterClosed().subscribe((result) => {
+      if (result === 'changed') this.loadBoard(board.id);
     });
   }
 
@@ -421,6 +443,19 @@ export class FinanceDashboardComponent implements OnInit {
   protected percent(budget: Budget): number {
     if (budget.amount <= 0) return 0;
     return Math.round((this.budgetSpent(budget) / budget.amount) * 100);
+  }
+
+  protected remaining(budget: Budget): number {
+    return budget.amount - this.budgetSpent(budget);
+  }
+
+  protected periodLabel(period: BudgetPeriod): string {
+    return period === 'WEEKLY' ? 'Weekly' : period === 'ANNUAL' ? 'Annual' : 'Monthly';
+  }
+
+  protected categoryName(budget: Budget): string | null {
+    if (!budget.categoryId) return null;
+    return this.board()?.categories?.find((c) => c.id === budget.categoryId)?.name ?? null;
   }
 
   protected formatCurrency(value: number): string {
