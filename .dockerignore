@@ -1,0 +1,11 @@
+# Keep the Docker build context small and reproducible.
+**/node_modules
+**/dist
+**/.angular
+**/coverage
+.git
+.github
+backups
+**/.env
+**/*.log
+docs
