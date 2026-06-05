@@ -57,8 +57,22 @@ import type { DashboardData } from './dashboard.types';
                     @for (t of d.todayTodos.pending.slice(0, 4); track t.id) {
                       <li>
                         <span class="circle"></span>
-                        <span [class.priority-high]="t.priority === 'HIGH' || t.priority === 'URGENT'">
-                          {{ t.title }}
+                        <span class="todo-text">
+                          <span
+                            class="todo-title"
+                            [class.priority-high]="t.priority === 'HIGH' || t.priority === 'URGENT'"
+                          >
+                            {{ t.title }}
+                          </span>
+                          <span class="todo-meta">
+                            <span class="todo-chip">{{ t.column.name }}</span>
+                            @if (t.dueDate) {
+                              <span class="todo-due">⏰ {{ t.dueDate | date: 'HH:mm' }}</span>
+                            }
+                            @if (t.priority === 'HIGH' || t.priority === 'URGENT') {
+                              <span class="todo-prio">{{ t.priority }}</span>
+                            }
+                          </span>
                         </span>
                       </li>
                     }
@@ -220,9 +234,10 @@ import type { DashboardData } from './dashboard.types';
     .todo-list li {
       font-size: 0.875rem;
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       gap: 0.5rem;
     }
+    .todo-list.completed li { align-items: center; }
     .todo-list.completed { color: var(--color-text-muted); }
     .circle {
       width: 8px;
@@ -230,8 +245,34 @@ import type { DashboardData } from './dashboard.types';
       border-radius: 50%;
       border: 1px solid var(--color-text-muted);
       display: inline-block;
+      margin-top: 0.3rem;
+      flex-shrink: 0;
     }
     .priority-high { color: var(--color-danger); }
+    .todo-text { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; }
+    .todo-title { line-height: 1.3; }
+    .todo-meta {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      font-size: 0.6875rem;
+      color: var(--color-text-muted);
+    }
+    .todo-chip {
+      padding: 0.05rem 0.4rem;
+      border-radius: 999px;
+      background: var(--color-background);
+      border: 1px solid var(--color-border);
+    }
+    .todo-due { white-space: nowrap; }
+    .todo-prio {
+      padding: 0.05rem 0.4rem;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--color-danger) 18%, transparent);
+      color: var(--color-danger);
+      font-weight: 600;
+    }
     .todo-extra { font-size: 0.875rem; color: var(--color-text-muted); }
     .tags {
       display: flex;
