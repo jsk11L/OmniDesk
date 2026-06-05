@@ -16,6 +16,16 @@ interface HabitTodayState {
   isActiveToday: boolean;
 }
 
+interface HeatCell {
+  date: string;
+  status: HabitEntryStatus | null;
+}
+
+interface HabitCalendar {
+  weeks: (HeatCell | null)[][];
+  pct: number;
+}
+
 @Component({
   selector: 'app-habits-home',
   standalone: true,
@@ -99,6 +109,43 @@ interface HabitTodayState {
                     >{{ d.label }}</span>
                   }
                 </div>
+
+                <button
+                  type="button"
+                  (click)="toggleCalendar(habit)"
+                  class="mt-3 text-xs text-text-muted hover:text-text"
+                >
+                  {{ expanded().has(habit.id) ? '▾ Hide calendar' : '▸ Show calendar' }}
+                </button>
+                @if (expanded().has(habit.id)) {
+                  @if (calMap().get(habit.id); as cal) {
+                    <div class="mt-2">
+                      <div class="flex gap-[3px] mb-1">
+                        @for (d of dayLabels; track d.value) {
+                          <span class="w-4 text-center text-[9px] text-text-muted">{{ d.label }}</span>
+                        }
+                      </div>
+                      @for (week of cal.weeks; track $index) {
+                        <div class="flex gap-[3px] mb-[3px]">
+                          @for (cell of week; track $index) {
+                            @if (cell) {
+                              <span
+                                class="w-4 h-4 rounded-sm"
+                                [style.background]="cellColor(cell, habit.color)"
+                                [title]="cell.date + (cell.status ? ' · ' + cell.status : '')"
+                              ></span>
+                            } @else {
+                              <span class="w-4 h-4"></span>
+                            }
+                          }
+                        </div>
+                      }
+                      <p class="text-xs text-text-muted mt-1">{{ cal.pct }}% done this month</p>
+                    </div>
+                  } @else {
+                    <p class="text-xs text-text-muted mt-2">Loading…</p>
+                  }
+                }
               </div>
             }
           </div>
@@ -115,6 +162,8 @@ export class HabitsHomeComponent implements OnInit {
   protected readonly habits = signal<Habit[]>([]);
   protected readonly loading = signal(true);
   protected readonly todayMarks = signal<Map<string, boolean>>(new Map());
+  protected readonly expanded = signal<Set<string>>(new Set());
+  protected readonly calMap = signal<Map<string, HabitCalendar>>(new Map());
 
   protected readonly dayLabels = [
     { value: 1, label: 'M' },
@@ -180,6 +229,7 @@ export class HabitsHomeComponent implements OnInit {
             return next;
           });
           this.reload();
+          this.refreshCalendar(habit.id);
         },
         error: () => this.toastr.error('Could not unmark'),
       });
@@ -192,10 +242,65 @@ export class HabitsHomeComponent implements OnInit {
             return next;
           });
           this.reload();
+          this.refreshCalendar(habit.id);
         },
         error: () => this.toastr.error('Could not mark'),
       });
     }
+  }
+
+  protected toggleCalendar(habit: Habit): void {
+    const next = new Set(this.expanded());
+    if (next.has(habit.id)) {
+      next.delete(habit.id);
+      this.expanded.set(next);
+      return;
+    }
+    next.add(habit.id);
+    this.expanded.set(next);
+    if (!this.calMap().has(habit.id)) this.fetchCalendar(habit.id);
+  }
+
+  private fetchCalendar(habitId: string): void {
+    this.service.stats(habitId).subscribe({
+      next: (s) => {
+        const m = new Map(this.calMap());
+        m.set(habitId, { weeks: this.buildWeeks(s.heatmap), pct: s.monthCompletionPct });
+        this.calMap.set(m);
+      },
+      error: () => this.toastr.error('Could not load the calendar'),
+    });
+  }
+
+  /** Keep an open calendar fresh after marking; otherwise drop the stale cache. */
+  private refreshCalendar(habitId: string): void {
+    if (this.expanded().has(habitId)) {
+      this.fetchCalendar(habitId);
+    } else if (this.calMap().has(habitId)) {
+      const m = new Map(this.calMap());
+      m.delete(habitId);
+      this.calMap.set(m);
+    }
+  }
+
+  /** Lay the heatmap out as week rows (Monday-first), padding the first week. */
+  private buildWeeks(heatmap: HeatCell[]): (HeatCell | null)[][] {
+    if (!heatmap.length) return [];
+    const cells: (HeatCell | null)[] = [];
+    const first = new Date(heatmap[0].date + 'T00:00:00');
+    const mondayIndex = (first.getDay() + 6) % 7; // 0 = Monday … 6 = Sunday
+    for (let i = 0; i < mondayIndex; i++) cells.push(null);
+    for (const h of heatmap) cells.push(h);
+    const weeks: (HeatCell | null)[][] = [];
+    for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7));
+    return weeks;
+  }
+
+  protected cellColor(cell: HeatCell, habitColor: string): string {
+    if (cell.status === 'DONE' || cell.status === 'RECOVERED') return habitColor;
+    if (cell.status === 'MISSED') return 'color-mix(in srgb, var(--color-danger) 55%, transparent)';
+    if (cell.status === 'REST') return 'var(--color-surface-hover)';
+    return 'var(--color-background)';
   }
 
   protected openCreate(): void {
