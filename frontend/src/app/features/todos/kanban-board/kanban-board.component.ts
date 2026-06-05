@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import {
   CdkDragDrop,
   CdkDrag,
+  CdkDragHandle,
   CdkDropList,
   CdkDropListGroup,
   moveItemInArray,
@@ -11,6 +12,7 @@ import {
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ToastrService } from 'ngx-toastr';
 import { HttpErrorResponse } from '@angular/common/http';
+import { forkJoin } from 'rxjs';
 
 import { TodosService } from '../services/todos.service';
 import { DialogService } from '../../../shared/services/dialog.service';
@@ -45,7 +47,7 @@ const PRIORITY_LABEL: Record<TodoPriority, string> = {
   selector: 'app-kanban-board',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, CdkDropList, CdkDrag, CdkDropListGroup, MatDialogModule],
+  imports: [FormsModule, CdkDropList, CdkDrag, CdkDragHandle, CdkDropListGroup, MatDialogModule],
   template: `
     <div class="h-full flex flex-col">
       <header class="px-6 py-4 border-b border-border">
@@ -105,17 +107,28 @@ const PRIORITY_LABEL: Record<TodoPriority, string> = {
           </p>
         } @else {
           <div
+            cdkDropList
+            cdkDropListOrientation="horizontal"
+            [cdkDropListData]="board()!.columns!"
+            (cdkDropListDropped)="onColumnDrop($event)"
             class="flex gap-4 h-full"
-            cdkDropListGroup
           >
+            <ng-container cdkDropListGroup>
             @for (col of board()!.columns!; track col.id) {
               <div
+                cdkDrag
+                [cdkDragData]="col"
                 class="w-72 shrink-0 bg-surface border border-border rounded flex flex-col max-h-full"
               >
                 <div
-                  class="px-3 py-2 border-b border-border flex items-center justify-between"
+                  class="px-3 py-2 border-b border-border flex items-center justify-between gap-1"
                   [style.border-top]="'3px solid ' + col.color"
                 >
+                  <span
+                    cdkDragHandle
+                    class="cursor-grab text-text-muted hover:text-text text-xs select-none"
+                    title="Drag to reorder column"
+                  >⠿</span>
                   <input
                     type="text"
                     [value]="col.name"
@@ -203,6 +216,7 @@ const PRIORITY_LABEL: Record<TodoPriority, string> = {
                 </div>
               </div>
             }
+            </ng-container>
           </div>
         }
       </div>
@@ -400,6 +414,34 @@ export class KanbanBoardComponent implements OnInit {
     );
     ref.afterClosed().subscribe((result) => {
       if (result) this.loadBoard(board.id);
+    });
+  }
+
+  protected onColumnDrop(event: CdkDragDrop<TodoColumn[]>): void {
+    const board = this.board();
+    if (!board?.columns) return;
+    if (event.previousIndex === event.currentIndex) return;
+
+    moveItemInArray(board.columns, event.previousIndex, event.currentIndex);
+
+    // Persist only the columns whose position actually changed.
+    const changed: { id: string; position: number }[] = [];
+    board.columns.forEach((c, idx) => {
+      if (c.position !== idx) {
+        changed.push({ id: c.id, position: idx });
+        c.position = idx;
+      }
+    });
+    this.board.set({ ...board });
+    if (!changed.length) return;
+
+    forkJoin(
+      changed.map((u) => this.service.updateColumn(board.id, u.id, { position: u.position })),
+    ).subscribe({
+      error: (err: HttpErrorResponse) => {
+        this.toastr.error('Could not save the column order: ' + this.errMsg(err));
+        this.loadBoard(board.id);
+      },
     });
   }
 
