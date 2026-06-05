@@ -44,7 +44,7 @@ type SaveStatus = 'saved' | 'saving' | 'dirty' | 'error';
         <div class="flex items-center justify-between mb-3 text-xs text-text-muted">
           <span>
             @switch (status()) {
-              @case ('saving') { Guardando… }
+              @case ('saving') { Saving… }
               @case ('saved') { ✓ Saved }
               @case ('dirty') { Unsaved changes }
               @case ('error') { ✗ Save error }
@@ -169,7 +169,7 @@ type SaveStatus = 'saved' | 'saving' | 'dirty' | 'error';
         cursor: text;
       }
       :host ::ng-deep .ProseMirror p.is-editor-empty:first-child::before {
-        content: 'Empieza a escribir…';
+        content: 'Start writing…';
         color: var(--color-text-muted);
         float: left;
         height: 0;
@@ -198,6 +198,19 @@ type SaveStatus = 'saved' | 'saving' | 'dirty' | 'error';
       :host ::ng-deep .ProseMirror ol {
         padding-left: 1.5rem;
         margin: 0.5rem 0;
+      }
+      /* Tailwind preflight resets list-style to none; restore the markers. */
+      :host ::ng-deep .ProseMirror ul {
+        list-style: disc outside;
+      }
+      :host ::ng-deep .ProseMirror ol {
+        list-style: decimal outside;
+      }
+      :host ::ng-deep .ProseMirror li {
+        margin: 0.125rem 0;
+      }
+      :host ::ng-deep .ProseMirror li p {
+        margin: 0;
       }
       :host ::ng-deep .ProseMirror blockquote {
         border-left: 3px solid var(--color-border);
@@ -257,24 +270,35 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
 
   private editor: Editor | null = null;
   private currentNoteId: string | null = null;
-  private readonly save$ = new Subject<UpdateNoteDto>();
+  private readonly save$ = new Subject<{ id: string; payload: UpdateNoteDto }>();
   private readonly destroy$ = new Subject<void>();
 
   constructor() {
-    effect(() => {
-      const n = this.note();
-      this.title = n.title;
-      this.icon = n.icon ?? '';
-      this.coverImageUrl = n.coverImageUrl ?? '';
-      this.description = n.description ?? '';
-      this.pinned.set(n.isPinned);
-      this.tags.set([...n.tags]);
-      this.status.set('saved');
-      this.applyNoteToEditor(n);
-    });
+    // Sync the selected note into the editor + local state whenever the input
+    // changes. allowSignalWrites is REQUIRED (Angular <=18): writing signals in
+    // an effect throws NG0600 by default, which would abort the effect before
+    // applyNoteToEditor() runs and leave the editor showing the previous note.
+    effect(
+      () => {
+        const n = this.note();
+        // Reset the editor content FIRST so a stale signal write can never
+        // strand the editor on the previous note's content.
+        this.applyNoteToEditor(n);
+        this.title = n.title;
+        this.icon = n.icon ?? '';
+        this.coverImageUrl = n.coverImageUrl ?? '';
+        this.description = n.description ?? '';
+        this.pinned.set(n.isPinned);
+        this.tags.set([...n.tags]);
+        this.status.set('saved');
+      },
+      { allowSignalWrites: true },
+    );
 
-    this.save$.pipe(debounceTime(2000), takeUntil(this.destroy$)).subscribe((payload) => {
-      this.flush(payload);
+    // The note id is captured at enqueue time (not at flush time) so a debounced
+    // autosave from note A can never be written onto note B after switching.
+    this.save$.pipe(debounceTime(2000), takeUntil(this.destroy$)).subscribe(({ id, payload }) => {
+      this.flush(payload, id);
     });
   }
 
@@ -290,7 +314,7 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
       onUpdate: ({ editor }) => {
         this.status.set('dirty');
         const json = editor.getJSON();
-        this.save$.next({ content: JSON.stringify(json) });
+        this.save$.next({ id: this.note().id, payload: { content: JSON.stringify(json) } });
       },
     });
     this.applyNoteToEditor(this.note());
@@ -339,11 +363,11 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
 
   protected async insertLink(): Promise<void> {
     const url = await this.dialogs.prompt({
-      title: 'Insertar link',
-      label: 'URL del link',
+      title: 'Insert link',
+      label: 'Link URL',
       inputType: 'url',
       placeholder: 'https://…',
-      confirmLabel: 'Insertar',
+      confirmLabel: 'Insert',
     });
     if (!url) return;
     this.editor?.chain().focus().setLink({ href: url }).run();
@@ -351,11 +375,11 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
 
   protected async insertImage(): Promise<void> {
     const url = await this.dialogs.prompt({
-      title: 'Insertar imagen',
-      label: 'URL de la imagen',
+      title: 'Insert image',
+      label: 'Image URL',
       inputType: 'url',
       placeholder: 'https://…',
-      confirmLabel: 'Insertar',
+      confirmLabel: 'Insert',
     });
     if (!url) return;
     this.editor?.chain().focus().setImage({ src: url }).run();
@@ -364,17 +388,20 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
   protected onMetaChange(): void {
     this.status.set('dirty');
     this.save$.next({
-      title: this.title.trim() || 'Untitled',
-      icon: this.icon?.trim() || undefined,
-      description: this.description.trim() || undefined,
-      coverImageUrl: this.coverImageUrl.trim() || undefined,
+      id: this.note().id,
+      payload: {
+        title: this.title.trim() || 'Untitled',
+        icon: this.icon?.trim() || undefined,
+        description: this.description.trim() || undefined,
+        coverImageUrl: this.coverImageUrl.trim() || undefined,
+      },
     });
   }
 
   protected onIconChange(value: string | null): void {
     this.icon = value;
     this.status.set('dirty');
-    this.save$.next({ icon: value ?? undefined });
+    this.save$.next({ id: this.note().id, payload: { icon: value ?? undefined } });
   }
 
   protected openSettings(): void {
@@ -439,9 +466,9 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
     });
   }
 
-  private flush(payload: UpdateNoteDto): void {
+  private flush(payload: UpdateNoteDto, id: string = this.note().id): void {
     this.status.set('saving');
-    this.service.update(this.note().id, payload).subscribe({
+    this.service.update(id, payload).subscribe({
       next: (updated) => {
         this.status.set('saved');
         this.noteUpdated.emit(updated);

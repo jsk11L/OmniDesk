@@ -8,6 +8,7 @@ import {
   signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { HttpErrorResponse } from '@angular/common/http';
 
@@ -116,6 +117,10 @@ import type { Note } from '../notes.types';
 export class NotesHomeComponent implements OnInit {
   private readonly service = inject(NotesService);
   private readonly toastr = inject(ToastrService);
+  private readonly route = inject(ActivatedRoute);
+
+  /** Note id to auto-select once the list loads (deep-link from dashboard, ?note=). */
+  private pendingSelectId: string | null = null;
 
   protected readonly loading = signal(true);
   protected readonly notes = signal<Note[]>([]);
@@ -145,6 +150,7 @@ export class NotesHomeComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.pendingSelectId = this.route.snapshot.queryParamMap.get('note');
     this.reload();
   }
 
@@ -158,6 +164,12 @@ export class NotesHomeComponent implements OnInit {
       next: (notes) => {
         this.notes.set(notes);
         this.loading.set(false);
+        // Honor a deep-link (?note=<id>) once, after the list is available.
+        if (this.pendingSelectId) {
+          const target = notes.find((n) => n.id === this.pendingSelectId);
+          if (target) this.selectedId.set(target.id);
+          this.pendingSelectId = null;
+        }
       },
       error: (err: HttpErrorResponse) => {
         this.loading.set(false);

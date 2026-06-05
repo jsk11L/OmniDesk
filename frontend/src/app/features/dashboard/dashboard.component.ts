@@ -81,7 +81,11 @@ import type { DashboardData } from './dashboard.types';
           </a>
 
           <!-- Latest note -->
-          <a routerLink="/app/notes" class="widget">
+          <a
+            routerLink="/app/notes"
+            [queryParams]="d.latestNote ? { note: d.latestNote.id } : null"
+            class="widget"
+          >
             <header class="widget-header">
               <span class="widget-icon">📝</span>
               <h2>Latest note</h2>
