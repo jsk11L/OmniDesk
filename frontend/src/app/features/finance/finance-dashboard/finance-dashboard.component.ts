@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { BaseChartDirective } from 'ng2-charts';
 import { ToastrService } from 'ngx-toastr';
@@ -30,7 +31,7 @@ import type {
   selector: 'app-finance-dashboard',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, MatDialogModule, BaseChartDirective],
+  imports: [FormsModule, RouterLink, MatDialogModule, BaseChartDirective],
   template: `
     <div class="h-full flex flex-col overflow-hidden">
       <header class="px-6 py-4 border-b border-border flex items-center justify-between gap-4">
@@ -62,6 +63,12 @@ import type {
           >
             + Board
           </button>
+          <a
+            routerLink="/app/finance/organizer"
+            class="px-3 py-2 rounded text-sm hover:bg-surface-hover"
+          >
+            Organizer →
+          </a>
           <button
             type="button"
             (click)="addTransaction()"

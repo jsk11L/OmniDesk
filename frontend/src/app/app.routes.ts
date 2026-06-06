@@ -83,6 +83,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'finance/organizer',
+        loadComponent: () =>
+          import('./features/finance/organizer/finance-organizer.component').then(
+            (m) => m.FinanceOrganizerComponent,
+          ),
+      },
+      {
         path: 'notifications',
         loadComponent: () =>
           import(
