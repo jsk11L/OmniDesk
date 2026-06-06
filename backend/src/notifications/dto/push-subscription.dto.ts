@@ -1,5 +1,12 @@
 import { Type } from 'class-transformer';
-import { IsObject, IsString, IsUrl, ValidateNested } from 'class-validator';
+import {
+  IsObject,
+  IsOptional,
+  IsString,
+  IsUrl,
+  MaxLength,
+  ValidateNested,
+} from 'class-validator';
 
 export class PushSubscriptionKeysDto {
   @IsString()
@@ -18,6 +25,11 @@ export class PushSubscriptionDto {
   @ValidateNested()
   @Type(() => PushSubscriptionKeysDto)
   keys!: PushSubscriptionKeysDto;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  deviceLabel?: string;
 }
 
 export class UnsubscribePushDto {

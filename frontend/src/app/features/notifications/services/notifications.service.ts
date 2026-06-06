@@ -44,6 +44,15 @@ export interface NotificationPreferences {
   quietDays: number[];
 }
 
+export interface PushDevice {
+  id: string;
+  deviceLabel: string | null;
+  platform: string | null;
+  userAgent: string | null;
+  lastUsedAt: string | null;
+  createdAt: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class NotificationsService {
   private readonly http = inject(HttpClient);
@@ -74,6 +83,18 @@ export class NotificationsService {
       .delete<ApiResponse<{ detached: boolean }>>(
         `${this.base}/targets/${type}/${entityId}/${notificationId}`,
       )
+      .pipe(map((r) => r.data));
+  }
+
+  listDevices(): Observable<PushDevice[]> {
+    return this.http
+      .get<ApiResponse<PushDevice[]>>(`${this.base}/push/devices`)
+      .pipe(map((r) => r.data));
+  }
+
+  removeDevice(id: string): Observable<{ id: string }> {
+    return this.http
+      .delete<ApiResponse<{ id: string }>>(`${this.base}/push/devices/${id}`)
       .pipe(map((r) => r.data));
   }
 

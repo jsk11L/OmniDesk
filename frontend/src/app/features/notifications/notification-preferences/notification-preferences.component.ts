@@ -1,15 +1,16 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { DatePipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ToastrService } from 'ngx-toastr';
 
-import { NotificationsService } from '../services/notifications.service';
+import { NotificationsService, type PushDevice } from '../services/notifications.service';
 
 @Component({
   selector: 'app-notification-preferences',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule],
+  imports: [FormsModule, DatePipe],
   template: `
     <div class="space-y-4">
       <label class="block">
@@ -61,6 +62,23 @@ import { NotificationsService } from '../services/notifications.service';
       >
         {{ saving() ? 'Saving…' : 'Save preferences' }}
       </button>
+
+      @if (devices().length) {
+        <div class="border-t border-border pt-4">
+          <span class="block text-xs text-text-muted mb-2">Subscribed devices (push)</span>
+          <ul class="space-y-1">
+            @for (d of devices(); track d.id) {
+              <li class="flex items-center justify-between text-sm bg-surface border border-border rounded px-3 py-1.5">
+                <span class="min-w-0">
+                  <span class="capitalize">{{ d.deviceLabel || d.platform || 'device' }}</span>
+                  @if (d.lastUsedAt) { <span class="text-xs text-text-muted"> · last used {{ d.lastUsedAt | date: 'd MMM' }}</span> }
+                </span>
+                <button type="button" (click)="revoke(d)" class="text-xs text-text-muted hover:text-danger ml-2">Revoke</button>
+              </li>
+            }
+          </ul>
+        </div>
+      }
     </div>
   `,
 })
@@ -69,6 +87,7 @@ export class NotificationPreferencesComponent implements OnInit {
   private readonly toastr = inject(ToastrService);
 
   protected readonly saving = signal(false);
+  protected readonly devices = signal<PushDevice[]>([]);
   protected readonly quietDays = signal<Set<number>>(new Set());
   protected timezone = '';
   protected dndStart = '';
@@ -93,6 +112,18 @@ export class NotificationPreferencesComponent implements OnInit {
         this.quietDays.set(new Set(p.quietDays ?? []));
       },
       error: () => undefined,
+    });
+    this.loadDevices();
+  }
+
+  private loadDevices(): void {
+    this.service.listDevices().subscribe({ next: (d) => this.devices.set(d), error: () => undefined });
+  }
+
+  protected revoke(d: PushDevice): void {
+    this.service.removeDevice(d.id).subscribe({
+      next: () => this.devices.update((arr) => arr.filter((x) => x.id !== d.id)),
+      error: () => this.toastr.error('Could not revoke the device'),
     });
   }
 

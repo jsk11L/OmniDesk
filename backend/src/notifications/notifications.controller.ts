@@ -9,8 +9,10 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  Req,
   UseGuards,
 } from '@nestjs/common';
+import type { Request } from 'express';
 
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser, AuthUser } from '../common/decorators/current-user.decorator';
@@ -65,14 +67,29 @@ export class NotificationsController {
   }
 
   @Post('push/subscribe')
-  subscribePush(@CurrentUser() user: AuthUser, @Body() dto: PushSubscriptionDto) {
-    return this.notifications.subscribePush(user.id, dto);
+  subscribePush(
+    @CurrentUser() user: AuthUser,
+    @Body() dto: PushSubscriptionDto,
+    @Req() req: Request,
+  ) {
+    return this.notifications.subscribePush(user.id, dto, req.headers['user-agent'] ?? null);
   }
 
   @Delete('push/unsubscribe')
   @HttpCode(HttpStatus.OK)
   unsubscribePush(@CurrentUser() user: AuthUser, @Body() dto: UnsubscribePushDto) {
     return this.notifications.unsubscribePush(user.id, dto);
+  }
+
+  @Get('push/devices')
+  listDevices(@CurrentUser() user: AuthUser) {
+    return this.notifications.listDevices(user.id);
+  }
+
+  @Delete('push/devices/:id')
+  @HttpCode(HttpStatus.OK)
+  removeDevice(@CurrentUser() user: AuthUser, @Param('id', ParseUUIDPipe) id: string) {
+    return this.notifications.removeDevice(user.id, id);
   }
 
   // ─── Preferences (Block 3) ───────────────────────────────

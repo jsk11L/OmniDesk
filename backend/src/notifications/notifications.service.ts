@@ -273,7 +273,12 @@ export class NotificationsService implements OnModuleInit {
 
   // ─── Push subscriptions ──────────────────────────────────
 
-  async subscribePush(userId: string, dto: PushSubscriptionDto): Promise<PushSubscription> {
+  async subscribePush(
+    userId: string,
+    dto: PushSubscriptionDto,
+    userAgent?: string | null,
+  ): Promise<PushSubscription> {
+    const platform = detectPlatform(userAgent);
     return this.prisma.pushSubscription.upsert({
       where: { endpoint: dto.endpoint },
       create: {
@@ -281,13 +286,33 @@ export class NotificationsService implements OnModuleInit {
         endpoint: dto.endpoint,
         p256dh: dto.keys.p256dh,
         auth: dto.keys.auth,
+        userAgent: userAgent ?? null,
+        deviceLabel: dto.deviceLabel ?? null,
+        platform,
+        lastUsedAt: new Date(),
       },
       update: {
         userId,
         p256dh: dto.keys.p256dh,
         auth: dto.keys.auth,
+        userAgent: userAgent ?? undefined,
+        deviceLabel: dto.deviceLabel ?? undefined,
+        platform,
       },
     });
+  }
+
+  listDevices(userId: string) {
+    return this.prisma.pushSubscription.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+      select: { id: true, deviceLabel: true, platform: true, userAgent: true, lastUsedAt: true, createdAt: true },
+    });
+  }
+
+  async removeDevice(userId: string, id: string): Promise<{ id: string }> {
+    await this.prisma.pushSubscription.deleteMany({ where: { id, userId } });
+    return { id };
   }
 
   async unsubscribePush(
@@ -366,4 +391,11 @@ export class NotificationsService implements OnModuleInit {
 
     return sent;
   }
+}
+
+function detectPlatform(ua?: string | null): string {
+  if (!ua) return 'unknown';
+  if (/tablet|ipad/i.test(ua)) return 'tablet';
+  if (/mobi|android|iphone/i.test(ua)) return 'mobile';
+  return 'desktop';
 }
