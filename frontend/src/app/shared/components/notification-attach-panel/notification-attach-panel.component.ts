@@ -48,6 +48,9 @@ import type { NotificationConfig } from '../../../features/notifications/notific
             @case ('todo-item') {
               <input type="number" min="0" [(ngModel)]="minutesBefore" placeholder="min before" class="w-24 px-2 py-1.5 bg-background border border-border rounded text-sm outline-none focus:border-primary" />
             }
+            @case ('calendar-event') {
+              <input type="number" min="0" [(ngModel)]="minutesBefore" placeholder="min before" class="w-24 px-2 py-1.5 bg-background border border-border rounded text-sm outline-none focus:border-primary" />
+            }
             @case ('habit') {
               <input type="time" [(ngModel)]="timeOfDay" class="px-2 py-1.5 bg-background border border-border rounded text-sm outline-none focus:border-primary" />
             }

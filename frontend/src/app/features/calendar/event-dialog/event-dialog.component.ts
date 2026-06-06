@@ -6,6 +6,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 
 import { CalendarService } from '../services/calendar.service';
 import { DialogService } from '../../../shared/services/dialog.service';
+import { NotificationAttachPanelComponent } from '../../../shared/components/notification-attach-panel/notification-attach-panel.component';
 import type { CalendarEvent } from '../calendar.types';
 
 export interface EventDialogData {
@@ -27,7 +28,7 @@ function toLocalInput(date: Date): string {
   selector: 'app-event-dialog',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, MatDialogModule],
+  imports: [ReactiveFormsModule, MatDialogModule, NotificationAttachPanelComponent],
   template: `
     <div class="bg-surface text-text p-6 w-[min(560px,95vw)]">
       <h2 class="text-lg font-semibold mb-4">
@@ -99,27 +100,9 @@ function toLocalInput(date: Date): string {
           </label>
         </div>
 
-        @if (data.event?.notifications?.length) {
+        @if (data.event) {
           <div class="border-t border-border pt-3">
-            <p class="text-xs text-text-muted mb-2">Linked notifications:</p>
-            <ul class="space-y-1">
-              @for (n of data.event!.notifications!; track n.id) {
-                <li class="flex items-center justify-between text-sm bg-background px-3 py-1.5 rounded">
-                  <span>{{ n.minutesBefore }} min before the event</span>
-                  <button
-                    type="button"
-                    (click)="detachNotification(n.id)"
-                    class="text-text-muted hover:text-danger"
-                    aria-label="Remove notification"
-                  >
-                    ×
-                  </button>
-                </li>
-              }
-            </ul>
-            <p class="text-xs text-text-muted mt-2">
-              Link new notifications from the Notifications module.
-            </p>
+            <app-notification-attach-panel entityType="calendar-event" [entityId]="data.event.id" />
           </div>
         }
 
