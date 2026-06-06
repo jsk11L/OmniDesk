@@ -76,11 +76,17 @@ export class AuthService {
       throw new ConflictException('Email already registered');
     }
 
+    // The very first account on a fresh instance becomes the admin and is
+    // always allowed (needed to bootstrap the instance).
+    const isFirstUser = (await this.prisma.user.count()) === 0;
+
+    // Honour a closed-registration instance (REGISTRATION_OPEN=false).
+    if (!isFirstUser && this.config.get<boolean>('REGISTRATION_OPEN', true) === false) {
+      throw new ForbiddenException('Registration is currently closed on this instance');
+    }
+
     const passwordHash = await bcrypt.hash(dto.password, BCRYPT_ROUNDS);
     const verificationToken = randomUUID();
-
-    // The very first account on a fresh instance becomes the admin.
-    const isFirstUser = (await this.prisma.user.count()) === 0;
 
     const user = await this.prisma.$transaction(async (tx) => {
       const created = await tx.user.create({
