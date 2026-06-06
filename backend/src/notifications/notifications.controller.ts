@@ -15,8 +15,10 @@ import {
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser, AuthUser } from '../common/decorators/current-user.decorator';
 import { NotificationsService } from './notifications.service';
+import { AttachmentService, type AttachEntityType } from './attachment.service';
 import { CreateNotificationDto } from './dto/create-notification.dto';
 import { UpdateNotificationDto } from './dto/update-notification.dto';
+import { AttachNotificationDto } from './dto/attach-notification.dto';
 import {
   PushSubscriptionDto,
   UnsubscribePushDto,
@@ -25,7 +27,10 @@ import {
 @UseGuards(JwtAuthGuard)
 @Controller('notifications')
 export class NotificationsController {
-  constructor(private readonly notifications: NotificationsService) {}
+  constructor(
+    private readonly notifications: NotificationsService,
+    private readonly attachments: AttachmentService,
+  ) {}
 
   // ─── Configs ─────────────────────────────────────────────
 
@@ -67,6 +72,42 @@ export class NotificationsController {
   @HttpCode(HttpStatus.OK)
   unsubscribePush(@CurrentUser() user: AuthUser, @Body() dto: UnsubscribePushDto) {
     return this.notifications.unsubscribePush(user.id, dto);
+  }
+
+  // ─── Attach to entities (Block 3) ────────────────────────
+
+  @Get('targets/:type/:entityId')
+  listTargets(
+    @CurrentUser() user: AuthUser,
+    @Param('type') type: AttachEntityType,
+    @Param('entityId', ParseUUIDPipe) entityId: string,
+  ) {
+    return this.attachments.list(type, entityId, user.id);
+  }
+
+  @Post('targets/:type/:entityId')
+  attach(
+    @CurrentUser() user: AuthUser,
+    @Param('type') type: AttachEntityType,
+    @Param('entityId', ParseUUIDPipe) entityId: string,
+    @Body() dto: AttachNotificationDto,
+  ) {
+    return this.attachments.attach(type, entityId, dto.notificationId, user.id, {
+      minutesBefore: dto.minutesBefore,
+      timeOfDay: dto.timeOfDay,
+      daysBefore: dto.daysBefore,
+    });
+  }
+
+  @Delete('targets/:type/:entityId/:notificationId')
+  @HttpCode(HttpStatus.OK)
+  detach(
+    @CurrentUser() user: AuthUser,
+    @Param('type') type: AttachEntityType,
+    @Param('entityId', ParseUUIDPipe) entityId: string,
+    @Param('notificationId', ParseUUIDPipe) notificationId: string,
+  ) {
+    return this.attachments.detach(type, entityId, notificationId, user.id);
   }
 
   @Get(':id')
