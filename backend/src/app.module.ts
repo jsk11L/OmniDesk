@@ -24,6 +24,7 @@ import { UploadsModule } from './uploads/uploads.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { HabitsModule } from './habits/habits.module';
 import { AdminModule } from './admin/admin.module';
+import { ExporterModule } from './exporter/exporter.module';
 
 @Module({
   imports: [
@@ -66,6 +67,7 @@ import { AdminModule } from './admin/admin.module';
     DashboardModule,
     HabitsModule,
     AdminModule,
+    ExporterModule,
   ],
   controllers: [AppController],
   providers: [
