@@ -15,6 +15,22 @@ export const routes: Routes = [
     loadChildren: () => import('./features/auth/auth.routes').then((m) => m.AUTH_ROUTES),
   },
   {
+    path: 'legal',
+    children: [
+      { path: '', pathMatch: 'full', redirectTo: 'terms' },
+      {
+        path: 'terms',
+        data: { doc: 'terms' },
+        loadComponent: () => import('./features/legal/legal.component').then((m) => m.LegalComponent),
+      },
+      {
+        path: 'privacy',
+        data: { doc: 'privacy' },
+        loadComponent: () => import('./features/legal/legal.component').then((m) => m.LegalComponent),
+      },
+    ],
+  },
+  {
     path: 'app',
     canActivate: [authGuard],
     loadComponent: () =>
