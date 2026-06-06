@@ -10,13 +10,14 @@ import {
   type NotificationEditorData,
   type NotificationEditorResult,
 } from '../notification-editor/notification-editor.component';
+import { NotificationPreferencesComponent } from '../notification-preferences/notification-preferences.component';
 import type { InAppNotification, NotificationConfig } from '../notifications.types';
 
 @Component({
   selector: 'app-notification-list',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MatDialogModule],
+  imports: [MatDialogModule, NotificationPreferencesComponent],
   template: `
     <div class="h-full flex flex-col">
       <header class="px-6 py-4 border-b border-border flex items-center justify-between gap-4">
@@ -140,6 +141,11 @@ import type { InAppNotification, NotificationConfig } from '../notifications.typ
               }
             </ul>
           }
+        </section>
+
+        <section class="lg:col-span-2">
+          <h2 class="text-sm font-medium mb-3">Preferences</h2>
+          <app-notification-preferences />
         </section>
       </div>
     </div>
