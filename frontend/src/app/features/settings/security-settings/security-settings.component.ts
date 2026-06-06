@@ -97,6 +97,25 @@ import { DataExportService } from '../../../core/services/data-export.service';
         <button type="button" (click)="exportData()" [disabled]="exporting()" class="px-3 py-1.5 text-sm rounded border border-border hover:bg-surface-hover disabled:opacity-50">
           {{ exporting() ? 'Preparing…' : 'Export my data (.zip)' }}
         </button>
+
+        <div class="mt-4 border-t border-border pt-4">
+          <p class="text-sm font-medium mb-1">Import an OmniDesk export</p>
+          <p class="text-xs text-text-muted mb-2">
+            <strong>Merge</strong> adds the imported data alongside yours (names get an
+            "(imported)" suffix). <strong>Replace</strong> first deletes all your current
+            data — irreversible.
+          </p>
+          <div class="flex items-center gap-2">
+            <select [(ngModel)]="importMode" class="px-2 py-1.5 bg-background border border-border rounded text-sm outline-none focus:border-primary">
+              <option value="merge">Merge</option>
+              <option value="replace">Replace all</option>
+            </select>
+            <label class="px-3 py-1.5 text-sm rounded border border-border hover:bg-surface-hover cursor-pointer" [class.opacity-50]="importing()">
+              {{ importing() ? 'Importing…' : 'Choose .zip' }}
+              <input type="file" accept=".zip,application/zip" hidden (change)="onImportPick($event)" />
+            </label>
+          </div>
+        </div>
       </section>
 
       <!-- Danger zone -->
@@ -121,6 +140,8 @@ export class SecuritySettingsComponent implements OnInit {
   private readonly exportService = inject(DataExportService);
 
   protected readonly exporting = signal(false);
+  protected readonly importing = signal(false);
+  protected importMode: 'merge' | 'replace' = 'merge';
   protected readonly usage = signal<UploadUsage | null>(null);
   protected readonly twoFaEnabled = signal(false);
   protected readonly setup = signal<TwoFactorSetup | null>(null);
@@ -241,6 +262,36 @@ export class SecuritySettingsComponent implements OnInit {
       error: () => {
         this.exporting.set(false);
         this.toastr.error('Could not export your data');
+      },
+    });
+  }
+
+  protected async onImportPick(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+    if (this.importMode === 'replace') {
+      const ok = await this.dialogs.confirm({
+        title: 'Replace all data',
+        message:
+          'This permanently deletes ALL your current data before importing. This cannot be undone. Continue?',
+        confirmLabel: 'Replace everything',
+        destructive: true,
+      });
+      if (!ok) return;
+    }
+    this.importing.set(true);
+    this.exportService.importOmnidesk(file, this.importMode).subscribe({
+      next: (report) => {
+        this.importing.set(false);
+        const total = Object.values(report.counts).reduce((a, b) => a + b, 0);
+        this.toastr.success(`Imported ${total} items (${report.mode})`);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.importing.set(false);
+        const body = err.error as { error?: { message?: string } } | null;
+        this.toastr.error(body?.error?.message ?? 'Import failed');
       },
     });
   }
