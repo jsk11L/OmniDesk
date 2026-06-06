@@ -23,6 +23,7 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { UploadsModule } from './uploads/uploads.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { HabitsModule } from './habits/habits.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -64,6 +65,7 @@ import { HabitsModule } from './habits/habits.module';
     UploadsModule,
     DashboardModule,
     HabitsModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [
