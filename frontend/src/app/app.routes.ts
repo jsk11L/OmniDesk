@@ -62,6 +62,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'notes/import',
+        loadComponent: () =>
+          import('./features/notes/obsidian-import/obsidian-import.component').then(
+            (m) => m.ObsidianImportComponent,
+          ),
+      },
+      {
         path: 'todos',
         loadComponent: () =>
           import('./features/todos/kanban-board/kanban-board.component').then(

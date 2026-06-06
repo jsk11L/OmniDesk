@@ -25,6 +25,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
 import { HabitsModule } from './habits/habits.module';
 import { AdminModule } from './admin/admin.module';
 import { ExporterModule } from './exporter/exporter.module';
+import { ImporterModule } from './importer/importer.module';
 
 @Module({
   imports: [
@@ -68,6 +69,7 @@ import { ExporterModule } from './exporter/exporter.module';
     HabitsModule,
     AdminModule,
     ExporterModule,
+    ImporterModule,
   ],
   controllers: [AppController],
   providers: [

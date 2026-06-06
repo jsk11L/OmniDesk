@@ -6,10 +6,28 @@ import { environment } from '../../../../environments/environment';
 import type { ApiResponse } from '../../../core/models/api-response.model';
 import type { CreateNoteDto, Note, UpdateNoteDto } from '../notes.types';
 
+export interface ImportReport {
+  notesCreated: number;
+  assetsUploaded: number;
+  wikilinksResolved: number;
+  wikilinksUnresolved: number;
+  duplicateTitlesRenamed: number;
+  skipped: string[];
+  errors: string[];
+}
+
 @Injectable({ providedIn: 'root' })
 export class NotesService {
   private readonly http = inject(HttpClient);
   private readonly base = `${environment.apiUrl}/notes`;
+
+  importObsidian(file: File): Observable<ImportReport> {
+    const fd = new FormData();
+    fd.append('file', file);
+    return this.http
+      .post<ApiResponse<ImportReport>>(`${environment.apiUrl}/import/obsidian`, fd)
+      .pipe(map((r) => r.data));
+  }
 
   list(opts: { q?: string; tag?: string; pinned?: boolean } = {}): Observable<Note[]> {
     let params = new HttpParams();

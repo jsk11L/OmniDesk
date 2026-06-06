@@ -8,7 +8,7 @@ import {
   signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { HttpErrorResponse } from '@angular/common/http';
 
@@ -20,21 +20,30 @@ import type { Note } from '../notes.types';
   selector: 'app-notes-home',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, NoteEditorComponent],
+  imports: [FormsModule, RouterLink, NoteEditorComponent],
   template: `
     <div class="h-full flex">
       <aside class="w-[320px] shrink-0 border-r border-border flex flex-col bg-background">
         <div class="p-4 border-b border-border">
           <div class="flex items-center justify-between mb-3">
             <h1 class="text-xl font-semibold">Notes</h1>
-            <button
-              type="button"
-              (click)="createNote()"
-              class="px-3 py-1.5 rounded bg-primary text-white text-xs font-medium hover:opacity-90"
-              title="New note (Ctrl+N)"
-            >
-              + New
-            </button>
+            <div class="flex items-center gap-2">
+              <a
+                routerLink="/app/notes/import"
+                class="px-2 py-1.5 rounded text-xs text-text-muted hover:bg-surface-hover hover:text-text"
+                title="Import from Obsidian"
+              >
+                Import
+              </a>
+              <button
+                type="button"
+                (click)="createNote()"
+                class="px-3 py-1.5 rounded bg-primary text-white text-xs font-medium hover:opacity-90"
+                title="New note (Ctrl+N)"
+              >
+                + New
+              </button>
+            </div>
           </div>
           <input
             type="search"
