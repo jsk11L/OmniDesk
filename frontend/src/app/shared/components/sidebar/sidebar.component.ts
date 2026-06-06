@@ -71,6 +71,15 @@ interface NavItem {
             {{ item.label }}
           </a>
         }
+        @if (isAdmin()) {
+          <a
+            routerLink="/app/admin"
+            routerLinkActive="bg-surface-hover text-text"
+            class="block px-3 py-2 rounded text-sm text-text-muted hover:bg-surface-hover hover:text-text transition-colors"
+          >
+            Admin
+          </a>
+        }
         <button
           type="button"
           (click)="logout()"
@@ -88,6 +97,7 @@ export class SidebarComponent {
   private readonly uploads = inject(UploadsService);
 
   readonly userEmail = computed(() => this.auth.user()?.email ?? null);
+  readonly isAdmin = computed(() => this.auth.user()?.isAdmin ?? false);
   readonly avatarSrc = computed(() => this.uploads.resolveUrl(this.auth.user()?.avatarUrl ?? null));
   readonly displayName = computed(() => {
     const u = this.auth.user();

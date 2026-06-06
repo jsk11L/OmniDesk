@@ -1,6 +1,6 @@
 import type { Routes } from '@angular/router';
 
-import { authGuard, publicOnlyGuard } from './core/guards/auth.guard';
+import { adminGuard, authGuard, publicOnlyGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   {
@@ -95,6 +95,12 @@ export const routes: Routes = [
           import('./features/settings/settings-home/settings-home.component').then(
             (m) => m.SettingsHomeComponent,
           ),
+      },
+      {
+        path: 'admin',
+        canActivate: [adminGuard],
+        loadComponent: () =>
+          import('./features/admin/admin.component').then((m) => m.AdminComponent),
       },
     ],
   },

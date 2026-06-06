@@ -21,3 +21,11 @@ export const publicOnlyGuard: CanActivateFn = () => {
   if (!auth.accessToken) return true;
   return router.createUrlTree(['/app']);
 };
+
+export const adminGuard: CanActivateFn = () => {
+  const auth = inject(AuthService);
+  const router = inject(Router);
+
+  if (auth.user()?.isAdmin) return true;
+  return router.createUrlTree(['/app']);
+};
