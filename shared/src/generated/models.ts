@@ -38,6 +38,17 @@ export interface User {
   resetPasswordExpiry: string | null;
   timezone: string | null;
   deletedAt: string | null;
+  isAdmin: boolean;
+  isSuspended: boolean;
+  acceptedTermsAt: string | null;
+  termsVersion: string | null;
+  uploadBytesUsed: bigint;
+  lastLoginAt: string | null;
+  failedLoginAttempts: number;
+  lockedUntil: string | null;
+  totpSecret: string | null;
+  totpEnabledAt: string | null;
+  totpBackupCodes: string[];
   createdAt: string;
   updatedAt: string;
   activeThemeId: string | null;
@@ -49,6 +60,18 @@ export interface PushSubscription {
   endpoint: string;
   p256dh: string;
   auth: string;
+  createdAt: string;
+}
+
+export interface AuditLog {
+  id: string;
+  userId: string | null;
+  action: string;
+  entityType: string | null;
+  entityId: string | null;
+  metadata: unknown | null;
+  ipAddress: string | null;
+  userAgent: string | null;
   createdAt: string;
 }
 

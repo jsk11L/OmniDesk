@@ -38,6 +38,22 @@ model User {
   resetPasswordExpiry DateTime?
   timezone            String?
   deletedAt           DateTime?
+
+  // Block 2 · public multi-user
+  isAdmin             Boolean   @default(false)
+  isSuspended         Boolean   @default(false)
+  acceptedTermsAt     DateTime?
+  termsVersion        String?
+  uploadBytesUsed     BigInt    @default(0)
+  lastLoginAt         DateTime?
+  failedLoginAttempts Int       @default(0)
+  lockedUntil         DateTime?
+
+  // 2FA (TOTP)
+  totpSecret          String?
+  totpEnabledAt       DateTime?
+  totpBackupCodes     String[]
+
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
 
@@ -64,6 +80,23 @@ model PushSubscription {
   createdAt DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Significant/destructive event log (Block 2, §3.3.3). Intentionally has no
+// relation to User so entries survive a hard account deletion for forensics.
+model AuditLog {
+  id         String   @id @default(uuid())
+  userId     String?
+  action     String
+  entityType String?
+  entityId   String?
+  metadata   Json?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([action, createdAt])
 }
 
 // ─────────────────────────────────────────

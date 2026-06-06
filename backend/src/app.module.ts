@@ -9,6 +9,7 @@ import { join, isAbsolute } from 'path';
 import { AppController } from './app.controller';
 import { validateEnv } from './config/env.validation';
 import { PrismaModule } from './prisma/prisma.module';
+import { AuditModule } from './audit/audit.module';
 import { MailModule } from './mail/mail.module';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
@@ -49,6 +50,7 @@ import { HabitsModule } from './habits/habits.module';
     ]),
     ScheduleModule.forRoot(),
     PrismaModule,
+    AuditModule,
     MailModule,
     UsersModule,
     AuthModule,
