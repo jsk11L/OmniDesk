@@ -353,10 +353,12 @@ const TIERS: PriceTier[] = [
           </div>
           <div class="mono footer-links">
             <a href="https://github.com" target="_blank" rel="noopener">GitHub</a>
-            <a href="#">Docs</a>
-            <a href="#">Privacy</a>
-            <a href="#">Terms</a>
+            <a routerLink="/legal/privacy">Privacy</a>
+            <a routerLink="/legal/terms">Terms</a>
           </div>
+        </div>
+        <div class="land-container footer-note">
+          <span class="mono">We never sell your data · no ads · no tracking · no SLA</span>
         </div>
       </footer>
     </div>
@@ -786,6 +788,7 @@ const TIERS: PriceTier[] = [
     .footer-links { display: flex; gap: 14px; font-size: 11px; }
     .footer-links a { color: var(--color-text-muted); text-decoration: none; }
     .footer-links a:hover { color: var(--color-text); }
+    .footer-note { margin-top: 12px; text-align: center; font-size: 11px; color: var(--color-text-faint); }
   `],
 })
 export class LandingComponent {
