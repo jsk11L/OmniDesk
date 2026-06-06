@@ -1,15 +1,18 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
   Post,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
+import type { Request } from 'express';
 
-import { AuthService, PublicUser, TokenPair } from './auth.service';
+import { AuthService, PublicUser, RequestMeta, TokenPair } from './auth.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -17,7 +20,16 @@ import { VerifyEmailDto } from './dto/verify-email.dto';
 import { RefreshDto } from './dto/refresh.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { DeleteAccountDto } from './dto/delete-account.dto';
+import { RestoreAccountDto } from './dto/restore-account.dto';
 import { CurrentUser, AuthUser } from '../common/decorators/current-user.decorator';
+
+function requestMeta(req: Request): RequestMeta {
+  return {
+    ipAddress: req.ip ?? null,
+    userAgent: req.headers['user-agent'] ?? null,
+  };
+}
 
 @Throttle({ default: { limit: 10, ttl: 15 * 60 * 1000 } })
 @Controller('auth')
@@ -64,5 +76,22 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   me(@CurrentUser() user: AuthUser): Promise<PublicUser> {
     return this.auth.me(user.id);
+  }
+
+  @Delete('account')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  deleteAccount(
+    @CurrentUser() user: AuthUser,
+    @Body() dto: DeleteAccountDto,
+    @Req() req: Request,
+  ): Promise<{ message: string }> {
+    return this.auth.deleteAccount(user.id, dto.password, requestMeta(req));
+  }
+
+  @Post('restore-account')
+  @HttpCode(HttpStatus.OK)
+  restoreAccount(@Body() dto: RestoreAccountDto): Promise<{ message: string }> {
+    return this.auth.restoreAccount(dto.token);
   }
 }

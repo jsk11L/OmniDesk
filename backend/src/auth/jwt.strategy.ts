@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
@@ -22,8 +22,11 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
 
   async validate(payload: JwtPayload): Promise<{ id: string; email: string }> {
     const user = await this.users.findById(payload.sub);
-    if (!user) {
+    if (!user || user.deletedAt) {
       throw new UnauthorizedException('Invalid token subject');
+    }
+    if (user.isSuspended) {
+      throw new ForbiddenException('This account is suspended');
     }
     return { id: user.id, email: user.email };
   }

@@ -15,6 +15,7 @@ import type { User } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { UsersService } from '../users/users.service';
 import { MailService } from '../mail/mail.service';
+import { AuditLogService } from '../audit/audit-log.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { VerifyEmailDto } from './dto/verify-email.dto';
@@ -25,6 +26,13 @@ import type { JwtPayload } from './jwt.strategy';
 
 const BCRYPT_ROUNDS = 12;
 const RESET_TOKEN_TTL_MS = 60 * 60 * 1000;
+const MAX_FAILED_LOGINS = 5;
+const LOCKOUT_MS = 15 * 60 * 1000;
+
+export interface RequestMeta {
+  ipAddress?: string | null;
+  userAgent?: string | null;
+}
 
 export interface PublicUser {
   id: string;
@@ -32,6 +40,7 @@ export interface PublicUser {
   displayName: string | null;
   avatarUrl: string | null;
   isEmailVerified: boolean;
+  isAdmin: boolean;
   activeThemeId: string | null;
   createdAt: Date;
 }
@@ -51,6 +60,7 @@ export class AuthService {
     private readonly mail: MailService,
     private readonly jwt: JwtService,
     private readonly config: ConfigService,
+    private readonly audit: AuditLogService,
   ) {}
 
   async register(dto: RegisterDto): Promise<{ message: string }> {
@@ -62,6 +72,9 @@ export class AuthService {
     const passwordHash = await bcrypt.hash(dto.password, BCRYPT_ROUNDS);
     const verificationToken = randomUUID();
 
+    // The very first account on a fresh instance becomes the admin.
+    const isFirstUser = (await this.prisma.user.count()) === 0;
+
     const user = await this.prisma.$transaction(async (tx) => {
       const created = await tx.user.create({
         data: {
@@ -70,6 +83,7 @@ export class AuthService {
           displayName: dto.displayName ?? null,
           verificationToken,
           isEmailVerified: false,
+          isAdmin: isFirstUser,
         },
       });
 
@@ -112,8 +126,19 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
+    if (user.deletedAt) {
+      throw new ForbiddenException('This account has been deactivated');
+    }
+    if (user.isSuspended) {
+      throw new ForbiddenException('This account is suspended');
+    }
+    if (user.lockedUntil && user.lockedUntil > new Date()) {
+      throw new ForbiddenException('Too many failed attempts. Try again later.');
+    }
+
     const passwordOk = await bcrypt.compare(dto.password, user.passwordHash);
     if (!passwordOk) {
+      await this.registerFailedLogin(user.id, user.failedLoginAttempts);
       throw new UnauthorizedException('Invalid credentials');
     }
 
@@ -121,7 +146,94 @@ export class AuthService {
       throw new ForbiddenException('Email not verified');
     }
 
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { failedLoginAttempts: 0, lockedUntil: null, lastLoginAt: new Date() },
+    });
+
     return this.issueTokens(user);
+  }
+
+  private async registerFailedLogin(userId: string, current: number): Promise<void> {
+    const attempts = current + 1;
+    if (attempts >= MAX_FAILED_LOGINS) {
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: { failedLoginAttempts: 0, lockedUntil: new Date(Date.now() + LOCKOUT_MS) },
+      });
+    } else {
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: { failedLoginAttempts: attempts },
+      });
+    }
+  }
+
+  async deleteAccount(userId: string, password: string, meta?: RequestMeta): Promise<{ message: string }> {
+    const user = await this.users.findById(userId);
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+    const ok = await bcrypt.compare(password, user.passwordHash);
+    if (!ok) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    await this.prisma.user.update({ where: { id: userId }, data: { deletedAt: new Date() } });
+
+    const graceDays = Number(this.config.get('SOFT_DELETE_DAYS', 30)) || 30;
+    const token = await this.jwt.signAsync(
+      { sub: userId, purpose: 'restore' },
+      { secret: this.config.getOrThrow<string>('JWT_SECRET'), expiresIn: `${graceDays}d` },
+    );
+    const restoreUrl = `${this.config.get<string>('FRONTEND_URL', 'http://localhost:4200')}/auth/restore?token=${encodeURIComponent(token)}`;
+    try {
+      await this.mail.sendAccountDeletionEmail(user.email, restoreUrl, user.displayName, graceDays);
+    } catch (err) {
+      this.logger.error(`Failed to send deletion email to ${user.email}`, err as Error);
+    }
+
+    await this.audit.log({
+      userId,
+      action: 'user.soft_deleted',
+      entityType: 'User',
+      entityId: userId,
+      ipAddress: meta?.ipAddress,
+      userAgent: meta?.userAgent,
+    });
+
+    return {
+      message: `Account scheduled for deletion. You have ${graceDays} days to restore it via the link we emailed you.`,
+    };
+  }
+
+  async restoreAccount(token: string): Promise<{ message: string }> {
+    let payload: { sub: string; purpose?: string };
+    try {
+      payload = await this.jwt.verifyAsync(token, {
+        secret: this.config.getOrThrow<string>('JWT_SECRET'),
+      });
+    } catch {
+      throw new BadRequestException('Invalid or expired restore token');
+    }
+    if (payload.purpose !== 'restore') {
+      throw new BadRequestException('Invalid restore token');
+    }
+    const user = await this.users.findById(payload.sub);
+    if (!user) {
+      throw new BadRequestException('Invalid restore token');
+    }
+    if (!user.deletedAt) {
+      return { message: 'Account is already active' };
+    }
+    await this.prisma.user.update({ where: { id: user.id }, data: { deletedAt: null } });
+    await this.audit.log({
+      userId: user.id,
+      action: 'user.restored',
+      entityType: 'User',
+      entityId: user.id,
+    });
+    return { message: 'Account restored. You can now sign in.' };
   }
 
   async refresh(dto: RefreshDto): Promise<{ accessToken: string }> {
@@ -232,6 +344,7 @@ export class AuthService {
       displayName: user.displayName,
       avatarUrl: user.avatarUrl,
       isEmailVerified: user.isEmailVerified,
+      isAdmin: user.isAdmin,
       activeThemeId: user.activeThemeId,
       createdAt: user.createdAt,
     };

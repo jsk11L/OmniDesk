@@ -74,6 +74,26 @@ export class MailService implements OnModuleInit {
     await this.send(to, subject, html);
   }
 
+  async sendAccountDeletionEmail(
+    to: string,
+    restoreUrl: string,
+    displayName?: string | null,
+    graceDays = 30,
+  ): Promise<void> {
+    const subject = 'Your OmniDesk account is scheduled for deletion';
+    const html = `
+      <div style="font-family: Inter, sans-serif; max-width: 560px; margin: 0 auto;">
+        <h2>Hi${displayName ? ' ' + this.escapeHtml(displayName) : ''},</h2>
+        <p>Your OmniDesk account has been scheduled for deletion and will be permanently removed in ${graceDays} days.</p>
+        <p>If this was a mistake, you can restore it any time before then:</p>
+        <p><a href="${restoreUrl}" style="background:#6366f1;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none;display:inline-block;">Restore my account</a></p>
+        <p style="color:#71717a;font-size:13px;">If the button doesn't work, copy and paste this URL into your browser:<br/>${restoreUrl}</p>
+        <p style="color:#71717a;font-size:13px;">If you did request the deletion, you can ignore this email and your data will be erased after the grace period.</p>
+      </div>
+    `;
+    await this.send(to, subject, html);
+  }
+
   async sendNotificationEmail(
     to: string,
     title: string,
