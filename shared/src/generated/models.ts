@@ -49,6 +49,9 @@ export interface User {
   totpSecret: string | null;
   totpEnabledAt: string | null;
   totpBackupCodes: string[];
+  dndStart: string | null;
+  dndEnd: string | null;
+  quietDays: number[];
   createdAt: string;
   updatedAt: string;
   activeThemeId: string | null;
@@ -60,6 +63,10 @@ export interface PushSubscription {
   endpoint: string;
   p256dh: string;
   auth: string;
+  userAgent: string | null;
+  deviceLabel: string | null;
+  platform: string | null;
+  lastUsedAt: string | null;
   createdAt: string;
 }
 
@@ -200,6 +207,45 @@ export interface Note {
 export interface NoteNotification {
   id: string;
   noteId: string;
+  notificationId: string;
+}
+
+export interface ListItemNotification {
+  id: string;
+  listItemId: string;
+  notificationId: string;
+}
+
+export interface TodoItemNotification {
+  id: string;
+  todoItemId: string;
+  notificationId: string;
+  minutesBefore: number | null;
+}
+
+export interface HabitNotification {
+  id: string;
+  habitId: string;
+  notificationId: string;
+  timeOfDay: string | null;
+}
+
+export interface WishlistItemNotification {
+  id: string;
+  wishlistItemId: string;
+  notificationId: string;
+}
+
+export interface PlannedPurchaseNotification {
+  id: string;
+  plannedPurchaseId: string;
+  notificationId: string;
+  daysBefore: number | null;
+}
+
+export interface SavingsGoalNotification {
+  id: string;
+  savingsGoalId: string;
   notificationId: string;
 }
 

@@ -54,6 +54,11 @@ model User {
   totpEnabledAt       DateTime?
   totpBackupCodes     String[]
 
+  // Notification preferences (Block 3) — do-not-disturb window, local "HH:MM"
+  dndStart            String?
+  dndEnd              String?
+  quietDays           Int[]     @default([]) // 0=Sun … 6=Sat; no push on these days
+
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
 
@@ -72,12 +77,16 @@ model User {
 }
 
 model PushSubscription {
-  id        String   @id @default(uuid())
-  userId    String
-  endpoint  String   @unique
-  p256dh    String
-  auth      String
-  createdAt DateTime @default(now())
+  id          String    @id @default(uuid())
+  userId      String
+  endpoint    String    @unique
+  p256dh      String
+  auth        String
+  userAgent   String?
+  deviceLabel String?
+  platform    String? // 'desktop' | 'mobile' | 'tablet' | 'unknown'
+  lastUsedAt  DateTime?
+  createdAt   DateTime  @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
@@ -121,10 +130,16 @@ model NotificationConfig {
   createdAt     DateTime              @default(now())
   updatedAt     DateTime              @updatedAt
 
-  user           User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  calendarEvents CalendarEventNotification[]
-  notes          NoteNotification[]
-  inAppQueue     InAppNotification[]
+  user             User                          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  calendarEvents   CalendarEventNotification[]
+  notes            NoteNotification[]
+  listItems        ListItemNotification[]
+  todoItems        TodoItemNotification[]
+  habits           HabitNotification[]
+  wishlistItems    WishlistItemNotification[]
+  plannedPurchases PlannedPurchaseNotification[]
+  savingsGoals     SavingsGoalNotification[]
+  inAppQueue       InAppNotification[]
 }
 
 enum NotificationTrigger {
@@ -284,8 +299,9 @@ model ListItem {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  list List          @relation(fields: [listId], references: [id], onDelete: Cascade)
-  tags ListItemTag[]
+  list          List                   @relation(fields: [listId], references: [id], onDelete: Cascade)
+  tags          ListItemTag[]
+  notifications ListItemNotification[]
 }
 
 model ListItemTag {
@@ -326,6 +342,67 @@ model NoteNotification {
   notificationId String
 
   note         Note               @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  notification NotificationConfig @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+}
+
+// ─────────────────────────────────────────
+// ATTACHABLE NOTIFICATIONS · 6 new entities (Block 3, §3.4.3)
+// ─────────────────────────────────────────
+
+model ListItemNotification {
+  id             String @id @default(uuid())
+  listItemId     String
+  notificationId String
+
+  listItem     ListItem           @relation(fields: [listItemId], references: [id], onDelete: Cascade)
+  notification NotificationConfig @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+}
+
+model TodoItemNotification {
+  id             String @id @default(uuid())
+  todoItemId     String
+  notificationId String
+  minutesBefore  Int? // fires N minutes before the item's dueDate
+
+  todoItem     TodoItem           @relation(fields: [todoItemId], references: [id], onDelete: Cascade)
+  notification NotificationConfig @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+}
+
+model HabitNotification {
+  id             String @id @default(uuid())
+  habitId        String
+  notificationId String
+  timeOfDay      String? // "HH:MM" in the user's local time
+
+  habit        Habit              @relation(fields: [habitId], references: [id], onDelete: Cascade)
+  notification NotificationConfig @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+}
+
+model WishlistItemNotification {
+  id             String @id @default(uuid())
+  wishlistItemId String
+  notificationId String
+
+  wishlistItem WishlistItem       @relation(fields: [wishlistItemId], references: [id], onDelete: Cascade)
+  notification NotificationConfig @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+}
+
+model PlannedPurchaseNotification {
+  id                String @id @default(uuid())
+  plannedPurchaseId String
+  notificationId    String
+  daysBefore        Int? // fires N days before the targetDate
+
+  plannedPurchase PlannedPurchase    @relation(fields: [plannedPurchaseId], references: [id], onDelete: Cascade)
+  notification    NotificationConfig @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+}
+
+model SavingsGoalNotification {
+  id             String @id @default(uuid())
+  savingsGoalId  String
+  notificationId String
+
+  savingsGoal  SavingsGoal        @relation(fields: [savingsGoalId], references: [id], onDelete: Cascade)
   notification NotificationConfig @relation(fields: [notificationId], references: [id], onDelete: Cascade)
 }
 
@@ -372,7 +449,8 @@ model TodoItem {
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
-  column TodoColumn @relation(fields: [columnId], references: [id], onDelete: Cascade)
+  column        TodoColumn             @relation(fields: [columnId], references: [id], onDelete: Cascade)
+  notifications TodoItemNotification[]
 }
 
 enum TodoPriority {
@@ -403,8 +481,9 @@ model Habit {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  user    User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  entries HabitEntry[]
+  user          User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  entries       HabitEntry[]
+  notifications HabitNotification[]
 }
 
 model HabitEntry {
@@ -525,7 +604,8 @@ model WishlistItem {
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
 
-  board FinanceBoard @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  board         FinanceBoard               @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  notifications WishlistItemNotification[]
 }
 
 enum WishlistPriority {
@@ -548,8 +628,9 @@ model PlannedPurchase {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
-  board    FinanceBoard     @relation(fields: [boardId], references: [id], onDelete: Cascade)
-  category FinanceCategory? @relation(fields: [categoryId], references: [id])
+  board         FinanceBoard                  @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  category      FinanceCategory?              @relation(fields: [categoryId], references: [id])
+  notifications PlannedPurchaseNotification[]
 }
 
 model SavingsGoal {
@@ -567,8 +648,9 @@ model SavingsGoal {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  board         FinanceBoard          @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  board         FinanceBoard              @relation(fields: [boardId], references: [id], onDelete: Cascade)
   contributions SavingsContribution[]
+  notifications SavingsGoalNotification[]
 }
 
 model SavingsContribution {
