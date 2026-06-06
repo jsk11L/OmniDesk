@@ -16,6 +16,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { UsersService } from '../users/users.service';
 import { MailService } from '../mail/mail.service';
 import { AuditLogService } from '../audit/audit-log.service';
+import { TwoFactorService } from './two-factor.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { VerifyEmailDto } from './dto/verify-email.dto';
@@ -50,6 +51,11 @@ export interface TokenPair {
   refreshToken: string;
 }
 
+export interface TwoFactorChallenge {
+  requires2FA: true;
+  tempToken: string;
+}
+
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
@@ -61,6 +67,7 @@ export class AuthService {
     private readonly jwt: JwtService,
     private readonly config: ConfigService,
     private readonly audit: AuditLogService,
+    private readonly twoFactor: TwoFactorService,
   ) {}
 
   async register(dto: RegisterDto): Promise<{ message: string }> {
@@ -122,7 +129,7 @@ export class AuthService {
     return { message: 'Account verified' };
   }
 
-  async login(dto: LoginDto): Promise<TokenPair> {
+  async login(dto: LoginDto): Promise<TokenPair | TwoFactorChallenge> {
     const user = await this.users.findByEmail(dto.email);
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
@@ -148,11 +155,49 @@ export class AuthService {
       throw new ForbiddenException('Email not verified');
     }
 
+    // Password is correct: clear the lockout counters.
     await this.prisma.user.update({
       where: { id: user.id },
-      data: { failedLoginAttempts: 0, lockedUntil: null, lastLoginAt: new Date() },
+      data: { failedLoginAttempts: 0, lockedUntil: null },
     });
 
+    // If 2FA is enabled, issue a short-lived challenge token instead of a session.
+    if (user.totpEnabledAt) {
+      const tempToken = await this.jwt.signAsync(
+        { sub: user.id, purpose: '2fa' },
+        { secret: this.config.getOrThrow<string>('JWT_SECRET'), expiresIn: '5m' },
+      );
+      return { requires2FA: true, tempToken };
+    }
+
+    await this.prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
+    return this.issueTokens(user);
+  }
+
+  async twoFactorLogin(tempToken: string, code: string): Promise<TokenPair> {
+    let payload: { sub: string; purpose?: string };
+    try {
+      payload = await this.jwt.verifyAsync(tempToken, {
+        secret: this.config.getOrThrow<string>('JWT_SECRET'),
+      });
+    } catch {
+      throw new UnauthorizedException('Invalid or expired 2FA session');
+    }
+    if (payload.purpose !== '2fa') {
+      throw new UnauthorizedException('Invalid 2FA session');
+    }
+    const user = await this.users.findById(payload.sub);
+    if (!user || user.deletedAt) {
+      throw new UnauthorizedException('Invalid 2FA session');
+    }
+    if (user.isSuspended) {
+      throw new ForbiddenException('This account is suspended');
+    }
+    const ok = await this.twoFactor.verifyCode(user.id, code);
+    if (!ok) {
+      throw new UnauthorizedException('Invalid verification code');
+    }
+    await this.prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
     return this.issueTokens(user);
   }
 
