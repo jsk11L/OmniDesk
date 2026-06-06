@@ -99,26 +99,22 @@ export class DashboardService {
   }
 
   private async pickRandomItem(userId: string): Promise<unknown | null> {
-    const listsCount = await this.prisma.list.count({ where: { userId } });
-    if (listsCount === 0) return null;
+    // Only lists that actually have at least one item (single query).
+    const lists = await this.prisma.list.findMany({
+      where: { userId, items: { some: {} } },
+      select: {
+        id: true,
+        name: true,
+        icon: true,
+        fields: { where: { fieldType: 'IMAGE_URL' }, select: { id: true }, take: 1 },
+      },
+    });
+    if (lists.length === 0) return null;
 
-    for (let attempt = 0; attempt < 5; attempt++) {
-      const listIdx = Math.floor(Math.random() * listsCount);
-      const list = await this.prisma.list.findFirst({
-        where: { userId },
-        skip: listIdx,
-        take: 1,
-        select: {
-          id: true,
-          name: true,
-          icon: true,
-          fields: { where: { fieldType: 'IMAGE_URL' }, select: { id: true }, take: 1 },
-        },
-      });
-      if (!list) continue;
-
+    {
+      const list = lists[Math.floor(Math.random() * lists.length)];
       const itemsCount = await this.prisma.listItem.count({ where: { listId: list.id } });
-      if (itemsCount === 0) continue;
+      if (itemsCount === 0) return null;
 
       const itemIdx = Math.floor(Math.random() * itemsCount);
       const item = await this.prisma.listItem.findFirst({
@@ -127,7 +123,7 @@ export class DashboardService {
         take: 1,
         select: { id: true, title: true, customFields: true },
       });
-      if (!item) continue;
+      if (!item) return null;
 
       const imageFieldId = list.fields[0]?.id;
       const customFields = item.customFields as Record<string, unknown>;

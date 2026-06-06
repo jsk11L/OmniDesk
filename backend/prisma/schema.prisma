@@ -183,6 +183,8 @@ model CalendarEvent {
 
   user          User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
   notifications CalendarEventNotification[]
+
+  @@index([userId, startDate])
 }
 
 model CalendarEventNotification {
@@ -334,6 +336,8 @@ model Note {
 
   user          User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   notifications NoteNotification[]
+
+  @@index([userId, updatedAt])
 }
 
 model NoteNotification {
@@ -568,6 +572,8 @@ model Transaction {
 
   board    FinanceBoard     @relation(fields: [boardId], references: [id], onDelete: Cascade)
   category FinanceCategory? @relation(fields: [categoryId], references: [id])
+
+  @@index([boardId, date])
 }
 
 model Budget {
