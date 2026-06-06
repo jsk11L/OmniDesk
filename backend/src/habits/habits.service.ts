@@ -78,6 +78,16 @@ export class HabitsService {
     });
   }
 
+  /** Today's entry status for every habit of the user, in a single query (avoids N+1). */
+  async today(userId: string): Promise<{ habitId: string; status: HabitEntryStatus }[]> {
+    const start = new Date(new Date().toISOString().slice(0, 10));
+    const end = new Date(start.getTime() + 24 * 60 * 60 * 1000);
+    return this.prisma.habitEntry.findMany({
+      where: { habit: { userId }, date: { gte: start, lt: end } },
+      select: { habitId: true, status: true },
+    });
+  }
+
   async markEntry(userId: string, habitId: string, dto: MarkHabitEntryDto): Promise<HabitEntry> {
     await this.findById(userId, habitId);
     const date = new Date(dto.date);

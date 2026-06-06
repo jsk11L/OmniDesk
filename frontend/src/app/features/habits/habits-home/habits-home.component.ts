@@ -189,7 +189,7 @@ export class HabitsHomeComponent implements OnInit {
       next: (habits) => {
         this.habits.set(habits);
         this.loading.set(false);
-        this.loadTodayEntries(habits);
+        this.loadTodayEntries();
       },
       error: () => {
         this.loading.set(false);
@@ -198,24 +198,17 @@ export class HabitsHomeComponent implements OnInit {
     });
   }
 
-  private loadTodayEntries(habits: Habit[]): void {
-    const today = new Date();
-    const dateStr = today.toISOString().slice(0, 10);
-    const marks = new Map<string, boolean>();
-    let pending = habits.length;
-    if (pending === 0) return;
-    for (const h of habits) {
-      this.service.entries(h.id, dateStr, dateStr).subscribe({
-        next: (entries) => {
-          const done = entries.some((e) => e.status === 'DONE' || e.status === 'RECOVERED');
-          marks.set(h.id, done);
-          if (--pending === 0) this.todayMarks.set(new Map(marks));
-        },
-        error: () => {
-          if (--pending === 0) this.todayMarks.set(new Map(marks));
-        },
-      });
-    }
+  private loadTodayEntries(): void {
+    this.service.today().subscribe({
+      next: (entries) => {
+        const marks = new Map<string, boolean>();
+        for (const e of entries) {
+          if (e.status === 'DONE' || e.status === 'RECOVERED') marks.set(e.habitId, true);
+        }
+        this.todayMarks.set(marks);
+      },
+      error: () => undefined,
+    });
   }
 
   protected isDoneToday(habit: Habit): boolean {
