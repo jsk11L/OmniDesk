@@ -25,6 +25,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 
 import { NotesService } from '../services/notes.service';
 import { DialogService } from '../../../shared/services/dialog.service';
+import { DataExportService } from '../../../core/services/data-export.service';
 import { EmojiPickerComponent } from '../../../shared/components/emoji-picker/emoji-picker.component';
 import {
   NoteSettingsDialogComponent,
@@ -78,6 +79,14 @@ const ResizableImage = Image.extend({
               class="hover:text-text"
             >
               {{ pinned() ? '★' : '☆' }}
+            </button>
+            <button
+              type="button"
+              (click)="downloadMarkdown()"
+              class="hover:text-text"
+              title="Download as Markdown"
+            >
+              ⬇
             </button>
             <button
               type="button"
@@ -301,6 +310,7 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
   private readonly toastr = inject(ToastrService);
   private readonly dialog = inject(MatDialog);
   private readonly dialogs = inject(DialogService);
+  private readonly exportService = inject(DataExportService);
 
   readonly note = input.required<Note>();
   readonly noteDeleted = output<string>();
@@ -383,6 +393,13 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
 
   protected focusEditor(): void {
     this.editor?.commands.focus();
+  }
+
+  protected downloadMarkdown(): void {
+    this.exportService.noteMarkdown(this.note().id).subscribe({
+      next: (res) => this.exportService.save(res, 'note.md'),
+      error: () => this.toastr.error('Could not download the note'),
+    });
   }
 
   private applyNoteToEditor(note: Note): void {

@@ -6,6 +6,7 @@ import { ToastrService } from 'ngx-toastr';
 import { AuthService, TwoFactorSetup } from '../../../core/services/auth.service';
 import { UploadsService, UploadUsage } from '../../../shared/services/uploads.service';
 import { DialogService } from '../../../shared/services/dialog.service';
+import { DataExportService } from '../../../core/services/data-export.service';
 
 @Component({
   selector: 'app-security-settings',
@@ -86,6 +87,18 @@ import { DialogService } from '../../../shared/services/dialog.service';
         }
       </section>
 
+      <!-- Your data -->
+      <section>
+        <h2 class="text-sm font-semibold mb-3">Your data</h2>
+        <p class="text-sm text-text-muted mb-3">
+          Download a complete archive of everything you've created (JSON + your
+          notes as Markdown + your uploaded images). Your data is yours.
+        </p>
+        <button type="button" (click)="exportData()" [disabled]="exporting()" class="px-3 py-1.5 text-sm rounded border border-border hover:bg-surface-hover disabled:opacity-50">
+          {{ exporting() ? 'Preparing…' : 'Export my data (.zip)' }}
+        </button>
+      </section>
+
       <!-- Danger zone -->
       <section>
         <h2 class="text-sm font-semibold mb-3 text-danger">Danger zone</h2>
@@ -105,7 +118,9 @@ export class SecuritySettingsComponent implements OnInit {
   private readonly uploads = inject(UploadsService);
   private readonly dialogs = inject(DialogService);
   private readonly toastr = inject(ToastrService);
+  private readonly exportService = inject(DataExportService);
 
+  protected readonly exporting = signal(false);
   protected readonly usage = signal<UploadUsage | null>(null);
   protected readonly twoFaEnabled = signal(false);
   protected readonly setup = signal<TwoFactorSetup | null>(null);
@@ -213,6 +228,20 @@ export class SecuritySettingsComponent implements OnInit {
         this.auth.logout();
       },
       error: (err: HttpErrorResponse) => this.toastr.error(this.msg(err)),
+    });
+  }
+
+  protected exportData(): void {
+    this.exporting.set(true);
+    this.exportService.exportAll().subscribe({
+      next: (res) => {
+        this.exporting.set(false);
+        this.exportService.save(res, 'omnidesk-export.zip');
+      },
+      error: () => {
+        this.exporting.set(false);
+        this.toastr.error('Could not export your data');
+      },
     });
   }
 
