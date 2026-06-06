@@ -11,10 +11,83 @@ import type {
   UpdateNotificationDto,
 } from '../notifications.types';
 
+export type AttachEntityType =
+  | 'calendar-event'
+  | 'note'
+  | 'list-item'
+  | 'todo-item'
+  | 'habit'
+  | 'wishlist-item'
+  | 'planned-purchase'
+  | 'savings-goal';
+
+export interface AttachedNotification {
+  id: string;
+  notificationId: string;
+  minutesBefore?: number | null;
+  timeOfDay?: string | null;
+  daysBefore?: number | null;
+  notification: NotificationConfig;
+}
+
+export interface AttachOptions {
+  notificationId: string;
+  minutesBefore?: number;
+  timeOfDay?: string;
+  daysBefore?: number;
+}
+
+export interface NotificationPreferences {
+  timezone: string | null;
+  dndStart: string | null;
+  dndEnd: string | null;
+  quietDays: number[];
+}
+
 @Injectable({ providedIn: 'root' })
 export class NotificationsService {
   private readonly http = inject(HttpClient);
   private readonly base = `${environment.apiUrl}/notifications`;
+
+  listTargets(type: AttachEntityType, entityId: string): Observable<AttachedNotification[]> {
+    return this.http
+      .get<ApiResponse<AttachedNotification[]>>(`${this.base}/targets/${type}/${entityId}`)
+      .pipe(map((r) => r.data));
+  }
+
+  attachTarget(
+    type: AttachEntityType,
+    entityId: string,
+    options: AttachOptions,
+  ): Observable<AttachedNotification> {
+    return this.http
+      .post<ApiResponse<AttachedNotification>>(`${this.base}/targets/${type}/${entityId}`, options)
+      .pipe(map((r) => r.data));
+  }
+
+  detachTarget(
+    type: AttachEntityType,
+    entityId: string,
+    notificationId: string,
+  ): Observable<{ detached: boolean }> {
+    return this.http
+      .delete<ApiResponse<{ detached: boolean }>>(
+        `${this.base}/targets/${type}/${entityId}/${notificationId}`,
+      )
+      .pipe(map((r) => r.data));
+  }
+
+  getPreferences(): Observable<NotificationPreferences> {
+    return this.http
+      .get<ApiResponse<NotificationPreferences>>(`${this.base}/preferences`)
+      .pipe(map((r) => r.data));
+  }
+
+  updatePreferences(dto: Partial<NotificationPreferences>): Observable<NotificationPreferences> {
+    return this.http
+      .patch<ApiResponse<NotificationPreferences>>(`${this.base}/preferences`, dto)
+      .pipe(map((r) => r.data));
+  }
 
   list(): Observable<NotificationConfig[]> {
     return this.http.get<ApiResponse<NotificationConfig[]>>(this.base).pipe(map((r) => r.data));

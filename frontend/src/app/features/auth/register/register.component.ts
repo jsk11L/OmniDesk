@@ -155,6 +155,7 @@ export class RegisterComponent {
         acceptedTerms: raw.acceptedTerms,
         acceptedNoDataSelling: raw.acceptedNoDataSelling,
         captchaToken: this.captchaToken() ?? undefined,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || undefined,
       })
       .subscribe({
         next: (res) => {

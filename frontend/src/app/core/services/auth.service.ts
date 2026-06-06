@@ -14,6 +14,7 @@ interface RegisterDto {
   acceptedTerms: boolean;
   acceptedNoDataSelling: boolean;
   captchaToken?: string;
+  timezone?: string;
 }
 
 export type LoginResult = { user: User } | { requires2FA: true; tempToken: string };
