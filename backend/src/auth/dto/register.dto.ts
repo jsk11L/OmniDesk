@@ -1,4 +1,13 @@
-import { IsEmail, IsOptional, IsString, Matches, MaxLength, MinLength } from 'class-validator';
+import {
+  Equals,
+  IsBoolean,
+  IsEmail,
+  IsOptional,
+  IsString,
+  Matches,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 import { Transform } from 'class-transformer';
 
 const PASSWORD_REGEX = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%&*?])[A-Za-z\d!@#$%&*?]{8,}$/;
@@ -22,4 +31,16 @@ export class RegisterDto {
   @MaxLength(100)
   @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
   displayName?: string;
+
+  @IsOptional()
+  @IsString()
+  captchaToken?: string;
+
+  @IsBoolean()
+  @Equals(true, { message: 'You must accept the Terms of Service and Privacy Policy.' })
+  acceptedTerms!: boolean;
+
+  @IsBoolean()
+  @Equals(true, { message: 'You must acknowledge that your data is never sold.' })
+  acceptedNoDataSelling!: boolean;
 }

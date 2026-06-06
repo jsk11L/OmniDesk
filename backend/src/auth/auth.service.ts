@@ -84,6 +84,8 @@ export class AuthService {
           verificationToken,
           isEmailVerified: false,
           isAdmin: isFirstUser,
+          acceptedTermsAt: new Date(),
+          termsVersion: this.config.get<string>('TERMS_VERSION', '2026-06'),
         },
       });
 

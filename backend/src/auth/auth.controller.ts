@@ -13,6 +13,7 @@ import { Throttle } from '@nestjs/throttler';
 import type { Request } from 'express';
 
 import { AuthService, PublicUser, RequestMeta, TokenPair } from './auth.service';
+import { CaptchaService } from './captcha.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -34,11 +35,15 @@ function requestMeta(req: Request): RequestMeta {
 @Throttle({ default: { limit: 10, ttl: 15 * 60 * 1000 } })
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly auth: AuthService) {}
+  constructor(
+    private readonly auth: AuthService,
+    private readonly captcha: CaptchaService,
+  ) {}
 
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
-  register(@Body() dto: RegisterDto): Promise<{ message: string }> {
+  async register(@Body() dto: RegisterDto, @Req() req: Request): Promise<{ message: string }> {
+    await this.captcha.verify(dto.captchaToken, req.ip);
     return this.auth.register(dto);
   }
 
@@ -62,7 +67,11 @@ export class AuthController {
 
   @Post('forgot-password')
   @HttpCode(HttpStatus.OK)
-  forgotPassword(@Body() dto: ForgotPasswordDto): Promise<{ message: string }> {
+  async forgotPassword(
+    @Body() dto: ForgotPasswordDto,
+    @Req() req: Request,
+  ): Promise<{ message: string }> {
+    await this.captcha.verify(dto.captchaToken, req.ip);
     return this.auth.forgotPassword(dto);
   }
 
