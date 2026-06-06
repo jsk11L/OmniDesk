@@ -6,6 +6,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 
 import { TodosService } from '../services/todos.service';
 import { DialogService } from '../../../shared/services/dialog.service';
+import { NotificationAttachPanelComponent } from '../../../shared/components/notification-attach-panel/notification-attach-panel.component';
 import type { TodoBoard, TodoItem, TodoPriority } from '../todos.types';
 
 export interface TodoItemDialogData {
@@ -20,7 +21,7 @@ export type TodoItemDialogResult = TodoItem | { deleted: string } | undefined;
   selector: 'app-todo-item-dialog',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, MatDialogModule],
+  imports: [ReactiveFormsModule, MatDialogModule, NotificationAttachPanelComponent],
   template: `
     <div class="bg-surface text-text p-6 w-[min(520px,95vw)]">
       <h2 class="text-lg font-semibold mb-4">
@@ -99,6 +100,12 @@ export type TodoItemDialogResult = TodoItem | { deleted: string } | undefined;
             placeholder="work, urgent"
           />
         </label>
+
+        @if (data.item) {
+          <div class="border-t border-border pt-3">
+            <app-notification-attach-panel entityType="todo-item" [entityId]="data.item.id" />
+          </div>
+        }
 
         @if (error()) {
           <p class="text-sm text-danger">{{ error() }}</p>

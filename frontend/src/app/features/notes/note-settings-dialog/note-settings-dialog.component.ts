@@ -5,6 +5,7 @@ import { ToastrService } from 'ngx-toastr';
 
 import { NotesService } from '../services/notes.service';
 import { ImageInputComponent } from '../../../shared/components/image-input/image-input.component';
+import { NotificationAttachPanelComponent } from '../../../shared/components/notification-attach-panel/notification-attach-panel.component';
 import type { Note } from '../notes.types';
 
 export interface NoteSettingsDialogData {
@@ -17,7 +18,7 @@ export type NoteSettingsDialogResult = Note | undefined;
   selector: 'app-note-settings-dialog',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, MatDialogModule, ImageInputComponent],
+  imports: [FormsModule, MatDialogModule, ImageInputComponent, NotificationAttachPanelComponent],
   template: `
     <div class="bg-surface text-text p-6 w-[min(520px,95vw)]">
       <h2 class="text-lg font-semibold mb-4">Note settings</h2>
@@ -54,6 +55,10 @@ export type NoteSettingsDialogResult = Note | undefined;
           <input type="checkbox" [(ngModel)]="pinned" class="accent-primary" />
           <span class="text-sm">Pin note to the top</span>
         </label>
+
+        <div class="border-t border-border pt-3">
+          <app-notification-attach-panel entityType="note" [entityId]="data.note.id" />
+        </div>
       </div>
 
       <div class="flex justify-end gap-2 pt-4">

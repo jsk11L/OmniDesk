@@ -7,6 +7,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { HabitsService } from '../services/habits.service';
 import { DialogService } from '../../../shared/services/dialog.service';
 import { EmojiPickerComponent } from '../../../shared/components/emoji-picker/emoji-picker.component';
+import { NotificationAttachPanelComponent } from '../../../shared/components/notification-attach-panel/notification-attach-panel.component';
 import type { CreateHabitDto, GoalPeriod, Habit } from '../habits.types';
 
 export interface HabitDialogData {
@@ -29,7 +30,7 @@ const DAYS = [
   selector: 'app-habit-dialog',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, MatDialogModule, EmojiPickerComponent],
+  imports: [ReactiveFormsModule, MatDialogModule, EmojiPickerComponent, NotificationAttachPanelComponent],
   template: `
     <div class="bg-surface text-text p-6 w-[min(480px,95vw)]">
       <h2 class="text-lg font-semibold mb-4">{{ data.habit ? 'Edit habit' : 'New habit' }}</h2>
@@ -118,6 +119,12 @@ const DAYS = [
             class="w-20 h-10 bg-background border border-border rounded cursor-pointer"
           />
         </label>
+
+        @if (data.habit) {
+          <div class="border-t border-border pt-3">
+            <app-notification-attach-panel entityType="habit" [entityId]="data.habit.id" />
+          </div>
+        }
 
         @if (error()) { <p class="text-sm text-danger">{{ error() }}</p> }
 

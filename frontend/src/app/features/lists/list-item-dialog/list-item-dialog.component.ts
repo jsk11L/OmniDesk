@@ -7,6 +7,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { ListsService } from '../services/lists.service';
 import { DialogService } from '../../../shared/services/dialog.service';
 import { ImageInputComponent } from '../../../shared/components/image-input/image-input.component';
+import { NotificationAttachPanelComponent } from '../../../shared/components/notification-attach-panel/notification-attach-panel.component';
 import type { List, ListField, ListItem } from '../lists.types';
 
 export interface ListItemDialogData {
@@ -20,7 +21,7 @@ export type ListItemDialogResult = ListItem | undefined;
   selector: 'app-list-item-dialog',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, FormsModule, MatDialogModule, ImageInputComponent],
+  imports: [ReactiveFormsModule, FormsModule, MatDialogModule, ImageInputComponent, NotificationAttachPanelComponent],
   template: `
     <div class="bg-surface text-text p-6 w-[min(600px,95vw)] max-h-[90vh] overflow-y-auto">
       <h2 class="text-lg font-semibold mb-4">
@@ -121,6 +122,12 @@ export type ListItemDialogResult = ListItem | undefined;
                 </button>
               }
             </div>
+          </div>
+        }
+
+        @if (data.item) {
+          <div class="border-t border-border pt-4">
+            <app-notification-attach-panel entityType="list-item" [entityId]="data.item.id" />
           </div>
         }
 
