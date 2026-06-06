@@ -362,6 +362,8 @@ model Habit {
   color         String   @default("#6366f1")
   activeDays    Int[]    @default([1, 2, 3, 4, 5, 6, 0])
   weeklyGoal    Int?
+  goalPeriod    GoalPeriod?
+  goalTarget    Int?
   currentStreak Int      @default(0)
   longestStreak Int      @default(0)
   perfectWeeks  Int      @default(0)
@@ -390,6 +392,12 @@ enum HabitEntryStatus {
   MISSED
   RECOVERED
   REST
+}
+
+enum GoalPeriod {
+  DAILY
+  WEEKLY
+  MONTHLY
 }
 
 // ─────────────────────────────────────────

@@ -1,7 +1,7 @@
 // Entity shapes from the Prisma-generated source (D-011).
-export type { Habit, HabitEntry, HabitEntryStatus } from '@omnidesk/shared';
+export type { Habit, HabitEntry, HabitEntryStatus, GoalPeriod } from '@omnidesk/shared';
 
-import type { HabitEntryStatus } from '@omnidesk/shared';
+import type { HabitEntryStatus, GoalPeriod } from '@omnidesk/shared';
 
 export interface HabitStats {
   currentStreak: number;
@@ -18,6 +18,8 @@ export interface CreateHabitDto {
   color?: string;
   activeDays: number[];
   weeklyGoal?: number;
+  goalPeriod?: GoalPeriod;
+  goalTarget?: number;
 }
 
 export type UpdateHabitDto = Partial<CreateHabitDto>;

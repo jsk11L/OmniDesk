@@ -34,6 +34,8 @@ export class HabitsService {
         color: dto.color ?? '#6366f1',
         activeDays: dto.activeDays,
         weeklyGoal: dto.weeklyGoal ?? null,
+        goalPeriod: dto.goalPeriod ?? null,
+        goalTarget: dto.goalTarget ?? null,
       },
     });
   }
@@ -49,6 +51,8 @@ export class HabitsService {
         color: dto.color ?? habit.color,
         activeDays: dto.activeDays ?? habit.activeDays,
         weeklyGoal: dto.weeklyGoal === undefined ? habit.weeklyGoal : dto.weeklyGoal || null,
+        goalPeriod: dto.goalPeriod === undefined ? habit.goalPeriod : dto.goalPeriod || null,
+        goalTarget: dto.goalTarget === undefined ? habit.goalTarget : dto.goalTarget || null,
       },
     });
   }

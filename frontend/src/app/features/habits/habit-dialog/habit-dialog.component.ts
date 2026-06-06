@@ -7,7 +7,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { HabitsService } from '../services/habits.service';
 import { DialogService } from '../../../shared/services/dialog.service';
 import { EmojiPickerComponent } from '../../../shared/components/emoji-picker/emoji-picker.component';
-import type { CreateHabitDto, Habit } from '../habits.types';
+import type { CreateHabitDto, GoalPeriod, Habit } from '../habits.types';
 
 export interface HabitDialogData {
   habit?: Habit;
@@ -83,17 +83,32 @@ const DAYS = [
           <p class="text-xs text-text-muted mt-1">Unmarked days are rest days and don't break the streak.</p>
         </div>
 
-        <label class="block">
-          <span class="block text-xs text-text-muted mb-1">Weekly goal (optional)</span>
-          <input
-            type="number"
-            min="1"
-            max="7"
-            formControlName="weeklyGoal"
-            placeholder="N times / week"
-            class="w-full px-3 py-2 bg-background border border-border rounded outline-none focus:border-primary"
-          />
-        </label>
+        <div>
+          <span class="block text-xs text-text-muted mb-1">Goal (optional)</span>
+          <div class="grid grid-cols-2 gap-3">
+            <select
+              formControlName="goalPeriod"
+              class="px-3 py-2 bg-background border border-border rounded outline-none focus:border-primary"
+            >
+              <option value="">No goal</option>
+              <option value="DAILY">Daily</option>
+              <option value="WEEKLY">Weekly</option>
+              <option value="MONTHLY">Monthly</option>
+            </select>
+            <input
+              type="number"
+              min="1"
+              max="366"
+              formControlName="goalTarget"
+              placeholder="times / period"
+              [disabled]="!form.controls.goalPeriod.value"
+              class="px-3 py-2 bg-background border border-border rounded outline-none focus:border-primary disabled:opacity-50"
+            />
+          </div>
+          <p class="text-xs text-text-muted mt-1">
+            e.g. 3 times per week. Leave on "No goal" to just track the streak.
+          </p>
+        </div>
 
         <label class="block">
           <span class="block text-xs text-text-muted mb-1">Color</span>
@@ -151,7 +166,8 @@ export class HabitDialogComponent {
       name: [h?.name ?? '', [Validators.required, Validators.maxLength(100)]],
       description: [h?.description ?? ''],
       color: [h?.color ?? '#6366f1'],
-      weeklyGoal: [h?.weeklyGoal ?? null],
+      goalPeriod: [(h?.goalPeriod ?? '') as GoalPeriod | ''],
+      goalTarget: [h?.goalTarget ?? null as number | null],
     });
     if (h) {
       this.icon.set(h.icon);
@@ -182,7 +198,8 @@ export class HabitDialogComponent {
       icon: this.icon() ?? undefined,
       color: raw.color,
       activeDays: Array.from(this.activeDays()),
-      weeklyGoal: raw.weeklyGoal ? Number(raw.weeklyGoal) : undefined,
+      goalPeriod: raw.goalPeriod ? (raw.goalPeriod as GoalPeriod) : undefined,
+      goalTarget: raw.goalPeriod && raw.goalTarget ? Number(raw.goalTarget) : undefined,
     };
 
     const req$ = this.data.habit

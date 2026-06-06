@@ -2,6 +2,7 @@ import {
   ArrayMaxSize,
   ArrayUnique,
   IsArray,
+  IsEnum,
   IsInt,
   IsOptional,
   IsString,
@@ -11,6 +12,7 @@ import {
   Min,
   MinLength,
 } from 'class-validator';
+import { GoalPeriod } from '@prisma/client';
 
 const HEX_COLOR = /^#[0-9a-f]{6}$/i;
 
@@ -48,4 +50,14 @@ export class CreateHabitDto {
   @Min(1)
   @Max(7)
   weeklyGoal?: number;
+
+  @IsOptional()
+  @IsEnum(GoalPeriod)
+  goalPeriod?: GoalPeriod;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(366)
+  goalTarget?: number;
 }

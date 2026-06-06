@@ -18,6 +18,8 @@ export type TodoPriority = "LOW" | "MEDIUM" | "HIGH" | "URGENT";
 
 export type HabitEntryStatus = "DONE" | "MISSED" | "RECOVERED" | "REST";
 
+export type GoalPeriod = "DAILY" | "WEEKLY" | "MONTHLY";
+
 export type FinanceCategoryType = "INCOME" | "EXPENSE";
 
 export type BudgetPeriod = "WEEKLY" | "MONTHLY" | "ANNUAL";
@@ -221,6 +223,8 @@ export interface Habit {
   color: string;
   activeDays: number[];
   weeklyGoal: number | null;
+  goalPeriod: GoalPeriod | null;
+  goalTarget: number | null;
   currentStreak: number;
   longestStreak: number;
   perfectWeeks: number;

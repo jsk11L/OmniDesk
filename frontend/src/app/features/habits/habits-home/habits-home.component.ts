@@ -97,6 +97,10 @@ interface HabitCalendar {
                   </div>
                 </div>
 
+                @if (goalLabel(habit); as goal) {
+                  <p class="text-xs text-text-muted mb-2">🎯 Goal: {{ goal }}</p>
+                }
+
                 <div class="flex gap-1 text-xs">
                   @for (d of dayLabels; track d.value) {
                     <span
@@ -294,6 +298,12 @@ export class HabitsHomeComponent implements OnInit {
     const weeks: (HeatCell | null)[][] = [];
     for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7));
     return weeks;
+  }
+
+  protected goalLabel(habit: Habit): string | null {
+    if (!habit.goalPeriod || !habit.goalTarget) return null;
+    const period = habit.goalPeriod.toLowerCase();
+    return `${habit.goalTarget}× ${period}`;
   }
 
   protected cellColor(cell: HeatCell, habitColor: string): string {
