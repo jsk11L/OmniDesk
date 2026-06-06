@@ -8,6 +8,12 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
+import { Subject, debounceTime, distinctUntilChanged, of, switchMap } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+
+import { environment } from '../../../../environments/environment';
+import type { ApiResponse } from '../../../core/models/api-response.model';
 
 interface Command {
   id: string;
@@ -16,6 +22,21 @@ interface Command {
   shortcut?: string;
   action: () => void;
 }
+
+interface SearchResult {
+  type: 'note' | 'event' | 'list-item' | 'todo';
+  id: string;
+  title: string;
+  snippet: string;
+  link: string;
+}
+
+const TYPE_LABEL: Record<SearchResult['type'], string> = {
+  note: 'Note',
+  event: 'Event',
+  'list-item': 'List item',
+  todo: 'Task',
+};
 
 @Component({
   selector: 'app-command-palette',
@@ -70,6 +91,23 @@ interface Command {
             }
           </ul>
 
+          @if (results().length) {
+            <div class="border-t border-border">
+              <p class="px-4 pt-2 pb-1 text-xs text-text-muted uppercase tracking-wide">Search results</p>
+              <ul class="max-h-[35vh] overflow-y-auto pb-2">
+                @for (r of results(); track r.type + r.id) {
+                  <li (click)="selectResult(r)" class="px-4 py-2 flex items-center gap-2 cursor-pointer text-sm hover:bg-surface-hover">
+                    <span class="text-xs px-1.5 py-0.5 rounded bg-background border border-border text-text-muted shrink-0">{{ typeLabel(r.type) }}</span>
+                    <span class="flex flex-col min-w-0">
+                      <span class="truncate">{{ r.title }}</span>
+                      @if (r.snippet) { <span class="text-xs text-text-muted truncate">{{ r.snippet }}</span> }
+                    </span>
+                  </li>
+                }
+              </ul>
+            </div>
+          }
+
           <div class="border-t border-border px-4 py-2 text-xs text-text-muted flex justify-between">
             <span>↑↓ navigate · ↵ run · Tab accept · Esc close</span>
             <span>{{ filtered().length }} of {{ allCommands.length }}</span>
@@ -95,11 +133,40 @@ interface Command {
 })
 export class CommandPaletteComponent {
   private readonly router = inject(Router);
+  private readonly http = inject(HttpClient);
 
   protected readonly open = signal(false);
   protected query = '';
   protected readonly selectedIndex = signal(0);
   protected readonly queryReactive = signal('');
+  protected readonly results = signal<SearchResult[]>([]);
+  private readonly search$ = new Subject<string>();
+
+  constructor() {
+    this.search$
+      .pipe(
+        debounceTime(200),
+        distinctUntilChanged(),
+        switchMap((q) =>
+          q.trim().length >= 2
+            ? this.http.get<ApiResponse<SearchResult[]>>(
+                `${environment.apiUrl}/search?q=${encodeURIComponent(q.trim())}`,
+              )
+            : of({ data: [] as SearchResult[] }),
+        ),
+        takeUntilDestroyed(),
+      )
+      .subscribe((r) => this.results.set(r.data));
+  }
+
+  protected typeLabel(t: SearchResult['type']): string {
+    return TYPE_LABEL[t];
+  }
+
+  protected selectResult(r: SearchResult): void {
+    void this.router.navigateByUrl(r.link);
+    this.close();
+  }
 
   protected readonly allCommands: Command[] = [
     { id: 'nav-dashboard', label: 'Go to Dashboard', category: 'Navigation', shortcut: 'G D', action: () => this.go('/app') },
@@ -203,6 +270,7 @@ export class CommandPaletteComponent {
   protected onQueryChange(): void {
     this.queryReactive.set(this.query);
     this.selectedIndex.set(0);
+    this.search$.next(this.query);
   }
 
   protected setIndex(i: number): void {
@@ -227,5 +295,6 @@ export class CommandPaletteComponent {
     this.query = '';
     this.queryReactive.set('');
     this.selectedIndex.set(0);
+    this.results.set([]);
   }
 }

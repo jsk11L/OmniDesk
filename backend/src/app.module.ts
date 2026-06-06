@@ -26,6 +26,7 @@ import { HabitsModule } from './habits/habits.module';
 import { AdminModule } from './admin/admin.module';
 import { ExporterModule } from './exporter/exporter.module';
 import { ImporterModule } from './importer/importer.module';
+import { SearchModule } from './search/search.module';
 
 @Module({
   imports: [
@@ -70,6 +71,7 @@ import { ImporterModule } from './importer/importer.module';
     AdminModule,
     ExporterModule,
     ImporterModule,
+    SearchModule,
   ],
   controllers: [AppController],
   providers: [
