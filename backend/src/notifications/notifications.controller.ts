@@ -19,6 +19,7 @@ import { AttachmentService, type AttachEntityType } from './attachment.service';
 import { CreateNotificationDto } from './dto/create-notification.dto';
 import { UpdateNotificationDto } from './dto/update-notification.dto';
 import { AttachNotificationDto } from './dto/attach-notification.dto';
+import { UpdatePreferencesDto } from './dto/update-preferences.dto';
 import {
   PushSubscriptionDto,
   UnsubscribePushDto,
@@ -72,6 +73,18 @@ export class NotificationsController {
   @HttpCode(HttpStatus.OK)
   unsubscribePush(@CurrentUser() user: AuthUser, @Body() dto: UnsubscribePushDto) {
     return this.notifications.unsubscribePush(user.id, dto);
+  }
+
+  // ─── Preferences (Block 3) ───────────────────────────────
+
+  @Get('preferences')
+  getPreferences(@CurrentUser() user: AuthUser) {
+    return this.notifications.getPreferences(user.id);
+  }
+
+  @Patch('preferences')
+  updatePreferences(@CurrentUser() user: AuthUser, @Body() dto: UpdatePreferencesDto) {
+    return this.notifications.updatePreferences(user.id, dto);
   }
 
   // ─── Attach to entities (Block 3) ────────────────────────

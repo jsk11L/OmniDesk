@@ -36,6 +36,11 @@ export class RegisterDto {
   @IsString()
   captchaToken?: string;
 
+  @IsOptional()
+  @IsString()
+  @MaxLength(64)
+  timezone?: string;
+
   @IsBoolean()
   @Equals(true, { message: 'You must accept the Terms of Service and Privacy Policy.' })
   acceptedTerms!: boolean;

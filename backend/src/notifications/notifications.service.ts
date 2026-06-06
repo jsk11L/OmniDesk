@@ -10,6 +10,7 @@ import * as webpush from 'web-push';
 import type {
   InAppNotification,
   NotificationConfig,
+  Prisma,
   PushSubscription,
 } from '@prisma/client';
 
@@ -204,6 +205,40 @@ export class NotificationsService implements OnModuleInit {
     }
 
     return result;
+  }
+
+  // ─── Preferences (DND + timezone) ────────────────────────
+
+  private readonly PREF_SELECT = {
+    timezone: true,
+    dndStart: true,
+    dndEnd: true,
+    quietDays: true,
+  } as const;
+
+  async getPreferences(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: this.PREF_SELECT,
+    });
+    return user ?? { timezone: null, dndStart: null, dndEnd: null, quietDays: [] };
+  }
+
+  async updatePreferences(
+    userId: string,
+    dto: {
+      timezone?: string;
+      dndStart?: string | null;
+      dndEnd?: string | null;
+      quietDays?: number[];
+    },
+  ) {
+    const data: Prisma.UserUpdateInput = {};
+    if (dto.timezone !== undefined) data.timezone = dto.timezone || null;
+    if (dto.dndStart !== undefined) data.dndStart = dto.dndStart;
+    if (dto.dndEnd !== undefined) data.dndEnd = dto.dndEnd;
+    if (dto.quietDays !== undefined) data.quietDays = dto.quietDays;
+    return this.prisma.user.update({ where: { id: userId }, data, select: this.PREF_SELECT });
   }
 
   // ─── Inbox ───────────────────────────────────────────────

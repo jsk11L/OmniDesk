@@ -99,6 +99,7 @@ export class AuthService {
           isAdmin: isFirstUser,
           acceptedTermsAt: new Date(),
           termsVersion: this.config.get<string>('TERMS_VERSION', '2026-06'),
+          timezone: dto.timezone ?? null,
         },
       });
 
