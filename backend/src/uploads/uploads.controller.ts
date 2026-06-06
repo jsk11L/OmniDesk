@@ -7,6 +7,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { Throttle } from '@nestjs/throttler';
 
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser, type AuthUser } from '../common/decorators/current-user.decorator';
@@ -17,6 +18,8 @@ import { UploadsService } from './uploads.service';
 export class UploadsController {
   constructor(private readonly service: UploadsService) {}
 
+  // Anti-abuse: cap upload bursts (in addition to the per-user storage quota).
+  @Throttle({ default: { limit: 40, ttl: 15 * 60 * 1000 } })
   @Post()
   @UseInterceptors(FileInterceptor('file'))
   async upload(
