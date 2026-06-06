@@ -16,6 +16,7 @@ import type {
 import { PrismaService } from '../prisma/prisma.service';
 import { MailService } from '../mail/mail.service';
 import { UsersService } from '../users/users.service';
+import { isPushSuppressed } from './dnd.util';
 import { CreateNotificationDto } from './dto/create-notification.dto';
 import { UpdateNotificationDto } from './dto/update-notification.dto';
 import {
@@ -172,22 +173,34 @@ export class NotificationsService implements OnModuleInit {
 
     // External, best-effort side effects. They run after the fired marker is
     // committed so a transient push/email failure can never trigger a re-fire.
-    if (config.channels.includes('PUSH') && this.pushEnabled) {
-      result.pushSent = await this.sendPushToUser(config);
+    const needsUser = config.channels.includes('PUSH') || config.channels.includes('EMAIL');
+    const user = needsUser ? await this.users.findById(config.userId) : null;
+
+    if (config.channels.includes('PUSH') && this.pushEnabled && user) {
+      // Do-not-disturb only suppresses push; the in-app entry above still queues.
+      const suppressed = isPushSuppressed(
+        {
+          timezone: user.timezone,
+          dndStart: user.dndStart,
+          dndEnd: user.dndEnd,
+          quietDays: user.quietDays,
+        },
+        new Date(),
+      );
+      if (!suppressed) {
+        result.pushSent = await this.sendPushToUser(config);
+      }
     }
 
-    if (config.channels.includes('EMAIL')) {
-      const user = await this.users.findById(config.userId);
-      if (user) {
-        await this.mail.sendNotificationEmail(
-          user.email,
-          config.title,
-          config.message,
-          config.iconUrl,
-          config.accentColor,
-        );
-        result.emailsSent = 1;
-      }
+    if (config.channels.includes('EMAIL') && user) {
+      await this.mail.sendNotificationEmail(
+        user.email,
+        config.title,
+        config.message,
+        config.iconUrl,
+        config.accentColor,
+      );
+      result.emailsSent = 1;
     }
 
     return result;
