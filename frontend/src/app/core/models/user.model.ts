@@ -4,6 +4,7 @@ export interface User {
   displayName: string | null;
   avatarUrl: string | null;
   isEmailVerified: boolean;
+  isAdmin: boolean;
   activeThemeId: string | null;
   createdAt: string;
 }

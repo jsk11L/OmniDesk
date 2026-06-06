@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal, viewChild } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -6,12 +6,14 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '../../../core/services/auth.service';
 import { AnimatedBgComponent } from '../../../shared/components/animated-bg/animated-bg.component';
 import { PasswordInputComponent } from '../../../shared/components/password-input/password-input.component';
+import { CaptchaComponent } from '../../../shared/components/captcha/captcha.component';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-register',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, RouterLink, AnimatedBgComponent, PasswordInputComponent],
+  imports: [ReactiveFormsModule, RouterLink, AnimatedBgComponent, PasswordInputComponent, CaptchaComponent],
   template: `
     <div class="relative min-h-screen flex items-center justify-center bg-background px-4 py-8 overflow-hidden">
       <app-animated-bg />
@@ -63,6 +65,23 @@ import { PasswordInputComponent } from '../../../shared/components/password-inpu
             />
           </div>
 
+          <label class="flex items-start gap-2 text-xs text-text-muted cursor-pointer">
+            <input type="checkbox" formControlName="acceptedTerms" class="mt-0.5 accent-primary" />
+            <span>
+              I accept the
+              <a routerLink="/legal/terms" target="_blank" class="text-primary hover:underline">Terms of Service</a>
+              and
+              <a routerLink="/legal/privacy" target="_blank" class="text-primary hover:underline">Privacy Policy</a>.
+            </span>
+          </label>
+
+          <label class="flex items-start gap-2 text-xs text-text-muted cursor-pointer">
+            <input type="checkbox" formControlName="acceptedNoDataSelling" class="mt-0.5 accent-primary" />
+            <span>I understand OmniDesk <strong>never sells my data</strong> and has no SLA.</span>
+          </label>
+
+          <app-captcha (token)="captchaToken.set($event)" />
+
           @if (error()) {
             <p class="text-sm text-danger">{{ error() }}</p>
           }
@@ -88,19 +107,29 @@ export class RegisterComponent {
   private readonly fb = inject(FormBuilder);
   private readonly auth = inject(AuthService);
 
+  private readonly captcha = viewChild(CaptchaComponent);
+
   protected readonly loading = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly success = signal<string | null>(null);
   protected readonly password = signal('');
   protected readonly passwordValid = signal(false);
+  protected readonly captchaToken = signal<string | null>(null);
+  protected readonly captchaEnabled = !!environment.captchaSiteKey;
 
   protected readonly form = this.fb.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
     displayName: ['', [Validators.maxLength(100)]],
+    acceptedTerms: [false, [Validators.requiredTrue]],
+    acceptedNoDataSelling: [false, [Validators.requiredTrue]],
   });
 
   protected canSubmit(): boolean {
-    return this.form.valid && this.passwordValid();
+    return (
+      this.form.valid &&
+      this.passwordValid() &&
+      (!this.captchaEnabled || !!this.captchaToken())
+    );
   }
 
   protected onPasswordChange(value: string): void {
@@ -118,27 +147,32 @@ export class RegisterComponent {
     this.loading.set(true);
 
     const raw = this.form.getRawValue();
-    const payload: { email: string; password: string; displayName?: string } = {
-      email: raw.email,
-      password: this.password(),
-    };
-    if (raw.displayName.trim()) {
-      payload.displayName = raw.displayName.trim();
-    }
-
-    this.auth.register(payload).subscribe({
-      next: (res) => {
-        this.loading.set(false);
-        this.success.set(res.message);
-        this.form.reset();
-        this.password.set('');
-        this.passwordValid.set(false);
-      },
-      error: (err: HttpErrorResponse) => {
-        this.loading.set(false);
-        this.error.set(this.extractErrorMessage(err));
-      },
-    });
+    this.auth
+      .register({
+        email: raw.email,
+        password: this.password(),
+        displayName: raw.displayName.trim() || undefined,
+        acceptedTerms: raw.acceptedTerms,
+        acceptedNoDataSelling: raw.acceptedNoDataSelling,
+        captchaToken: this.captchaToken() ?? undefined,
+      })
+      .subscribe({
+        next: (res) => {
+          this.loading.set(false);
+          this.success.set(res.message);
+          this.form.reset();
+          this.password.set('');
+          this.passwordValid.set(false);
+          this.captchaToken.set(null);
+          this.captcha()?.reset();
+        },
+        error: (err: HttpErrorResponse) => {
+          this.loading.set(false);
+          this.captchaToken.set(null);
+          this.captcha()?.reset();
+          this.error.set(this.extractErrorMessage(err));
+        },
+      });
   }
 
   private extractErrorMessage(err: HttpErrorResponse): string {

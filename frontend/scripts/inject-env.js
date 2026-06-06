@@ -7,9 +7,12 @@ const path = require('node:path');
 
 const file = path.resolve(__dirname, '../src/environments/environment.production.ts');
 const vapidPublicKey = process.env.VAPID_PUBLIC_KEY || '';
+const captchaSiteKey = process.env.CAPTCHA_SITE_KEY || '';
 
 let src = fs.readFileSync(file, 'utf8');
 src = src.replace(/vapidPublicKey:\s*'[^']*'/, `vapidPublicKey: '${vapidPublicKey}'`);
+src = src.replace(/captchaSiteKey:\s*'[^']*'/, `captchaSiteKey: '${captchaSiteKey}'`);
 fs.writeFileSync(file, src);
 
 console.log(`[inject-env] vapidPublicKey ${vapidPublicKey ? 'set' : 'left empty'}`);
+console.log(`[inject-env] captchaSiteKey ${captchaSiteKey ? 'set' : 'left empty'}`);
