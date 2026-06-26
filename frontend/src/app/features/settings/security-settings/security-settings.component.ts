@@ -51,23 +51,25 @@ import { DataExportService } from '../../../core/services/data-export.service';
               Disable 2FA
             </button>
           </div>
-        } @else if (setup(); as s) {
-          <p class="text-sm text-text-muted mb-3">Scan this QR with your authenticator app, then enter the 6-digit code to confirm.</p>
-          <img [src]="s.qrDataUrl" alt="2FA QR code" class="w-44 h-44 rounded bg-white p-2 mb-2" />
-          <p class="text-xs text-text-muted mb-3">Can't scan? Secret: <code class="bg-surface px-1.5 py-0.5 rounded">{{ s.secret }}</code></p>
-          <div class="flex gap-2 items-center">
-            <input
-              type="text"
-              inputmode="numeric"
-              [(ngModel)]="code"
-              placeholder="123456"
-              class="px-3 py-2 bg-background border border-border rounded text-sm outline-none focus:border-primary w-32 tracking-widest"
-            />
-            <button type="button" [disabled]="!code.trim() || busy()" (click)="confirmEnable()" class="px-3 py-1.5 text-sm rounded bg-primary text-white hover:opacity-90 disabled:opacity-50">
-              {{ busy() ? 'Enabling…' : 'Confirm' }}
-            </button>
-            <button type="button" (click)="cancelSetup()" class="px-3 py-1.5 text-sm rounded hover:bg-surface-hover">Cancel</button>
-          </div>
+        } @else if (setup()) {
+          @if (setup(); as s) {
+            <p class="text-sm text-text-muted mb-3">Scan this QR with your authenticator app, then enter the 6-digit code to confirm.</p>
+            <img [src]="s.qrDataUrl" alt="2FA QR code" class="w-44 h-44 rounded bg-white p-2 mb-2" />
+            <p class="text-xs text-text-muted mb-3">Can't scan? Secret: <code class="bg-surface px-1.5 py-0.5 rounded">{{ s.secret }}</code></p>
+            <div class="flex gap-2 items-center">
+              <input
+                type="text"
+                inputmode="numeric"
+                [(ngModel)]="code"
+                placeholder="123456"
+                class="px-3 py-2 bg-background border border-border rounded text-sm outline-none focus:border-primary w-32 tracking-widest"
+              />
+              <button type="button" [disabled]="!code.trim() || busy()" (click)="confirmEnable()" class="px-3 py-1.5 text-sm rounded bg-primary text-white hover:opacity-90 disabled:opacity-50">
+                {{ busy() ? 'Enabling…' : 'Confirm' }}
+              </button>
+              <button type="button" (click)="cancelSetup()" class="px-3 py-1.5 text-sm rounded hover:bg-surface-hover">Cancel</button>
+            </div>
+          }
         } @else {
           <p class="text-sm text-text-muted mb-3">Add a second step at sign-in with an authenticator app (TOTP).</p>
           <button type="button" [disabled]="busy()" (click)="startSetup()" class="px-3 py-1.5 text-sm rounded bg-primary text-white hover:opacity-90 disabled:opacity-50">
