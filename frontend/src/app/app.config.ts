@@ -11,8 +11,10 @@ import { routes } from './app.routes';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 
 const DIALOG_DEFAULTS: MatDialogConfig = {
-  width: 'min(560px, 92vw)',
-  maxWidth: '92vw',
+  // No fixed width: each dialog's own inner `w-[min(Npx,95vw)]` governs, so the
+  // panel never squeezes content (which made text hit the edges). maxWidth keeps
+  // it within the viewport on phones.
+  maxWidth: '95vw',
   maxHeight: '90vh',
   panelClass: 'omni-dialog',
   backdropClass: 'omni-backdrop',
