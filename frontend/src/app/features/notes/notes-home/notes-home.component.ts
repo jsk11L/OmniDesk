@@ -23,7 +23,12 @@ import type { Note } from '../notes.types';
   imports: [FormsModule, RouterLink, NoteEditorComponent],
   template: `
     <div class="h-full flex">
-      <aside class="w-[320px] shrink-0 border-r border-border flex flex-col bg-background">
+      <aside
+        [class]="
+          'shrink-0 border-r border-border flex-col bg-background w-full md:w-[320px] ' +
+          (selectedId() ? 'hidden md:flex' : 'flex')
+        "
+      >
         <div class="p-4 border-b border-border">
           <div class="flex items-center justify-between mb-3">
             <h1 class="text-xl font-semibold">Notes</h1>
@@ -104,9 +109,22 @@ import type { Note } from '../notes.types';
         </ul>
       </aside>
 
-      <section class="flex-1 overflow-hidden">
+      <section
+        [class]="
+          'flex-1 overflow-hidden flex-col min-w-0 ' +
+          (selectedNote() ? 'flex' : 'hidden md:flex')
+        "
+      >
         @if (selectedNote(); as note) {
+          <button
+            type="button"
+            (click)="selectedId.set(null)"
+            class="md:hidden px-4 py-2 text-sm text-text-muted hover:text-text border-b border-border text-left shrink-0"
+          >
+            ← Notes
+          </button>
           <app-note-editor
+            class="flex-1 min-h-0 block"
             [note]="note"
             (noteDeleted)="onDeleted($event)"
             (noteUpdated)="onUpdated($event)"
