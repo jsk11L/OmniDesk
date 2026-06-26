@@ -1,339 +1,445 @@
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { DatePipe, DecimalPipe } from '@angular/common';
+import { DatePipe } from '@angular/common';
 
 import { AuthService } from '../../core/services/auth.service';
-import { UploadsService } from '../../shared/services/uploads.service';
 import { DashboardService } from './dashboard.service';
 import type { DashboardData } from './dashboard.types';
+
+interface MiniCell {
+  day: number | null;
+  isToday: boolean;
+  dots: string[];
+}
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, DatePipe, DecimalPipe],
+  imports: [RouterLink, DatePipe],
   template: `
-    <div class="p-4 sm:p-6 max-w-7xl mx-auto">
-      <header class="mb-6">
-        <h1 class="text-xl sm:text-2xl font-semibold mb-1">Hi{{ greeting() }}</h1>
-        <p class="text-text-muted text-sm">Your day at a glance.</p>
-      </header>
-
+    <div class="page">
       @if (data(); as d) {
-        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-          <!-- Next event -->
-          <a routerLink="/app/calendar" class="widget">
-            <header class="widget-header">
-              <span class="widget-icon">📅</span>
-              <h2>Next event</h2>
-            </header>
-            @if (d.nextEvent; as e) {
-              <div class="widget-body">
-                <p class="title-line">
-                  <span class="dot" [style.background-color]="e.color"></span>
-                  <strong>{{ e.title }}</strong>
-                </p>
-                <p class="meta">{{ e.startDate | date:'EEEE d MMM, HH:mm' }}</p>
-                @if (e.location) { <p class="meta">📍 {{ e.location }}</p> }
-              </div>
-            } @else {
-              <p class="empty">No upcoming events</p>
-            }
-          </a>
+        <!-- Greeting -->
+        <header class="page-header">
+          <div>
+            <div class="uppercase-tag">{{ today() }}</div>
+            <h1 class="page-title mt-1">{{ greeting() }}</h1>
+            <p class="page-subtitle">{{ subtitle(d) }}</p>
+          </div>
+          <div class="flex gap-2 shrink-0">
+            <a routerLink="/app/calendar" class="btn btn-sm">📅 Calendar</a>
+            <a routerLink="/app/todos" class="btn btn-sm btn-primary">✓ Tasks</a>
+          </div>
+        </header>
 
-          <!-- Today's TO-DOs -->
-          <a routerLink="/app/todos" class="widget">
-            <header class="widget-header">
-              <span class="widget-icon">✓</span>
-              <h2>Today's tasks</h2>
-            </header>
-            <div class="widget-body">
-              @if (d.todayTodos.pending.length === 0 && d.todayTodos.completed.length === 0 && !d.todayTodos.extraNoDate) {
-                <p class="empty">Nothing for today. Enjoy your day.</p>
+        <!-- Stat row -->
+        <div class="stat-row">
+          <div class="stat-card">
+            <div class="stat-top">
+              <span class="uppercase-tag">Balance · {{ monthLabel() }}</span>
+              <span>{{ d.stats.balance >= 0 ? '📈' : '📉' }}</span>
+            </div>
+            <div
+              class="stat-value mono"
+              [class.text-success]="d.stats.balance >= 0"
+              [class.text-danger]="d.stats.balance < 0"
+            >
+              {{ formatCurrency(d.stats.balance, d.stats.currency) }}
+            </div>
+            <div class="stat-sub mono">
+              @if (d.stats.balanceDelta !== null) {
+                {{ formatDelta(d.stats.balanceDelta, d.stats.currency) }} vs last month
               } @else {
-                @if (d.todayTodos.pending.length) {
-                  <p class="section-title">Pending ({{ d.todayTodos.pending.length }})</p>
-                  <ul class="todo-list">
-                    @for (t of d.todayTodos.pending.slice(0, 4); track t.id) {
-                      <li>
-                        <span class="circle"></span>
-                        <span class="todo-text">
-                          <span
-                            class="todo-title"
-                            [class.priority-high]="t.priority === 'HIGH' || t.priority === 'URGENT'"
-                          >
-                            {{ t.title }}
-                          </span>
-                          <span class="todo-meta">
-                            <span class="todo-chip">{{ t.column.name }}</span>
-                            @if (t.dueDate) {
-                              <span class="todo-due">⏰ {{ t.dueDate | date: 'HH:mm' }}</span>
-                            }
-                            @if (t.priority === 'HIGH' || t.priority === 'URGENT') {
-                              <span class="todo-prio">{{ t.priority }}</span>
-                            }
-                          </span>
-                        </span>
-                      </li>
-                    }
-                  </ul>
-                }
-                @if (d.todayTodos.completed.length) {
-                  <p class="section-title mt-2">Done ({{ d.todayTodos.completed.length }})</p>
-                  <ul class="todo-list completed">
-                    @for (t of d.todayTodos.completed.slice(0, 2); track t.id) {
-                      <li>✓ <s>{{ t.title }}</s></li>
-                    }
-                  </ul>
-                }
-                @if (d.todayTodos.extraNoDate; as e) {
-                  <p class="section-title mt-2">No date</p>
-                  <p class="todo-extra">○ {{ e.title }}</p>
-                }
+                this month
               }
             </div>
-          </a>
+          </div>
 
-          <!-- Latest note -->
-          <a
-            routerLink="/app/notes"
-            [queryParams]="d.latestNote ? { note: d.latestNote.id } : null"
-            class="widget"
-          >
-            <header class="widget-header">
-              <span class="widget-icon">📝</span>
-              <h2>Latest note</h2>
-            </header>
-            @if (d.latestNote; as n) {
-              <div class="widget-body">
-                <p class="title-line">
-                  @if (n.icon) { <span>{{ n.icon }}</span> }
-                  <strong>{{ n.title || 'Untitled' }}</strong>
-                </p>
-                <p class="meta">Updated {{ n.updatedAt | date:'d MMM, HH:mm' }}</p>
-                @if (n.tags.length) {
-                  <div class="tags">
-                    @for (t of n.tags.slice(0, 4); track t) {
-                      <span class="tag">{{ t }}</span>
-                    }
-                  </div>
-                }
-              </div>
-            } @else {
-              <p class="empty">No notes yet</p>
-            }
-          </a>
+          <div class="stat-card">
+            <div class="stat-top">
+              <span class="uppercase-tag">Tasks today</span>
+              <span>🗂️</span>
+            </div>
+            <div class="stat-value mono text-primary">{{ d.stats.todoToday }}</div>
+            <div class="stat-sub mono">
+              {{ d.stats.todoHigh }} high priority
+            </div>
+          </div>
 
-          <!-- Next finance goal -->
-          <a routerLink="/app/finance" class="widget">
-            <header class="widget-header">
-              <span class="widget-icon">💰</span>
-              <h2>Your budget</h2>
-            </header>
-            @if (d.nextFinanceGoal; as g) {
-              <div class="widget-body">
-                <p class="title-line"><strong>{{ g.name }}</strong></p>
-                <p class="meta">
-                  {{ g.current | number:'1.0-2' }} / {{ g.target | number:'1.0-2' }}
-                </p>
-                <div class="progress">
-                  <div class="progress-fill" [style.width.%]="g.percent"
-                       [class.over]="g.percent >= 100"></div>
-                </div>
-                <p class="meta">{{ g.percent }}% used</p>
-              </div>
-            } @else {
-              <p class="empty">No goals configured</p>
-            }
-          </a>
+          <div class="stat-card">
+            <div class="stat-top">
+              <span class="uppercase-tag">Events this week</span>
+              <span>📅</span>
+            </div>
+            <div class="stat-value mono">{{ d.stats.eventsThisWeek }}</div>
+            <div class="stat-sub mono truncate">
+              {{ d.stats.nextEventLabel ?? 'nothing scheduled' }}
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-top">
+              <span class="uppercase-tag">Best streak</span>
+              <span>🔥</span>
+            </div>
+            <div class="stat-value mono" style="color: var(--color-accent)">{{ d.stats.bestStreak }}d</div>
+            <div class="stat-sub mono truncate">
+              {{ d.stats.bestStreakHabit ?? 'no habits yet' }}
+            </div>
+          </div>
         </div>
 
-        <!-- Random item -->
-        <a
-          class="widget mt-4 random-item"
-          [routerLink]="d.randomItem ? ['/app/lists', d.randomItem.list.id] : null"
-        >
-          <header class="widget-header">
-            <span class="widget-icon">🎲</span>
-            <h2>Discover something from your collections</h2>
-          </header>
-          @if (d.randomItem; as r) {
-            <div class="random-content">
-              @if (r.item.imageUrl) {
-                <img [src]="resolveImg(r.item.imageUrl)" alt="" class="random-img" />
-              } @else {
-                <div class="random-img placeholder">{{ r.list.icon ?? '📚' }}</div>
-              }
-              <div>
-                <p class="meta">In list <strong>{{ r.list.name }}</strong></p>
-                <p class="title-line"><strong>{{ r.item.title }}</strong></p>
+        <!-- Two-column main -->
+        <div class="main-grid">
+          <!-- Left column -->
+          <div class="col">
+            <!-- Upcoming events -->
+            <section class="panel">
+              <div class="panel-header">
+                <div>
+                  <div class="panel-title">Upcoming events</div>
+                  <div class="panel-sub">Today → this week</div>
+                </div>
+                <a routerLink="/app/calendar" class="btn btn-sm btn-ghost">Open calendar →</a>
               </div>
-            </div>
-          } @else {
-            <p class="empty">Create your first list to see random items here.</p>
-          }
-        </a>
+              @if (d.upcomingEvents.length === 0) {
+                <p class="empty">No upcoming events</p>
+              } @else {
+                @for (e of d.upcomingEvents; track e.id) {
+                  <a routerLink="/app/calendar" class="event-row panel-row">
+                    <div class="event-when">
+                      <div class="mono text-xs text-faint">{{ e.startDate | date: 'MMM dd' }}</div>
+                      <div class="mono text-sm">{{ e.allDay ? 'all day' : (e.startDate | date: 'HH:mm') }}</div>
+                    </div>
+                    <div class="event-bar" [style.background]="e.color"></div>
+                    <div class="min-w-0">
+                      <div class="event-title">{{ e.title }}</div>
+                      <div class="text-xs text-muted mono truncate">
+                        {{ e.startDate | date: 'EEE' }}@if (e.location) { · 📍 {{ e.location }} }
+                      </div>
+                    </div>
+                  </a>
+                }
+              }
+            </section>
+
+            <!-- Tasks in progress -->
+            <section class="panel">
+              <div class="panel-header">
+                <div>
+                  <div class="panel-title">On your plate</div>
+                  <div class="panel-sub">{{ d.todosInProgress.length }} task(s) today</div>
+                </div>
+                <a routerLink="/app/todos" class="btn btn-sm btn-ghost">View board →</a>
+              </div>
+              @if (d.todosInProgress.length === 0) {
+                <p class="empty">Nothing for today. Enjoy your day.</p>
+              } @else {
+                <div class="list-pad">
+                  @for (t of d.todosInProgress; track t.id) {
+                    <div class="todo-row">
+                      <span
+                        class="prio-dot"
+                        [style.background]="prioColor(t.priority)"
+                      ></span>
+                      <span class="flex-1 text-sm truncate">{{ t.title }}</span>
+                      <span class="chip">{{ t.column.name }}</span>
+                      @if (t.dueDate) {
+                        <span class="mono text-xs text-faint shrink-0">{{ t.dueDate | date: 'HH:mm' }}</span>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+            </section>
+
+            <!-- Savings pots -->
+            @if (d.savingsPots.length > 0) {
+              <section class="panel">
+                <div class="panel-header">
+                  <div>
+                    <div class="panel-title">Savings pots</div>
+                    <div class="panel-sub">Your active goals</div>
+                  </div>
+                  <a routerLink="/app/finance/organizer" class="btn btn-sm btn-ghost">View goals →</a>
+                </div>
+                <div class="panel-pad">
+                  @for (p of d.savingsPots; track p.id) {
+                    <div class="pot">
+                      <div class="pot-head">
+                        <span>{{ p.icon ?? '🎯' }}</span>
+                        <span class="flex-1 text-sm font-medium truncate">{{ p.name }}</span>
+                        <span class="mono text-xs font-semibold" [style.color]="p.color">{{ p.percent }}%</span>
+                      </div>
+                      <div class="bar">
+                        <div class="bar-fill" [style.width.%]="p.percent" [style.background]="p.color"></div>
+                      </div>
+                      <div class="mono text-xs text-faint mt-1">
+                        <strong class="text-muted">{{ formatCurrency(p.saved, d.stats.currency) }}</strong>
+                        / {{ formatCurrency(p.goal, d.stats.currency) }}
+                      </div>
+                    </div>
+                  }
+                </div>
+              </section>
+            }
+          </div>
+
+          <!-- Right column -->
+          <div class="col">
+            <!-- Mini calendar -->
+            <section class="panel">
+              <div class="panel-header">
+                <div class="panel-title">{{ monthLabel() }} {{ year() }}</div>
+              </div>
+              <div class="panel-pad">
+                <div class="cal-grid cal-dow">
+                  @for (dl of dowLabels; track $index) {
+                    <div class="mono text-xs text-faint cal-dow-cell">{{ dl }}</div>
+                  }
+                </div>
+                <div class="cal-grid">
+                  @for (c of miniCells(); track $index) {
+                    <div class="cal-cell" [class.cal-today]="c.isToday" [class.cal-empty]="!c.day">
+                      {{ c.day ?? '' }}
+                      @if (c.dots.length && !c.isToday) {
+                        <div class="cal-dots">
+                          @for (col of c.dots; track $index) {
+                            <span class="cal-dot" [style.background]="col"></span>
+                          }
+                        </div>
+                      }
+                    </div>
+                  }
+                </div>
+              </div>
+            </section>
+
+            <!-- Habits today -->
+            <section class="panel">
+              <div class="panel-header">
+                <div>
+                  <div class="panel-title">Habits · today</div>
+                  <div class="panel-sub">{{ habitsDone(d) }}/{{ d.habitsToday.length }} done</div>
+                </div>
+                <a routerLink="/app/habits" class="btn btn-sm btn-ghost">View all →</a>
+              </div>
+              @if (d.habitsToday.length === 0) {
+                <p class="empty">No habits yet</p>
+              } @else {
+                <div class="list-pad">
+                  @for (h of d.habitsToday; track h.id) {
+                    <div class="habit-row">
+                      <span class="habit-check" [class.done]="h.doneToday">
+                        @if (h.doneToday) { ✓ }
+                      </span>
+                      <span class="flex-1 text-sm truncate">{{ h.icon ?? '🔁' }} {{ h.name }}</span>
+                      <span class="mono text-xs text-muted shrink-0">{{ h.streak }}d</span>
+                    </div>
+                  }
+                </div>
+              }
+            </section>
+
+            <!-- Recent notes -->
+            <section class="panel">
+              <div class="panel-header">
+                <div>
+                  <div class="panel-title">Recent notes</div>
+                  <div class="panel-sub">Latest activity</div>
+                </div>
+                <a routerLink="/app/notes" class="btn btn-sm btn-ghost">View all →</a>
+              </div>
+              @if (d.recentNotes.length === 0) {
+                <p class="empty">No notes yet</p>
+              } @else {
+                <div class="list-pad">
+                  @for (n of d.recentNotes; track n.id) {
+                    <a
+                      routerLink="/app/notes"
+                      [queryParams]="{ note: n.id }"
+                      class="note-row"
+                    >
+                      <span>{{ n.icon ?? '📝' }}</span>
+                      <div class="min-w-0 flex-1">
+                        <div class="text-sm font-medium truncate">{{ n.title || 'Untitled' }}</div>
+                        <div class="text-xs text-muted mono">{{ n.updatedAt | date: 'd MMM, HH:mm' }}</div>
+                      </div>
+                    </a>
+                  }
+                </div>
+              }
+            </section>
+          </div>
+        </div>
       } @else if (loading()) {
-        <p class="text-text-muted">Loading…</p>
+        <p class="text-text-muted p-6">Loading…</p>
       } @else if (error()) {
-        <p class="text-danger">{{ error() }}</p>
+        <p class="text-danger p-6">{{ error() }}</p>
       }
     </div>
   `,
   styles: [`
-    .widget {
-      display: block;
-      background: var(--color-surface);
-      border: 1px solid var(--color-border-soft);
-      border-radius: var(--radius-lg);
-      padding: 1rem 1.25rem;
-      box-shadow: var(--shadow-sm);
-      transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
-      color: inherit;
-      text-decoration: none;
+    .page { padding: 28px 32px 80px; max-width: 1400px; margin: 0 auto; }
+    @media (max-width: 640px) { .page { padding: 18px 16px 64px; } }
+
+    .page-header {
+      display: flex; align-items: flex-end; justify-content: space-between;
+      gap: 16px; margin-bottom: 24px; flex-wrap: wrap;
     }
-    .widget:hover {
-      border-color: color-mix(in srgb, var(--color-primary) 55%, var(--color-border));
-      box-shadow: var(--shadow-md);
-      transform: translateY(-2px);
+    .page-title { font-size: 26px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.1; }
+    .page-subtitle { color: var(--color-text-muted); font-size: 13px; margin-top: 4px; }
+
+    .stat-row {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 22px;
     }
-    .widget-header {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      margin-bottom: 0.75rem;
+    .stat-top { display: flex; justify-content: space-between; align-items: flex-start; font-size: 14px; }
+    .stat-value { font-size: 26px; font-weight: 600; margin-top: 6px; letter-spacing: -0.02em; }
+    .stat-sub { font-size: 11px; color: var(--color-text-muted); margin-top: 4px; }
+
+    .main-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 18px; }
+    .col { display: flex; flex-direction: column; gap: 18px; }
+
+    @media (max-width: 900px) {
+      .stat-row { grid-template-columns: repeat(2, 1fr); }
+      .main-grid { grid-template-columns: 1fr; }
     }
-    .widget-icon { font-size: 1.125rem; }
-    .widget-header h2 {
-      font-size: 0.8125rem;
-      font-weight: 600;
-      color: var(--color-text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
+    @media (max-width: 420px) {
+      .stat-row { grid-template-columns: 1fr; }
     }
-    .widget-body { display: flex; flex-direction: column; gap: 0.25rem; }
-    .title-line { display: flex; align-items: center; gap: 0.5rem; font-size: 1rem; }
-    .title-line strong { font-weight: 600; }
-    .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
-    .meta { font-size: 0.8125rem; color: var(--color-text-muted); }
-    .empty { font-size: 0.875rem; color: var(--color-text-muted); font-style: italic; }
-    .section-title {
-      font-size: 0.6875rem;
-      color: var(--color-text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin-bottom: 0.25rem;
+
+    .empty { font-size: 13px; color: var(--color-text-muted); font-style: italic; padding: 16px 18px; }
+    .list-pad { padding: 6px 8px 10px; }
+
+    .text-muted { color: var(--color-text-muted); }
+    .text-faint { color: var(--color-text-faint); }
+    .text-success { color: var(--color-success); }
+    .text-danger { color: var(--color-danger); }
+    .text-primary { color: var(--color-primary); }
+
+    /* Events */
+    .event-row {
+      display: grid; grid-template-columns: 56px 3px 1fr; align-items: center; gap: 14px;
+      padding: 11px 18px; color: inherit; text-decoration: none;
+      transition: background 100ms;
     }
-    .mt-2 { margin-top: 0.5rem; }
-    .todo-list {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 0.25rem;
+    .event-row:hover { background: var(--color-surface-hover); }
+    .event-when { text-align: left; }
+    .event-bar { width: 3px; height: 30px; border-radius: 3px; }
+    .event-title { font-size: 13px; font-weight: 500; }
+
+    /* Todos */
+    .todo-row { display: flex; align-items: center; gap: 10px; padding: 7px 10px; }
+    .prio-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+
+    /* Savings */
+    .pot { margin-bottom: 14px; }
+    .pot:last-child { margin-bottom: 0; }
+    .pot-head { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
+    .bar { height: 5px; background: var(--color-surface-2); border-radius: 3px; overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
+
+    /* Mini calendar */
+    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+    .cal-dow { margin-bottom: 6px; }
+    .cal-dow-cell { text-align: center; padding: 4px 0; }
+    .cal-cell {
+      aspect-ratio: 1; border-radius: 4px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      font-size: 12px; position: relative; color: var(--color-text);
     }
-    .todo-list li {
-      font-size: 0.875rem;
-      display: flex;
-      align-items: flex-start;
-      gap: 0.5rem;
-    }
-    .todo-list.completed li { align-items: center; }
-    .todo-list.completed { color: var(--color-text-muted); }
-    .circle {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      border: 1px solid var(--color-text-muted);
-      display: inline-block;
-      margin-top: 0.3rem;
-      flex-shrink: 0;
-    }
-    .priority-high { color: var(--color-danger); }
-    .todo-text { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; }
-    .todo-title { line-height: 1.3; }
-    .todo-meta {
-      display: flex;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 0.35rem;
-      font-size: 0.6875rem;
-      color: var(--color-text-muted);
-    }
-    .todo-chip {
-      padding: 0.05rem 0.4rem;
-      border-radius: 999px;
-      background: var(--color-background);
+    .cal-empty { color: transparent; }
+    .cal-today { background: var(--color-primary); color: #fff; font-weight: 600; }
+    .cal-dots { position: absolute; bottom: 3px; display: flex; gap: 1px; }
+    .cal-dot { width: 4px; height: 4px; border-radius: 50%; }
+
+    /* Habits */
+    .habit-row { display: flex; align-items: center; gap: 12px; padding: 7px 6px; }
+    .habit-check {
+      width: 22px; height: 22px; border-radius: 6px; flex-shrink: 0;
       border: 1px solid var(--color-border);
+      display: grid; place-items: center; font-size: 12px; color: #fff;
     }
-    .todo-due { white-space: nowrap; }
-    .todo-prio {
-      padding: 0.05rem 0.4rem;
-      border-radius: 999px;
-      background: color-mix(in srgb, var(--color-danger) 18%, transparent);
-      color: var(--color-danger);
-      font-weight: 600;
+    .habit-check.done { background: var(--color-success); border-color: transparent; }
+
+    /* Notes */
+    .note-row {
+      display: flex; align-items: flex-start; gap: 10px; padding: 7px 6px;
+      color: inherit; text-decoration: none; border-radius: var(--radius-sm);
+      transition: background 100ms;
     }
-    .todo-extra { font-size: 0.875rem; color: var(--color-text-muted); }
-    .tags {
-      display: flex;
-      gap: 0.25rem;
-      flex-wrap: wrap;
-      margin-top: 0.5rem;
-    }
-    .tag {
-      font-size: 0.6875rem;
-      padding: 0.125rem 0.5rem;
-      background: var(--color-surface-hover);
-      border-radius: 999px;
-    }
-    .progress {
-      width: 100%;
-      height: 6px;
-      background: var(--color-surface-hover);
-      border-radius: 999px;
-      overflow: hidden;
-      margin: 0.5rem 0;
-    }
-    .progress-fill {
-      height: 100%;
-      background: var(--color-primary);
-      transition: width 0.3s;
-    }
-    .progress-fill.over { background: var(--color-danger); }
-    .random-item.widget { padding: 1rem 1.25rem; }
-    .random-content { display: flex; gap: 1rem; align-items: center; }
-    .random-img {
-      width: 64px;
-      height: 64px;
-      border-radius: 8px;
-      object-fit: cover;
-      flex-shrink: 0;
-    }
-    .random-img.placeholder {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: var(--color-surface-hover);
-      font-size: 1.5rem;
-    }
+    .note-row:hover { background: var(--color-surface-hover); }
+
+    .mt-1 { margin-top: 4px; }
+    .font-medium { font-weight: 500; }
+    .font-semibold { font-weight: 600; }
+    .text-xs { font-size: 11px; }
+    .text-sm { font-size: 13px; }
+    .flex { display: flex; }
+    .flex-1 { flex: 1; }
+    .gap-2 { gap: 8px; }
+    .shrink-0 { flex-shrink: 0; }
+    .min-w-0 { min-width: 0; }
+    .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   `],
 })
 export class DashboardComponent implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly dashboard = inject(DashboardService);
-  private readonly uploads = inject(UploadsService);
 
   protected readonly data = signal<DashboardData | null>(null);
   protected readonly loading = signal(true);
   protected readonly error = signal<string | null>(null);
 
+  protected readonly dowLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+
   protected readonly greeting = computed(() => {
     const u = this.auth.user();
-    if (u?.displayName) return `, ${u.displayName}`;
-    if (u?.email) return `, ${u.email.split('@')[0]}`;
-    return '';
+    const name = u?.displayName ?? u?.email?.split('@')[0] ?? null;
+    const h = new Date().getHours();
+    const part = h < 12 ? 'Good morning' : h < 19 ? 'Good afternoon' : 'Good evening';
+    return name ? `${part}, ${name}.` : `${part}.`;
+  });
+
+  protected readonly today = computed(() =>
+    new Date().toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long' }),
+  );
+
+  protected readonly monthLabel = computed(() =>
+    new Date().toLocaleDateString('en-US', { month: 'long' }),
+  );
+
+  protected readonly year = computed(() => new Date().getFullYear());
+
+  protected readonly miniCells = computed<MiniCell[]>(() => {
+    const d = this.data();
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+    const first = new Date(year, month, 1);
+    const startDow = (first.getDay() + 6) % 7; // Monday-first
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const todayDate = now.getDate();
+
+    const dotsByDay = new Map<number, string[]>();
+    for (const e of d?.monthEvents ?? []) {
+      const arr = dotsByDay.get(e.day) ?? [];
+      if (arr.length < 3) arr.push(e.color);
+      dotsByDay.set(e.day, arr);
+    }
+
+    const cells: MiniCell[] = [];
+    for (let i = 0; i < 42; i++) {
+      const day = i - startDow + 1;
+      const valid = day >= 1 && day <= daysInMonth;
+      cells.push({
+        day: valid ? day : null,
+        isToday: valid && day === todayDate,
+        dots: valid ? dotsByDay.get(day) ?? [] : [],
+      });
+    }
+    return cells;
   });
 
   ngOnInit(): void {
@@ -349,7 +455,39 @@ export class DashboardComponent implements OnInit {
     });
   }
 
-  protected resolveImg(url: string | null): string | null {
-    return this.uploads.resolveUrl(url);
+  protected subtitle(d: DashboardData): string {
+    const parts: string[] = [];
+    parts.push(`${d.stats.eventsThisWeek} event(s) this week`);
+    parts.push(`${d.stats.todoToday} task(s) today`);
+    if (d.stats.bestStreak > 0 && d.stats.bestStreakHabit) {
+      parts.push(`${d.stats.bestStreak}-day ${d.stats.bestStreakHabit} streak`);
+    }
+    return parts.join(' · ');
+  }
+
+  protected habitsDone(d: DashboardData): number {
+    return d.habitsToday.filter((h) => h.doneToday).length;
+  }
+
+  protected prioColor(p: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT'): string {
+    if (p === 'HIGH' || p === 'URGENT') return 'var(--color-danger)';
+    if (p === 'MEDIUM') return 'var(--color-accent)';
+    return 'var(--color-text-faint)';
+  }
+
+  protected formatCurrency(value: number, currency: string): string {
+    try {
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency,
+        maximumFractionDigits: 0,
+      }).format(value);
+    } catch {
+      return `${currency} ${value.toFixed(0)}`;
+    }
+  }
+
+  protected formatDelta(value: number, currency: string): string {
+    return (value >= 0 ? '+' : '') + this.formatCurrency(value, currency);
   }
 }
