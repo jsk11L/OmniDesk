@@ -5,6 +5,15 @@ All notable changes to OmniDesk. Breaking changes are called out explicitly.
 ## [Unreleased]
 
 ### Added
+- **Recurring transactions:** finance templates (subscriptions, salary, rent…)
+  with daily/weekly/monthly/yearly cadence, materialized into real transactions
+  by an hourly scheduler (with bounded catch-up), pause without deleting, and a
+  management section + dialog in the finance dashboard.
+- **UI design pass:** responsive app shell with a breadcrumb top bar (⌘K + bell)
+  and a mobile off-canvas sidebar; richer finance dashboard (month-over-month
+  balance delta, savings rate, clickable category breakdown, transaction filters,
+  CSV export); responsive dashboard/notes/finance and wrapping page headers;
+  dialogs no longer squeeze their content.
 - **Dogfooding fixes (Block 1.5):** note switching/autosave + list markers,
   list image-input URL default + dialog sizing, sidebar avatar, editable budgets,
   dashboard task detail, note fonts + image controls, kanban column reorder,

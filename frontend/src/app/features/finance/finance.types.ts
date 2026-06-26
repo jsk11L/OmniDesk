@@ -6,12 +6,14 @@ import type {
   Transaction as TransactionBase,
   FinanceBoard as FinanceBoardBase,
   SavingsGoal as SavingsGoalBase,
+  RecurringTransaction as RecurringTransactionBase,
   FinanceCategory,
   Budget,
   SavingsContribution,
   WishlistItem,
   PlannedPurchase,
   FinanceCategoryType,
+  RecurringFrequency,
   BudgetPeriod,
   WishlistPriority,
 } from '@omnidesk/shared';
@@ -23,6 +25,7 @@ export type {
   WishlistItem,
   PlannedPurchase,
   FinanceCategoryType,
+  RecurringFrequency,
   BudgetPeriod,
   WishlistPriority,
 };
@@ -30,6 +33,23 @@ export type {
 export interface Transaction extends TransactionBase {
   category?: FinanceCategory | null;
 }
+
+export interface RecurringTransaction extends RecurringTransactionBase {
+  category?: FinanceCategory | null;
+}
+
+export interface CreateRecurringDto {
+  title: string;
+  amount: number;
+  type: FinanceCategoryType;
+  frequency: RecurringFrequency;
+  nextRun: string;
+  categoryId?: string;
+  notes?: string;
+  tags?: string[];
+}
+
+export type UpdateRecurringDto = Partial<CreateRecurringDto> & { isActive?: boolean };
 
 export interface FinanceBoard extends FinanceBoardBase {
   categories?: FinanceCategory[];

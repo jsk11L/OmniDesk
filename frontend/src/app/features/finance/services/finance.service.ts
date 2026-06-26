@@ -9,12 +9,15 @@ import type {
   CreateBoardDto,
   CreateBudgetDto,
   CreateCategoryDto,
+  CreateRecurringDto,
   CreateTransactionDto,
   FinanceBoard,
   FinanceCategory,
   FinanceSummary,
+  RecurringTransaction,
   Transaction,
   UpdateBudgetDto,
+  UpdateRecurringDto,
   UpdateTransactionDto,
 } from '../finance.types';
 
@@ -91,6 +94,39 @@ export class FinanceService {
     if (opts.end) params = params.set('end', opts.end);
     return this.http
       .get<ApiResponse<FinanceSummary>>(`${this.base}/boards/${boardId}/summary`, { params })
+      .pipe(map((r) => r.data));
+  }
+
+  // ─── Recurring transactions ──────────────────────────────
+
+  listRecurring(boardId: string): Observable<RecurringTransaction[]> {
+    return this.http
+      .get<ApiResponse<RecurringTransaction[]>>(`${this.base}/boards/${boardId}/recurring`)
+      .pipe(map((r) => r.data));
+  }
+
+  createRecurring(boardId: string, dto: CreateRecurringDto): Observable<RecurringTransaction> {
+    return this.http
+      .post<ApiResponse<RecurringTransaction>>(`${this.base}/boards/${boardId}/recurring`, dto)
+      .pipe(map((r) => r.data));
+  }
+
+  updateRecurring(
+    boardId: string,
+    recId: string,
+    dto: UpdateRecurringDto,
+  ): Observable<RecurringTransaction> {
+    return this.http
+      .patch<ApiResponse<RecurringTransaction>>(
+        `${this.base}/boards/${boardId}/recurring/${recId}`,
+        dto,
+      )
+      .pipe(map((r) => r.data));
+  }
+
+  deleteRecurring(boardId: string, recId: string): Observable<{ id: string }> {
+    return this.http
+      .delete<ApiResponse<{ id: string }>>(`${this.base}/boards/${boardId}/recurring/${recId}`)
       .pipe(map((r) => r.data));
   }
 

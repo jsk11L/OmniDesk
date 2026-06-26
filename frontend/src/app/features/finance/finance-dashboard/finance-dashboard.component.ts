@@ -19,11 +19,18 @@ import {
   type BudgetDialogData,
   type BudgetDialogResult,
 } from '../budget-dialog/budget-dialog.component';
+import {
+  RecurringDialogComponent,
+  type RecurringDialogData,
+  type RecurringDialogResult,
+} from '../recurring-dialog/recurring-dialog.component';
 import type {
   Budget,
   BudgetPeriod,
   FinanceBoard,
   FinanceSummary,
+  RecurringFrequency,
+  RecurringTransaction,
   Transaction,
 } from '../finance.types';
 
@@ -69,6 +76,14 @@ import type {
           >
             Organizer →
           </a>
+          <button
+            type="button"
+            (click)="addRecurring()"
+            [disabled]="!board()"
+            class="px-3 py-2 rounded text-sm hover:bg-surface-hover disabled:opacity-50"
+          >
+            + Recurring
+          </button>
           <button
             type="button"
             (click)="addTransaction()"
@@ -226,6 +241,62 @@ import type {
           </section>
 
           <section>
+            <div class="flex items-center justify-between gap-2 mb-3">
+              <h2 class="text-sm font-medium">Recurring &amp; subscriptions</h2>
+              @if (recurring().length > 0) {
+                <button type="button" (click)="addRecurring()" class="text-xs text-primary hover:underline">
+                  + Add
+                </button>
+              }
+            </div>
+            @if (recurring().length === 0) {
+              <p class="text-text-muted text-sm">
+                No recurring entries yet.
+                <button (click)="addRecurring()" class="text-primary hover:underline">
+                  + Add a subscription, salary or bill
+                </button>
+              </p>
+            } @else {
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                @for (r of recurring(); track r.id) {
+                  <button
+                    type="button"
+                    (click)="editRecurring(r)"
+                    [class]="
+                      'text-left bg-surface border rounded p-3 hover:border-primary transition-colors ' +
+                      (r.isActive ? 'border-border' : 'border-border opacity-60')
+                    "
+                  >
+                    <div class="flex items-center justify-between gap-2 mb-0.5">
+                      <span class="font-medium text-sm flex items-center gap-2 min-w-0">
+                        <span class="truncate">{{ r.title }}</span>
+                        @if (!r.isActive) {
+                          <span class="text-xs font-normal px-1.5 py-0.5 rounded bg-background text-text-muted shrink-0">
+                            Paused
+                          </span>
+                        }
+                      </span>
+                      <span
+                        class="text-sm font-medium shrink-0"
+                        [class.text-success]="r.type === 'INCOME'"
+                        [class.text-danger]="r.type === 'EXPENSE'"
+                      >
+                        {{ r.type === 'INCOME' ? '+' : '-' }}{{ formatCurrency(r.amount) }}
+                      </span>
+                    </div>
+                    <p class="text-xs text-text-muted">
+                      {{ frequencyLabel(r.frequency) }} · next {{ formatDate(r.nextRun) }}
+                      @if (r.category) {
+                        · {{ r.category.name }}
+                      }
+                    </p>
+                  </button>
+                }
+              </div>
+            }
+          </section>
+
+          <section>
             <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
               <h2 class="text-sm font-medium">Transactions</h2>
               <div class="flex flex-wrap items-center gap-2">
@@ -321,6 +392,7 @@ export class FinanceDashboardComponent implements OnInit {
   protected readonly boards = signal<FinanceBoard[]>([]);
   protected readonly board = signal<FinanceBoard | null>(null);
   protected readonly transactions = signal<Transaction[]>([]);
+  protected readonly recurring = signal<RecurringTransaction[]>([]);
   protected readonly summary = signal<FinanceSummary | null>(null);
   protected readonly prevSummary = signal<FinanceSummary | null>(null);
   protected selectedBoardId = '';
@@ -504,6 +576,52 @@ export class FinanceDashboardComponent implements OnInit {
     });
   }
 
+  protected addRecurring(): void {
+    const board = this.board();
+    if (!board) return;
+    const ref = this.dialog.open<
+      RecurringDialogComponent,
+      RecurringDialogData,
+      RecurringDialogResult
+    >(RecurringDialogComponent, { data: { board } });
+    ref.afterClosed().subscribe((result) => {
+      if (result) this.loadRecurring(board.id);
+    });
+  }
+
+  protected editRecurring(recurring: RecurringTransaction): void {
+    const board = this.board();
+    if (!board) return;
+    const ref = this.dialog.open<
+      RecurringDialogComponent,
+      RecurringDialogData,
+      RecurringDialogResult
+    >(RecurringDialogComponent, { data: { board, recurring } });
+    ref.afterClosed().subscribe((result) => {
+      if (result) this.loadRecurring(board.id);
+    });
+  }
+
+  protected frequencyLabel(frequency: RecurringFrequency): string {
+    switch (frequency) {
+      case 'DAILY':
+        return 'Daily';
+      case 'WEEKLY':
+        return 'Weekly';
+      case 'YEARLY':
+        return 'Yearly';
+      default:
+        return 'Monthly';
+    }
+  }
+
+  private loadRecurring(id: string): void {
+    this.service.listRecurring(id).subscribe({
+      next: (recurring) => this.recurring.set(recurring),
+      error: () => this.recurring.set([]),
+    });
+  }
+
   protected addBudget(): void {
     const board = this.board();
     if (!board) return;
@@ -631,6 +749,7 @@ export class FinanceDashboardComponent implements OnInit {
 
   private loadBoard(id: string): void {
     this.loading.set(true);
+    this.loadRecurring(id);
     this.service.findBoard(id).subscribe({
       next: (board) => {
         this.board.set(board);

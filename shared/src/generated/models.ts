@@ -22,6 +22,8 @@ export type GoalPeriod = "DAILY" | "WEEKLY" | "MONTHLY";
 
 export type FinanceCategoryType = "INCOME" | "EXPENSE";
 
+export type RecurringFrequency = "DAILY" | "WEEKLY" | "MONTHLY" | "YEARLY";
+
 export type BudgetPeriod = "WEEKLY" | "MONTHLY" | "ANNUAL";
 
 export type WishlistPriority = "LOW" | "MEDIUM" | "HIGH";
@@ -339,6 +341,28 @@ export interface Transaction {
   date: string;
   notes: string | null;
   tags: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * A template that the scheduler materializes into real Transactions on each
+ * due date (subscriptions, salary, rent…). `nextRun` is advanced by `frequency`
+ * after each materialization; `isActive=false` pauses it without deleting.
+ */
+export interface RecurringTransaction {
+  id: string;
+  boardId: string;
+  categoryId: string | null;
+  title: string;
+  amount: number;
+  type: FinanceCategoryType;
+  frequency: RecurringFrequency;
+  notes: string | null;
+  tags: string[];
+  nextRun: string;
+  lastRun: string | null;
+  isActive: boolean;
   createdAt: string;
   updatedAt: string;
 }

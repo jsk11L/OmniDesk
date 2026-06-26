@@ -529,13 +529,14 @@ model FinanceBoard {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  categories        FinanceCategory[]
-  transactions      Transaction[]
-  budgets           Budget[]
-  wishlistItems     WishlistItem[]
-  plannedPurchases  PlannedPurchase[]
-  savingsGoals      SavingsGoal[]
+  user                  User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categories            FinanceCategory[]
+  transactions          Transaction[]
+  recurringTransactions RecurringTransaction[]
+  budgets               Budget[]
+  wishlistItems         WishlistItem[]
+  plannedPurchases      PlannedPurchase[]
+  savingsGoals          SavingsGoal[]
 }
 
 model FinanceCategory {
@@ -546,10 +547,11 @@ model FinanceCategory {
   icon         String?
   categoryType FinanceCategoryType
 
-  board             FinanceBoard       @relation(fields: [boardId], references: [id], onDelete: Cascade)
-  transactions      Transaction[]
-  budgets           Budget[]
-  plannedPurchases  PlannedPurchase[]
+  board                 FinanceBoard           @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  transactions          Transaction[]
+  recurringTransactions RecurringTransaction[]
+  budgets               Budget[]
+  plannedPurchases      PlannedPurchase[]
 }
 
 enum FinanceCategoryType {
@@ -574,6 +576,38 @@ model Transaction {
   category FinanceCategory? @relation(fields: [categoryId], references: [id])
 
   @@index([boardId, date])
+}
+
+/// A template that the scheduler materializes into real Transactions on each
+/// due date (subscriptions, salary, rent…). `nextRun` is advanced by `frequency`
+/// after each materialization; `isActive=false` pauses it without deleting.
+model RecurringTransaction {
+  id         String              @id @default(uuid())
+  boardId    String
+  categoryId String?
+  title      String
+  amount     Float
+  type       FinanceCategoryType
+  frequency  RecurringFrequency  @default(MONTHLY)
+  notes      String?
+  tags       String[]            @default([])
+  nextRun    DateTime
+  lastRun    DateTime?
+  isActive   Boolean             @default(true)
+  createdAt  DateTime            @default(now())
+  updatedAt  DateTime            @updatedAt
+
+  board    FinanceBoard     @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  category FinanceCategory? @relation(fields: [categoryId], references: [id])
+
+  @@index([isActive, nextRun])
+}
+
+enum RecurringFrequency {
+  DAILY
+  WEEKLY
+  MONTHLY
+  YEARLY
 }
 
 model Budget {
