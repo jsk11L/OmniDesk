@@ -32,7 +32,7 @@ interface HabitCalendar {
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="h-full flex flex-col">
-      <header class="px-6 py-4 border-b border-border flex items-center justify-between">
+      <header class="px-4 sm:px-6 py-4 border-b border-border flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 class="text-2xl font-semibold">Habits</h1>
           <p class="text-sm text-text-muted">Build streaks and watch your progress.</p>

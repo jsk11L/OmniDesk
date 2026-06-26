@@ -20,7 +20,7 @@ import type { List } from '../lists.types';
   imports: [FormsModule, RouterLink, ImageCellComponent, MatDialogModule],
   template: `
     <div class="h-full flex flex-col">
-      <header class="px-6 py-4 border-b border-border flex items-center justify-between gap-4">
+      <header class="px-4 sm:px-6 py-4 border-b border-border flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 class="text-2xl font-semibold">Lists</h1>
           <p class="text-sm text-text-muted">

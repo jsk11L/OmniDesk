@@ -50,8 +50,8 @@ const PRIORITY_LABEL: Record<TodoPriority, string> = {
   imports: [FormsModule, CdkDropList, CdkDrag, CdkDragHandle, CdkDropListGroup, MatDialogModule],
   template: `
     <div class="h-full flex flex-col">
-      <header class="px-6 py-4 border-b border-border">
-        <div class="flex items-center justify-between gap-4 mb-3">
+      <header class="px-4 sm:px-6 py-4 border-b border-border">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
           <div class="flex items-center gap-3">
             <h1 class="text-2xl font-semibold">TO-DO</h1>
             @if (boards().length > 0) {
