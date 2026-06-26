@@ -13,14 +13,14 @@ import type { DashboardData } from './dashboard.types';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink, DatePipe, DecimalPipe],
   template: `
-    <div class="p-6 max-w-7xl mx-auto">
+    <div class="p-4 sm:p-6 max-w-7xl mx-auto">
       <header class="mb-6">
-        <h1 class="text-2xl font-semibold mb-1">Hi{{ greeting() }}</h1>
+        <h1 class="text-xl sm:text-2xl font-semibold mb-1">Hi{{ greeting() }}</h1>
         <p class="text-text-muted text-sm">Your day at a glance.</p>
       </header>
 
       @if (data(); as d) {
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
           <!-- Next event -->
           <a routerLink="/app/calendar" class="widget">
             <header class="widget-header">
@@ -184,16 +184,18 @@ import type { DashboardData } from './dashboard.types';
     .widget {
       display: block;
       background: var(--color-surface);
-      border: 1px solid var(--color-border);
-      border-radius: 12px;
+      border: 1px solid var(--color-border-soft);
+      border-radius: var(--radius-lg);
       padding: 1rem 1.25rem;
-      transition: border-color 0.15s, transform 0.15s;
+      box-shadow: var(--shadow-sm);
+      transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
       color: inherit;
       text-decoration: none;
     }
     .widget:hover {
-      border-color: var(--color-primary);
-      transform: translateY(-1px);
+      border-color: color-mix(in srgb, var(--color-primary) 55%, var(--color-border));
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
     }
     .widget-header {
       display: flex;
