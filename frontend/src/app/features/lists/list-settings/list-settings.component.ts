@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, Inject, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { ToastrService } from 'ngx-toastr';
@@ -114,11 +115,18 @@ const FIELD_TYPES: { value: ListFieldType; label: string }[] = [
               <li
                 class="flex items-center justify-between text-sm bg-background px-3 py-2 rounded border border-border"
               >
-                <div>
+                <div class="min-w-0">
                   <span class="font-medium">{{ f.name }}</span>
                   <span class="text-xs text-text-muted ml-2">{{ f.fieldType }}</span>
                   @if (f.isRequired) {
                     <span class="text-xs text-danger ml-1">required</span>
+                  }
+                  @if (optionsOf(f).length) {
+                    <div class="flex flex-wrap gap-1 mt-1">
+                      @for (o of optionsOf(f); track o) {
+                        <span class="text-xs px-1.5 py-0.5 rounded bg-surface text-text-muted">{{ o }}</span>
+                      }
+                    </div>
                   }
                 </div>
                 <button
@@ -149,6 +157,19 @@ const FIELD_TYPES: { value: ListFieldType; label: string }[] = [
               <option [value]="t.value">{{ t.label }}</option>
             }
           </select>
+          @if (newFieldType() === 'SELECT' || newFieldType() === 'MULTI_SELECT') {
+            <div class="col-span-3">
+              <input
+                type="text"
+                formControlName="options"
+                placeholder="Options, comma-separated — e.g. Backlog, Playing, Completed"
+                class="w-full px-3 py-2 bg-background border border-border rounded outline-none focus:border-primary text-sm"
+              />
+              <p class="text-xs text-text-muted mt-1">
+                These are the choices users pick from when filling this field.
+              </p>
+            </div>
+          }
           <button
             type="submit"
             [disabled]="fieldForm.invalid"
@@ -233,6 +254,8 @@ export class ListSettingsComponent {
   protected readonly fields = signal<ListField[]>([]);
   protected readonly tags = signal<ListTag[]>([]);
   protected readonly fieldTypes = FIELD_TYPES;
+  /** Mirrors fieldForm.fieldType so the options input shows/hides under OnPush. */
+  protected readonly newFieldType = signal<ListFieldType>('TEXT');
 
   protected readonly listForm;
   protected readonly fieldForm;
@@ -257,7 +280,12 @@ export class ListSettingsComponent {
     this.fieldForm = this.fb.nonNullable.group({
       name: ['', [Validators.required, Validators.maxLength(100)]],
       fieldType: ['TEXT' as ListFieldType],
+      options: [''],
     });
+
+    this.fieldForm.controls.fieldType.valueChanges
+      .pipe(takeUntilDestroyed())
+      .subscribe((t) => this.newFieldType.set(t));
 
     this.tagForm = this.fb.nonNullable.group({
       name: ['', [Validators.required, Validators.maxLength(50)]],
@@ -292,19 +320,49 @@ export class ListSettingsComponent {
   addField(): void {
     if (this.fieldForm.invalid) return;
     const raw = this.fieldForm.getRawValue();
+    const needsOptions = raw.fieldType === 'SELECT' || raw.fieldType === 'MULTI_SELECT';
+
+    let options: Record<string, unknown> | undefined;
+    if (needsOptions) {
+      const parsed = this.parseOptions(raw.options);
+      if (parsed.length === 0) {
+        this.toastr.error('Add at least one option for a Select field');
+        return;
+      }
+      options = { options: parsed };
+    }
+
     this.service
       .createField(this.data.list.id, {
         name: raw.name.trim(),
         fieldType: raw.fieldType,
+        options,
       })
       .subscribe({
         next: (field) => {
           this.fields.update((arr) => [...arr, field]);
-          this.fieldForm.reset({ name: '', fieldType: 'TEXT' });
+          this.fieldForm.reset({ name: '', fieldType: 'TEXT', options: '' });
+          this.newFieldType.set('TEXT');
           this.toastr.success('Field added');
         },
         error: (err: HttpErrorResponse) => this.toastr.error(this.errMsg(err)),
       });
+  }
+
+  /** Reads the stored `{ options: [...] }` choices for a SELECT/MULTI_SELECT field. */
+  protected optionsOf(field: ListField): string[] {
+    const raw = field.options as { options?: unknown[] } | null;
+    if (!raw?.options || !Array.isArray(raw.options)) return [];
+    return raw.options.map((o) => String(o));
+  }
+
+  /** Splits the comma/newline-separated options input into a deduped list. */
+  private parseOptions(raw: string): string[] {
+    const seen = new Set<string>();
+    return raw
+      .split(/[,\n]/)
+      .map((o) => o.trim())
+      .filter((o) => o.length > 0 && !seen.has(o) && seen.add(o));
   }
 
   async deleteField(fieldId: string): Promise<void> {
