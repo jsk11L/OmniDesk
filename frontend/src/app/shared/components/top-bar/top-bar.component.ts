@@ -29,7 +29,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-/i;
   imports: [RouterLink],
   template: `
     <header
-      class="h-12 shrink-0 flex items-center gap-2 px-3 border-b border-border bg-surface/80 backdrop-blur-md sticky top-0 z-20"
+      class="h-12 shrink-0 flex items-center gap-2 px-4 sm:px-6 border-b border-border bg-surface/80 backdrop-blur-md sticky top-0 z-20"
     >
       <button
         type="button"
@@ -52,21 +52,22 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-/i;
       <button
         type="button"
         (click)="openPalette()"
-        class="hidden sm:flex items-center gap-2 px-2.5 py-1.5 rounded-lg border border-border text-text-muted hover:text-text hover:border-primary/50 text-xs transition-colors"
+        class="hidden sm:flex items-center gap-2 pl-3 pr-2 py-1.5 rounded-lg border border-border bg-surface-2 text-text-muted hover:text-text hover:border-primary text-xs transition-colors w-48"
         title="Search (Ctrl/⌘ K)"
       >
-        <span>Search…</span>
+        <span class="text-sm leading-none">🔍</span>
+        <span class="flex-1 text-left">Search or run…</span>
         <kbd class="px-1.5 py-0.5 bg-background border border-border rounded text-[10px] font-mono">⌘K</kbd>
       </button>
 
       <a
         routerLink="/app/notifications"
-        class="relative p-2 rounded hover:bg-surface-hover text-text-muted hover:text-text"
+        class="relative p-2.5 rounded-lg hover:bg-surface-hover text-text-muted hover:text-text"
         title="Notifications"
       >
-        <span class="text-base leading-none">🔔</span>
+        <span class="text-lg leading-none">🔔</span>
         @if (unread() > 0) {
-          <span class="absolute top-0.5 right-0.5 min-w-4 h-4 px-1 bg-primary text-white text-[10px] font-semibold rounded-full flex items-center justify-center">
+          <span class="absolute top-1 right-1 min-w-4 h-4 px-1 bg-primary text-white text-[10px] font-semibold rounded-full flex items-center justify-center">
             {{ unread() > 9 ? '9+' : unread() }}
           </span>
         }

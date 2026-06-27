@@ -7,6 +7,7 @@ import { UploadsService } from '../../services/uploads.service';
 interface NavItem {
   path: string;
   label: string;
+  icon: string;
   exact?: boolean;
 }
 
@@ -16,80 +17,202 @@ interface NavItem {
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink, RouterLinkActive],
   template: `
-    <aside
-      class="w-[260px] shrink-0 bg-surface border-r border-border flex flex-col h-full"
-    >
-      <div class="px-5 py-4 border-b border-border">
-        <h1 class="text-lg font-semibold tracking-tight">OmniDesk</h1>
+    <aside class="sb">
+      <div class="sb-header">
+        <div class="sb-logo">O</div>
+        <div class="sb-title">OmniDesk</div>
       </div>
 
-      <nav class="flex-1 p-2 overflow-y-auto">
+      <button type="button" class="sb-search" (click)="openPalette()" title="Search (Ctrl/⌘ K)">
+        <span class="sb-search-ico">🔍</span>
+        <span class="sb-search-text">Search or run…</span>
+        <span class="kbd">⌘K</span>
+      </button>
+
+      <nav class="sb-section">
+        <div class="sb-section-label">Workspace</div>
         @for (item of mainNav; track item.path) {
           <a
             [routerLink]="item.path"
-            routerLinkActive="bg-surface-hover text-text"
+            routerLinkActive="active"
             [routerLinkActiveOptions]="{ exact: item.exact ?? false }"
-            class="block px-3 py-2 rounded text-sm text-text-muted hover:bg-surface-hover hover:text-text transition-colors"
+            class="nav-item"
           >
-            {{ item.label }}
+            <span class="nav-ico">{{ item.icon }}</span>
+            <span>{{ item.label }}</span>
           </a>
         }
       </nav>
 
-      <div class="border-t border-border p-3 space-y-1">
-        <a
-          routerLink="/app/settings"
-          routerLinkActive="bg-surface-hover"
-          class="flex items-center gap-3 px-3 py-2 rounded hover:bg-surface-hover transition-colors"
-          title="Profile & settings"
-        >
-          @if (avatarSrc(); as src) {
-            <img
-              [src]="src"
-              alt=""
-              class="w-9 h-9 rounded-full object-cover border border-border shrink-0"
-            />
-          } @else {
-            <span
-              class="w-9 h-9 rounded-full bg-surface-hover text-text flex items-center justify-center text-sm font-semibold shrink-0"
-            >
-              {{ initials() }}
-            </span>
-          }
-          <span class="min-w-0 flex-1">
-            <span class="block text-sm text-text truncate">{{ displayName() }}</span>
-            <span class="block text-xs text-text-muted truncate">{{ userEmail() }}</span>
-          </span>
+      <div class="sb-footer">
+        <a routerLink="/app/notifications" routerLinkActive="active" class="nav-item">
+          <span class="nav-ico">🔔</span>
+          <span>Notifications</span>
         </a>
-
-        @for (item of footerNav; track item.path) {
-          <a
-            [routerLink]="item.path"
-            routerLinkActive="bg-surface-hover text-text"
-            class="block px-3 py-2 rounded text-sm text-text-muted hover:bg-surface-hover hover:text-text transition-colors"
-          >
-            {{ item.label }}
-          </a>
-        }
+        <a routerLink="/app/settings" routerLinkActive="active" class="nav-item">
+          <span class="nav-ico">⚙️</span>
+          <span>Settings</span>
+        </a>
         @if (isAdmin()) {
-          <a
-            routerLink="/app/admin"
-            routerLinkActive="bg-surface-hover text-text"
-            class="block px-3 py-2 rounded text-sm text-text-muted hover:bg-surface-hover hover:text-text transition-colors"
-          >
-            Admin
+          <a routerLink="/app/admin" routerLinkActive="active" class="nav-item">
+            <span class="nav-ico">🛡️</span>
+            <span>Admin</span>
           </a>
         }
-        <button
-          type="button"
-          (click)="logout()"
-          class="w-full text-left mt-1 px-3 py-2 rounded text-sm text-text-muted hover:text-danger hover:bg-surface-hover transition-colors"
-        >
-          Sign out
-        </button>
+
+        <div class="user-pill">
+          <a routerLink="/app/settings" class="user-main" title="Profile & settings">
+            @if (avatarSrc(); as src) {
+              <img [src]="src" alt="" class="user-avatar-img" />
+            } @else {
+              <span class="user-avatar">{{ initials() }}</span>
+            }
+            <span class="user-meta">
+              <span class="user-name">{{ displayName() }}</span>
+              <span class="user-status">{{ userEmail() }}</span>
+            </span>
+          </a>
+          <button type="button" (click)="logout()" class="user-logout" title="Sign out">⎋</button>
+        </div>
       </div>
     </aside>
   `,
+  styles: [`
+    .sb {
+      width: 248px;
+      flex-shrink: 0;
+      height: 100%;
+      background: var(--color-surface);
+      border-right: 1px solid var(--color-border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .sb-header {
+      padding: 14px 14px 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid var(--color-border-soft);
+    }
+    .sb-logo {
+      width: 26px; height: 26px;
+      border-radius: 6px;
+      background: linear-gradient(135deg, var(--color-primary), var(--color-secondary, #8b5cf6));
+      display: grid; place-items: center;
+      color: #fff; font-weight: 700; font-size: 13px;
+      box-shadow: 0 2px 8px color-mix(in srgb, var(--color-primary) 40%, transparent);
+    }
+    .sb-title { font-size: 14px; font-weight: 600; letter-spacing: -0.01em; }
+
+    .sb-search {
+      margin: 10px 12px 4px;
+      display: flex; align-items: center; gap: 8px;
+      padding: 7px 10px;
+      background: var(--color-background);
+      border: 1px solid var(--color-border-soft);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: border-color 120ms;
+      width: calc(100% - 24px);
+      font-family: inherit;
+    }
+    .sb-search:hover { border-color: var(--color-border); }
+    .sb-search-ico { font-size: 12px; opacity: 0.7; }
+    .sb-search-text { color: var(--color-text-faint); font-size: 13px; flex: 1; text-align: left; }
+    .kbd {
+      font-family: var(--font-mono); font-size: 11px; padding: 2px 6px;
+      border: 1px solid var(--color-border); border-radius: 4px;
+      background: var(--color-surface); color: var(--color-text-muted);
+    }
+
+    .sb-section { padding: 8px; flex: 1; overflow-y: auto; }
+    .sb-section-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--color-text-faint);
+      padding: 8px 10px 4px;
+    }
+
+    .nav-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 7px 10px;
+      border-radius: var(--radius-sm);
+      color: var(--color-text-muted);
+      font-size: 13px;
+      cursor: pointer;
+      transition: background 100ms, color 100ms;
+      position: relative;
+      text-decoration: none;
+      user-select: none;
+    }
+    .nav-item:hover { background: var(--color-surface-hover); color: var(--color-text); }
+    .nav-item.active { background: var(--color-surface-hover); color: var(--color-text); }
+    .nav-item.active::before {
+      content: '';
+      position: absolute;
+      left: -2px; top: 7px; bottom: 7px; width: 2px;
+      background: var(--color-primary);
+      border-radius: 2px;
+    }
+    .nav-ico { width: 18px; font-size: 14px; flex-shrink: 0; text-align: center; }
+
+    .sb-footer {
+      padding: 8px;
+      border-top: 1px solid var(--color-border-soft);
+    }
+
+    .user-pill {
+      display: flex; align-items: center; gap: 6px;
+      margin-top: 6px;
+      padding: 6px;
+      border-radius: var(--radius-sm);
+    }
+    .user-pill:hover { background: var(--color-surface-hover); }
+    .user-main {
+      display: flex; align-items: center; gap: 10px;
+      flex: 1; min-width: 0;
+      text-decoration: none; color: inherit;
+    }
+    .user-avatar, .user-avatar-img {
+      width: 30px; height: 30px; border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .user-avatar {
+      background: linear-gradient(135deg, var(--color-accent), var(--color-danger));
+      display: grid; place-items: center;
+      color: #fff; font-weight: 600; font-size: 11px;
+    }
+    .user-avatar-img { object-fit: cover; border: 1px solid var(--color-border); }
+    .user-meta { min-width: 0; flex: 1; }
+    .user-name {
+      display: block; font-size: 13px; font-weight: 500; color: var(--color-text);
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .user-status {
+      display: block; font-size: 11px; color: var(--color-text-faint);
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .user-logout {
+      flex-shrink: 0;
+      width: 30px; height: 30px;
+      border-radius: var(--radius-sm);
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--color-text-muted);
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 100ms, color 100ms, border-color 100ms;
+    }
+    .user-logout:hover {
+      background: var(--color-background);
+      color: var(--color-danger);
+      border-color: var(--color-border);
+    }
+  `],
 })
 export class SidebarComponent {
   private readonly auth = inject(AuthService);
@@ -112,19 +235,18 @@ export class SidebarComponent {
   });
 
   readonly mainNav: NavItem[] = [
-    { path: '/app', label: 'Dashboard', exact: true },
-    { path: '/app/calendar', label: 'Calendar' },
-    { path: '/app/lists', label: 'Lists' },
-    { path: '/app/notes', label: 'Notes' },
-    { path: '/app/todos', label: 'TO-DO' },
-    { path: '/app/habits', label: 'Habits' },
-    { path: '/app/finance', label: 'Finance' },
+    { path: '/app', label: 'Dashboard', icon: '🏠', exact: true },
+    { path: '/app/calendar', label: 'Calendar', icon: '📅' },
+    { path: '/app/lists', label: 'Lists', icon: '🗂️' },
+    { path: '/app/notes', label: 'Notes', icon: '📝' },
+    { path: '/app/todos', label: 'TO-DO', icon: '✓' },
+    { path: '/app/habits', label: 'Habits', icon: '🔁' },
+    { path: '/app/finance', label: 'Finance', icon: '💰' },
   ];
 
-  readonly footerNav: NavItem[] = [
-    { path: '/app/notifications', label: 'Notifications' },
-    { path: '/app/settings', label: 'Settings' },
-  ];
+  protected openPalette(): void {
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, bubbles: true }));
+  }
 
   logout(): void {
     this.auth.logout();
