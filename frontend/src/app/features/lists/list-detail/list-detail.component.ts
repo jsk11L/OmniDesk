@@ -104,11 +104,49 @@ interface ItemGroup {
           </select>
 
           @if ((list()?.fields?.length ?? 0) > 0) {
+            <div class="relative">
+              <button type="button" (click)="fieldsPanelOpen.set(!fieldsPanelOpen())"
+                class="px-3 py-2 bg-surface border border-border rounded text-sm hover:bg-surface-hover">
+                ⚙ Fields
+              </button>
+              @if (fieldsPanelOpen()) {
+                <div class="absolute z-30 mt-1 right-0 w-64 bg-surface border border-border rounded-lg shadow-lg p-2">
+                  <p class="uppercase-tag px-2 pb-1">Fields shown on cards</p>
+                  @for (f of fieldConfigRows(); track f.id) {
+                    <div class="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-surface-hover text-sm">
+                      <input type="checkbox" [checked]="isFieldVisible(f.id)" (change)="toggleFieldVisible(f.id)" class="accent-primary" />
+                      <span class="flex-1 truncate">{{ f.name }}</span>
+                      @if (isFieldVisible(f.id)) {
+                        <button type="button" (click)="moveField(f.id, -1)" class="w-6 h-6 grid place-items-center rounded hover:bg-background text-text-muted" title="Move up">↑</button>
+                        <button type="button" (click)="moveField(f.id, 1)" class="w-6 h-6 grid place-items-center rounded hover:bg-background text-text-muted" title="Move down">↓</button>
+                      }
+                    </div>
+                  }
+                  <div class="flex items-center justify-between gap-2 px-2 pt-2 mt-1 border-t border-border">
+                    <label class="flex items-center gap-1.5 text-xs text-text-muted cursor-pointer">
+                      <input type="checkbox" [checked]="gridConfig().showImage" (change)="patchGrid({ showImage: !gridConfig().showImage })" class="accent-primary" /> Image
+                    </label>
+                    <label class="flex items-center gap-1.5 text-xs text-text-muted cursor-pointer">
+                      <input type="checkbox" [checked]="gridConfig().showTags" (change)="patchGrid({ showTags: !gridConfig().showTags })" class="accent-primary" /> Tags
+                    </label>
+                    <button type="button" (click)="fieldsPanelOpen.set(false)" class="text-xs text-primary hover:underline">Done</button>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+
+          @if ((list()?.fields?.length ?? 0) > 0) {
             <select [ngModel]="viewConfig().groupBy ?? ''" (ngModelChange)="setGroupBy($event || null)"
               class="px-3 py-2 bg-surface border border-border rounded text-sm outline-none focus:border-primary">
               <option value="">No grouping</option>
               @for (f of list()!.fields!; track f.id) {
-                <option [value]="f.id">Group by {{ f.name }}</option>
+                @if (f.fieldType === 'DATE') {
+                  <option [value]="f.id + ':year'">Group by {{ f.name }} · Year</option>
+                  <option [value]="f.id + ':month'">Group by {{ f.name }} · Month</option>
+                } @else {
+                  <option [value]="f.id">Group by {{ f.name }}</option>
+                }
               }
             </select>
 
@@ -363,7 +401,43 @@ export class ListDetailComponent implements OnInit {
   protected readonly loading = signal(true);
   protected readonly list = signal<List | null>(null);
   protected readonly rawItems = signal<ListItem[]>([]);
+  protected readonly fieldsPanelOpen = signal(false);
   protected search = '';
+
+  /** All fields ordered so the currently-visible ones (in their saved order) come first. */
+  protected readonly fieldConfigRows = computed<ListField[]>(() => {
+    const fields = this.list()?.fields ?? [];
+    const visible = this.gridConfig().visibleFields;
+    const byId = new Map(fields.map((f) => [f.id, f]));
+    const ordered = visible.map((id) => byId.get(id)).filter((f): f is ListField => !!f);
+    const rest = fields.filter((f) => !visible.includes(f.id));
+    return [...ordered, ...rest];
+  });
+
+  protected isFieldVisible(fieldId: string): boolean {
+    return this.gridConfig().visibleFields.includes(fieldId);
+  }
+
+  protected toggleFieldVisible(fieldId: string): void {
+    const visible = this.gridConfig().visibleFields;
+    const next = visible.includes(fieldId)
+      ? visible.filter((id) => id !== fieldId)
+      : [...visible, fieldId];
+    this.patchGridConfig({ visibleFields: next });
+  }
+
+  protected moveField(fieldId: string, delta: number): void {
+    const visible = [...this.gridConfig().visibleFields];
+    const i = visible.indexOf(fieldId);
+    const j = i + delta;
+    if (i < 0 || j < 0 || j >= visible.length) return;
+    [visible[i], visible[j]] = [visible[j], visible[i]];
+    this.patchGridConfig({ visibleFields: visible });
+  }
+
+  protected patchGrid(patch: Partial<GridConfig>): void {
+    this.patchGridConfig(patch);
+  }
 
   protected readonly gridConfig = computed<GridConfig>(() => {
     const l = this.list();
@@ -412,10 +486,15 @@ export class ListDetailComponent implements OnInit {
       return [{ key: '__all__', label: '', items }];
     }
 
+    // groupBy is either a fieldId, or "fieldId:year" / "fieldId:month" for dates.
+    const [fieldId, granularity] = config.groupBy.split(':') as [string, 'year' | 'month' | undefined];
+
     const groups = new Map<string, ListItem[]>();
+    const labels = new Map<string, string>();
     for (const item of items) {
-      const raw = item.customFields[config.groupBy];
-      const key = raw === null || raw === undefined || raw === '' ? '__none__' : String(raw);
+      const raw = item.customFields[fieldId];
+      const { key, label } = this.groupKey(raw, granularity);
+      labels.set(key, label);
       const arr = groups.get(key) ?? [];
       arr.push(item);
       groups.set(key, arr);
@@ -432,10 +511,36 @@ export class ListDetailComponent implements OnInit {
 
     return sortedKeys.map((k) => ({
       key: k,
-      label: k === '__none__' ? 'Unclassified' : k,
+      label: k === '__none__' ? 'Unclassified' : labels.get(k) ?? k,
       items: groups.get(k)!,
     }));
   });
+
+  /**
+   * Computes the group key + display label for a value. For date fields with a
+   * year/month granularity, the key is sortable ("2026" / "2026-05") while the
+   * label is human ("2026" / "May 2026") — so the per-day uniqueness problem
+   * (one item per date) collapses into useful year/month buckets.
+   */
+  private groupKey(
+    raw: unknown,
+    granularity: 'year' | 'month' | undefined,
+  ): { key: string; label: string } {
+    if (raw === null || raw === undefined || raw === '') {
+      return { key: '__none__', label: 'Unclassified' };
+    }
+    if (granularity) {
+      const d = new Date(String(raw));
+      if (!isNaN(d.getTime())) {
+        const year = d.getFullYear();
+        if (granularity === 'year') return { key: String(year), label: String(year) };
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const label = d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+        return { key: `${year}-${month}`, label };
+      }
+    }
+    return { key: String(raw), label: String(raw) };
+  }
 
   ngOnInit(): void {
     this.loadList();
