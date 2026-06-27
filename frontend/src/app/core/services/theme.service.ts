@@ -39,6 +39,23 @@ export class ThemeService {
       );
   }
 
+  /** CSS custom properties this service writes inline on <html>. */
+  private static readonly THEME_VARS = [
+    '--color-primary',
+    '--color-secondary',
+    '--color-background',
+    '--color-surface',
+    '--color-surface-hover',
+    '--color-border',
+    '--color-text',
+    '--color-text-muted',
+    '--color-accent',
+    '--color-danger',
+    '--color-success',
+    '--font-family',
+    '--border-radius',
+  ] as const;
+
   applyTheme(theme: Theme): void {
     const root = document.documentElement;
     root.style.setProperty('--color-primary', theme.colorPrimary);
@@ -56,6 +73,18 @@ export class ThemeService {
     root.style.setProperty('--border-radius', theme.borderRadius);
     root.setAttribute('data-theme', theme.isDark ? 'dark' : 'light');
     this._activeTheme.set(theme);
+  }
+
+  /**
+   * Strip the inline theme overrides so the stylesheet `:root` defaults take
+   * over again. Called on logout — otherwise a user's custom theme (e.g. red)
+   * bleeds onto the login screen and any next account on the same browser.
+   */
+  reset(): void {
+    const root = document.documentElement;
+    for (const v of ThemeService.THEME_VARS) root.style.removeProperty(v);
+    root.removeAttribute('data-theme');
+    this._activeTheme.set(null);
   }
 
   bootstrap(activeThemeId: string | null): void {

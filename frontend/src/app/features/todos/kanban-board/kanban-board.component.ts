@@ -121,14 +121,17 @@ const PRIORITY_LABEL: Record<TodoPriority, string> = {
                 class="flex-1 min-w-[280px] bg-surface border border-border-soft rounded-xl overflow-hidden flex flex-col max-h-full"
               >
                 <div
-                  class="px-3 py-2 border-b border-border flex items-center justify-between gap-1"
-                  [style.border-top]="'3px solid ' + col.color"
+                  class="px-3 py-2 border-b border-border-soft flex items-center justify-between gap-1"
                 >
                   <span
                     cdkDragHandle
                     class="cursor-grab text-text-muted hover:text-text text-xs select-none"
                     title="Drag to reorder column"
                   >⠿</span>
+                  <span
+                    class="w-2 h-2 rounded-full shrink-0"
+                    [style.background-color]="col.color || 'var(--color-text-muted)'"
+                  ></span>
                   <input
                     type="text"
                     [value]="col.name"

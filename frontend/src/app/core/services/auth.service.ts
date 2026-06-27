@@ -6,6 +6,7 @@ import { catchError, map, Observable, of, switchMap, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import type { ApiResponse } from '../models/api-response.model';
 import type { TokenPair, User } from '../models/user.model';
+import { ThemeService } from './theme.service';
 
 interface RegisterDto {
   email: string;
@@ -32,6 +33,7 @@ export class AuthService {
 
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
+  private readonly theme = inject(ThemeService);
 
   private readonly _user = signal<User | null>(null);
   readonly user = this._user.asReadonly();
@@ -192,6 +194,7 @@ export class AuthService {
   logout(): void {
     this.clearTokens();
     this._user.set(null);
+    this.theme.reset();
     void this.router.navigate(['/auth/login']);
   }
 
