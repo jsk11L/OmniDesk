@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { RouterLink, RouterLinkActive } from '@angular/router';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ToastrService } from 'ngx-toastr';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -32,23 +32,27 @@ type Tab = 'wishlist' | 'planned' | 'savings';
   selector: 'app-finance-organizer',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, DatePipe, RouterLink, MatDialogModule],
+  imports: [FormsModule, DatePipe, RouterLink, RouterLinkActive, MatDialogModule],
   template: `
     <div class="h-full flex flex-col">
-      <header class="px-6 py-4 border-b border-border flex items-center justify-between gap-4">
-        <div class="flex items-center gap-3">
-          <a routerLink="/app/finance" class="text-text-muted hover:text-text text-sm">← Finance</a>
-          <h1 class="text-2xl font-semibold">Organizer</h1>
-          @if (boards().length > 1) {
-            <select [(ngModel)]="selectedBoardId" (ngModelChange)="loadBoard($event)" class="px-3 py-2 bg-surface border border-border rounded text-sm outline-none focus:border-primary">
-              @for (b of boards(); track b.id) { <option [value]="b.id">{{ b.name }}</option> }
-            </select>
-          }
-        </div>
+      <header class="px-4 sm:px-6 pt-4 flex items-center justify-between gap-4">
+        <h1 class="text-xl sm:text-2xl font-semibold">Finance</h1>
         <button type="button" [disabled]="!board()" (click)="add()" class="px-4 py-2 rounded bg-primary text-white text-sm font-medium hover:opacity-90 disabled:opacity-50">+ New</button>
       </header>
 
-      <nav class="px-6 pt-3 flex gap-2 border-b border-border">
+      <nav class="px-4 sm:px-6 flex gap-1 border-b border-border">
+        <a routerLink="/app/finance" routerLinkActive="!border-primary !text-text font-medium"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="px-3 py-2.5 -mb-px text-sm border-b-2 border-transparent text-text-muted hover:text-text">
+          Expenses &amp; Budgets
+        </a>
+        <a routerLink="/app/finance/organizer" routerLinkActive="!border-primary !text-text font-medium"
+          class="px-3 py-2.5 -mb-px text-sm border-b-2 border-transparent text-text-muted hover:text-text">
+          Wishlist &amp; Savings
+        </a>
+      </nav>
+
+      <nav class="px-4 sm:px-6 pt-3 flex gap-2 border-b border-border">
         @for (t of tabs; track t.id) {
           <button type="button" (click)="tab.set(t.id)"
             [class]="'px-3 py-2 text-sm rounded-t border-b-2 ' + (tab() === t.id ? 'border-primary text-text' : 'border-transparent text-text-muted hover:text-text')">

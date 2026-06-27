@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { RouterLink, RouterLinkActive } from '@angular/router';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { BaseChartDirective } from 'ng2-charts';
 import { ToastrService } from 'ngx-toastr';
@@ -38,23 +38,23 @@ import type {
   selector: 'app-finance-dashboard',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, RouterLink, MatDialogModule, BaseChartDirective],
+  imports: [FormsModule, RouterLink, RouterLinkActive, MatDialogModule, BaseChartDirective],
   template: `
     <div class="h-full flex flex-col overflow-hidden">
-      <header class="px-4 sm:px-6 py-4 border-b border-border flex flex-wrap items-center justify-between gap-3">
+      <header class="px-4 sm:px-6 pt-4 flex flex-wrap items-center justify-between gap-3">
         <div class="flex flex-wrap items-center gap-2 sm:gap-3">
           <h1 class="text-xl sm:text-2xl font-semibold">Finance</h1>
-          @if (boards().length > 0) {
-            <select
-              [(ngModel)]="selectedBoardId"
-              (ngModelChange)="onBoardChange($event)"
-              class="px-3 py-2 bg-surface border border-border rounded text-sm outline-none focus:border-primary"
-            >
-              @for (b of boards(); track b.id) {
-                <option [value]="b.id">{{ b.name }} ({{ b.currency }})</option>
-              }
-            </select>
-          }
+          <select
+            [ngModel]="board()?.currency ?? 'USD'"
+            (ngModelChange)="setCurrency($event)"
+            [disabled]="!board()"
+            title="Display currency"
+            class="px-3 py-2 bg-surface border border-border rounded text-sm outline-none focus:border-primary disabled:opacity-50"
+          >
+            @for (c of currencies; track c) {
+              <option [value]="c">{{ c }}</option>
+            }
+          </select>
           <input
             type="month"
             [(ngModel)]="selectedMonth"
@@ -63,19 +63,6 @@ import type {
           />
         </div>
         <div class="flex gap-2">
-          <button
-            type="button"
-            (click)="createBoard()"
-            class="px-3 py-2 rounded text-sm hover:bg-surface-hover"
-          >
-            + Board
-          </button>
-          <a
-            routerLink="/app/finance/organizer"
-            class="px-3 py-2 rounded text-sm hover:bg-surface-hover"
-          >
-            Organizer →
-          </a>
           <button
             type="button"
             (click)="addRecurring()"
@@ -94,6 +81,18 @@ import type {
           </button>
         </div>
       </header>
+
+      <nav class="px-4 sm:px-6 flex gap-1 border-b border-border">
+        <a routerLink="/app/finance" routerLinkActive="!border-primary !text-text font-medium"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="px-3 py-2.5 -mb-px text-sm border-b-2 border-transparent text-text-muted hover:text-text">
+          Expenses &amp; Budgets
+        </a>
+        <a routerLink="/app/finance/organizer" routerLinkActive="!border-primary !text-text font-medium"
+          class="px-3 py-2.5 -mb-px text-sm border-b-2 border-transparent text-text-muted hover:text-text">
+          Wishlist &amp; Savings
+        </a>
+      </nav>
 
       <div class="flex-1 overflow-auto p-4 sm:p-6 space-y-6">
         @if (loading()) {
@@ -397,6 +396,22 @@ export class FinanceDashboardComponent implements OnInit {
   protected readonly prevSummary = signal<FinanceSummary | null>(null);
   protected selectedBoardId = '';
   protected selectedMonth = this.currentMonth();
+  protected readonly currencies = ['USD', 'EUR', 'CLP', 'GBP', 'MXN', 'ARS', 'BRL', 'JPY', 'CAD', 'AUD'];
+
+  /** Changes the active board's display currency (no amount conversion). */
+  protected setCurrency(currency: string): void {
+    const b = this.board();
+    if (!b || b.currency === currency) return;
+    this.service.updateBoard(b.id, { currency }).subscribe({
+      next: (updated) => {
+        this.board.set({ ...b, currency: updated.currency });
+        this.boards.update((arr) =>
+          arr.map((x) => (x.id === b.id ? { ...x, currency: updated.currency } : x)),
+        );
+      },
+      error: () => this.toastr.error('Could not change currency'),
+    });
+  }
 
   // Transaction filters
   protected readonly txSearch = signal('');

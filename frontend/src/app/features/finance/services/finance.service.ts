@@ -44,6 +44,12 @@ export class FinanceService {
       .pipe(map((r) => r.data));
   }
 
+  updateBoard(id: string, dto: { name?: string; currency?: string }): Observable<FinanceBoard> {
+    return this.http
+      .patch<ApiResponse<FinanceBoard>>(`${this.base}/boards/${id}`, dto)
+      .pipe(map((r) => r.data));
+  }
+
   listTransactions(
     boardId: string,
     opts: { start?: string; end?: string; type?: string; category?: string } = {},
