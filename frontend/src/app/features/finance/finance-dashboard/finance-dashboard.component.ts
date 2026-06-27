@@ -83,14 +83,14 @@ import type {
       </header>
 
       <nav class="px-4 sm:px-6 flex gap-1 border-b border-border">
+        <a routerLink="/app/finance/organizer" routerLinkActive="!border-primary !text-text font-medium"
+          class="px-3 py-2.5 -mb-px text-sm border-b-2 border-transparent text-text-muted hover:text-text">
+          Wishlist &amp; Savings
+        </a>
         <a routerLink="/app/finance" routerLinkActive="!border-primary !text-text font-medium"
           [routerLinkActiveOptions]="{ exact: true }"
           class="px-3 py-2.5 -mb-px text-sm border-b-2 border-transparent text-text-muted hover:text-text">
           Expenses &amp; Budgets
-        </a>
-        <a routerLink="/app/finance/organizer" routerLinkActive="!border-primary !text-text font-medium"
-          class="px-3 py-2.5 -mb-px text-sm border-b-2 border-transparent text-text-muted hover:text-text">
-          Wishlist &amp; Savings
         </a>
       </nav>
 

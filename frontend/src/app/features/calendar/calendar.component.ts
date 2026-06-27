@@ -220,6 +220,32 @@ interface SlotMenu {
     ::ng-deep .fc .fc-day-other .fc-daygrid-day-number { color: var(--color-text-faint); }
     ::ng-deep .fc .fc-day-other { background: rgba(0, 0, 0, 0.12); }
 
+    /* Click affordance: hovering any day tints the cell and shows a "+" so it
+       reads as "click here to add an event" (the text hint alone wasn't enough) */
+    ::ng-deep .fc .fc-daygrid-day-frame { position: relative; }
+    ::ng-deep .fc .fc-daygrid-day:hover .fc-daygrid-day-frame {
+      background: var(--color-primary-ghost);
+      cursor: pointer;
+    }
+    ::ng-deep .fc .fc-daygrid-day:hover .fc-daygrid-day-frame::after {
+      content: '+';
+      position: absolute;
+      top: 5px;
+      left: 6px;
+      width: 18px;
+      height: 18px;
+      display: grid;
+      place-items: center;
+      border-radius: 6px;
+      background: var(--color-primary);
+      color: #fff;
+      font-size: 13px;
+      line-height: 1;
+      font-weight: 600;
+      pointer-events: none;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+    }
+
     /* Today: badge the number instead of flooding the cell */
     ::ng-deep .fc .fc-day-today .fc-daygrid-day-number {
       background: var(--color-primary);

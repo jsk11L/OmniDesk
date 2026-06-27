@@ -41,14 +41,14 @@ type Tab = 'wishlist' | 'planned' | 'savings';
       </header>
 
       <nav class="px-4 sm:px-6 flex gap-1 border-b border-border">
+        <a routerLink="/app/finance/organizer" routerLinkActive="!border-primary !text-text font-medium"
+          class="px-3 py-2.5 -mb-px text-sm border-b-2 border-transparent text-text-muted hover:text-text">
+          Wishlist &amp; Savings
+        </a>
         <a routerLink="/app/finance" routerLinkActive="!border-primary !text-text font-medium"
           [routerLinkActiveOptions]="{ exact: true }"
           class="px-3 py-2.5 -mb-px text-sm border-b-2 border-transparent text-text-muted hover:text-text">
           Expenses &amp; Budgets
-        </a>
-        <a routerLink="/app/finance/organizer" routerLinkActive="!border-primary !text-text font-medium"
-          class="px-3 py-2.5 -mb-px text-sm border-b-2 border-transparent text-text-muted hover:text-text">
-          Wishlist &amp; Savings
         </a>
       </nav>
 
@@ -65,6 +65,25 @@ type Tab = 'wishlist' | 'planned' | 'savings';
         @if (!board()) {
           <p class="text-text-muted">Loading…</p>
         } @else {
+          <!-- Wishlist & Savings mini-dashboard (design handoff) -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
+            <div class="bg-surface border border-border-soft rounded-lg p-4">
+              <div class="uppercase-tag mb-1.5">Wishlist value</div>
+              <div class="mono text-2xl font-semibold tracking-tight" style="color: var(--color-primary)">{{ money(wishlistValue()) }}</div>
+              <div class="text-xs text-text-muted mono mt-1">⭐ {{ pendingCount() }} pending {{ pendingCount() === 1 ? 'item' : 'items' }}</div>
+            </div>
+            <div class="bg-surface border border-border-soft rounded-lg p-4" style="border-left: 3px solid var(--color-success)">
+              <div class="uppercase-tag mb-1.5">Saved in goals</div>
+              <div class="mono text-2xl font-semibold tracking-tight" style="color: var(--color-success)">{{ money(totalSaved()) }}</div>
+              <div class="text-xs text-text-muted mono mt-1">📈 {{ savedPct() }}% of target · {{ activeGoals() }} active</div>
+            </div>
+            <div class="bg-surface border border-border-soft rounded-lg p-4">
+              <div class="uppercase-tag mb-1.5">Left to save</div>
+              <div class="mono text-2xl font-semibold tracking-tight" style="color: var(--color-accent)">{{ money(leftToSave()) }}</div>
+              <div class="text-xs text-text-muted mono mt-1">⏳ across {{ goals().length }} {{ goals().length === 1 ? 'goal' : 'goals' }}</div>
+            </div>
+          </div>
+
           @switch (tab()) {
             @case ('wishlist') {
               <div class="flex items-center gap-2 mb-3 text-sm">
@@ -170,6 +189,32 @@ export class FinanceOrganizerComponent implements OnInit {
 
   protected readonly visibleWishlist = computed(() =>
     this.wishlist().filter((w) => this.showArchived || !w.isArchived),
+  );
+
+  // ─── Mini-dashboard stats (design handoff) ───────────────
+  /** Pending = wishes still on the list (not archived). */
+  private readonly pendingWishlist = computed(() =>
+    this.wishlist().filter((w) => !w.isArchived),
+  );
+  protected readonly pendingCount = computed(() => this.pendingWishlist().length);
+  protected readonly wishlistValue = computed(() =>
+    this.pendingWishlist().reduce((sum, w) => sum + (w.estimatedPrice ?? 0), 0),
+  );
+  protected readonly totalSaved = computed(() =>
+    this.goals().reduce((sum, g) => sum + g.currentAmount, 0),
+  );
+  protected readonly totalGoal = computed(() =>
+    this.goals().reduce((sum, g) => sum + g.targetAmount, 0),
+  );
+  protected readonly leftToSave = computed(() =>
+    Math.max(0, this.totalGoal() - this.totalSaved()),
+  );
+  protected readonly savedPct = computed(() => {
+    const goal = this.totalGoal();
+    return goal > 0 ? Math.round((this.totalSaved() / goal) * 100) : 0;
+  });
+  protected readonly activeGoals = computed(
+    () => this.goals().filter((g) => !g.isCompleted).length,
   );
 
   ngOnInit(): void {
