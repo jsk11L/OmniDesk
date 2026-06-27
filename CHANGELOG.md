@@ -5,6 +5,17 @@ All notable changes to OmniDesk. Breaking changes are called out explicitly.
 ## [Unreleased]
 
 ### Added
+- **List card designer (Large card):** per-field layout — anchor a field to any
+  of 9 zones (3×3 matrix), stack it above the title with auto-scaled typography,
+  or keep it in the body; hide the "Field:" label; and render DATE fields as
+  month-only / month+year / year (e.g. show just "May" when grouping by year).
+  Each field gets its own layout button in the Fields popover.
+- **Obsidian → list import:** turn a vault `.zip` into list items — YAML
+  frontmatter keys become custom fields (types inferred), `tags` + folders
+  become list tags, images upload to assets, and the new fields show on cards.
+- **Calendar day-add affordance:** hovering a day tints the cell and shows a "+".
+- **Finance Wishlist & Savings mini-dashboard:** wishlist value, saved-in-goals
+  and left-to-save stat cards; the Wishlist & Savings tab now comes first.
 - **Calendar event tags + filter:** events carry tags and the calendar shows a
   tag filter bar; plus a visible hint that clicking a day adds an event.
 - **Finance tabs + currency switcher:** Expenses & Budgets and Wishlist &
@@ -74,6 +85,11 @@ All notable changes to OmniDesk. Breaking changes are called out explicitly.
   soft-delete purge cron, env validation, offset pagination, smoke test.
 
 ### Fixed
+- **Custom theme no longer bleeds past logout:** the active theme's inline CSS
+  variables are reset on sign-out, so the login screen and the next account
+  start from the default palette.
+- **Kanban columns:** dropped the stray white top border (an invalid
+  `border-top` when a column had no colour); softened the header divider.
 - **Dialogs no longer double-play** their open animation on first interaction
   (switched from async to eager animation providers).
 
