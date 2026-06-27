@@ -5,6 +5,10 @@ All notable changes to OmniDesk. Breaking changes are called out explicitly.
 ## [Unreleased]
 
 ### Added
+- **Lists power-features:** pick which custom fields show on cards and reorder
+  them (Fields popover); group by a DATE field at Year or Month granularity;
+  and configurable one-click **action buttons** on cards that set a Select field
+  to a value (e.g. a games backlog → Completed).
 - **Notes & TO-DO polish (design handoff):** notes list shows a total count,
   a Pinned section above All, and pages the All list horizontally (‹ x/y ›)
   instead of scrolling — pinned capped at 5 (server-enforced). Kanban columns
