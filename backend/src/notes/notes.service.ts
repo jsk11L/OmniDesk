@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import type { Note, NoteNotification, Prisma } from '@prisma/client';
 
 import { PrismaService } from '../prisma/prisma.service';
@@ -81,8 +81,24 @@ export class NotesService {
     });
   }
 
+  /** A user may keep at most this many pinned notes at once. */
+  private static readonly MAX_PINNED = 5;
+
   async update(userId: string, id: string, dto: UpdateNoteDto): Promise<Note> {
     const note = await this.findById(userId, id);
+
+    // Cap pinned notes — only check when newly pinning (not already pinned).
+    if (dto.isPinned === true && !note.isPinned) {
+      const pinnedCount = await this.prisma.note.count({
+        where: { userId, isPinned: true },
+      });
+      if (pinnedCount >= NotesService.MAX_PINNED) {
+        throw new BadRequestException(
+          `You can pin at most ${NotesService.MAX_PINNED} notes. Unpin one first.`,
+        );
+      }
+    }
+
     const content = dto.content ?? note.content;
     return this.prisma.note.update({
       where: { id },

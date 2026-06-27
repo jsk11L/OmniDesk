@@ -8,6 +8,7 @@ import {
   signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { NgTemplateOutlet } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -20,7 +21,7 @@ import type { Note } from '../notes.types';
   selector: 'app-notes-home',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, RouterLink, NoteEditorComponent],
+  imports: [FormsModule, NgTemplateOutlet, RouterLink, NoteEditorComponent],
   template: `
     <div class="h-full flex">
       <aside
@@ -31,7 +32,10 @@ import type { Note } from '../notes.types';
       >
         <div class="p-4 border-b border-border">
           <div class="flex items-center justify-between mb-3">
-            <h1 class="text-xl font-semibold">Notes</h1>
+            <div>
+              <div class="uppercase-tag">Notes</div>
+              <div class="text-sm font-semibold mt-0.5">{{ notes().length }} note{{ notes().length === 1 ? '' : 's' }}</div>
+            </div>
             <div class="flex items-center gap-2">
               <a
                 routerLink="/app/notes/import"
@@ -54,12 +58,12 @@ import type { Note } from '../notes.types';
             type="search"
             [(ngModel)]="search"
             (ngModelChange)="reload()"
-            placeholder="Search…"
+            placeholder="Search note or tag…"
             class="w-full px-3 py-2 bg-surface border border-border rounded text-sm outline-none focus:border-primary"
           />
         </div>
 
-        <ul class="flex-1 overflow-y-auto p-2 space-y-1">
+        <div class="flex-1 overflow-y-auto p-2">
           @if (loading()) {
             <p class="text-text-muted text-sm p-2">Loading…</p>
           } @else if (notes().length === 0) {
@@ -71,43 +75,82 @@ import type { Note } from '../notes.types';
               }
             </p>
           } @else {
-            @for (note of sortedNotes(); track note.id) {
-              <li>
-                <button
-                  type="button"
-                  (click)="select(note)"
-                  [class]="
-                    'w-full text-left px-3 py-2 rounded text-sm transition-colors ' +
-                    (selectedId() === note.id
-                      ? 'bg-surface-hover border-l-2 border-primary'
-                      : 'hover:bg-surface-hover border-l-2 border-transparent')
-                  "
-                >
-                  <div class="flex items-center gap-1.5">
-                    @if (note.isPinned) {
-                      <span class="text-accent text-xs">★</span>
-                    }
-                    @if (note.icon) {
-                      <span>{{ note.icon }}</span>
-                    }
-                    <span class="font-medium truncate">{{ note.title || 'Untitled' }}</span>
-                  </div>
-                  @if (note.tags.length) {
-                    <div class="flex flex-wrap gap-1 mt-1">
-                      @for (t of note.tags; track t) {
-                        <span class="text-xs px-1.5 py-0.5 bg-surface rounded text-text-muted">
-                          {{ t }}
-                        </span>
-                      }
-                    </div>
-                  }
-                  <p class="text-xs text-text-muted mt-1">{{ formatDate(note.updatedAt) }}</p>
-                </button>
-              </li>
+            @if (pinnedNotes().length) {
+              <div class="uppercase-tag px-2 pt-1 pb-1">Pinned</div>
+              <div class="space-y-1 mb-2">
+                @for (note of pinnedNotes(); track note.id) {
+                  <ng-container [ngTemplateOutlet]="row" [ngTemplateOutletContext]="{ $implicit: note }" />
+                }
+              </div>
+            }
+
+            <div class="uppercase-tag px-2 pt-2 pb-1 flex items-center justify-between">
+              <span>All</span>
+              @if (totalPages() > 1) {
+                <span class="flex items-center gap-1">
+                  <button
+                    type="button"
+                    (click)="prevPage()"
+                    [disabled]="page() === 0"
+                    class="w-6 h-6 grid place-items-center rounded hover:bg-surface-hover disabled:opacity-30 text-text-muted"
+                    aria-label="Previous page"
+                  >‹</button>
+                  <span class="mono text-[10px] text-text-faint">{{ page() + 1 }}/{{ totalPages() }}</span>
+                  <button
+                    type="button"
+                    (click)="nextPage()"
+                    [disabled]="page() >= totalPages() - 1"
+                    class="w-6 h-6 grid place-items-center rounded hover:bg-surface-hover disabled:opacity-30 text-text-muted"
+                    aria-label="Next page"
+                  >›</button>
+                </span>
+              }
+            </div>
+            @if (pagedNotes().length === 0) {
+              <p class="text-text-muted text-xs p-2 text-center">No more notes.</p>
+            } @else {
+              <div class="space-y-1">
+                @for (note of pagedNotes(); track note.id) {
+                  <ng-container [ngTemplateOutlet]="row" [ngTemplateOutletContext]="{ $implicit: note }" />
+                }
+              </div>
             }
           }
-        </ul>
+        </div>
       </aside>
+
+      <ng-template #row let-note>
+        <button
+          type="button"
+          (click)="select(note)"
+          [class]="
+            'w-full text-left px-3 py-2 rounded text-sm transition-colors ' +
+            (selectedId() === note.id
+              ? 'bg-surface-hover border-l-2 border-primary'
+              : 'hover:bg-surface-hover border-l-2 border-transparent')
+          "
+        >
+          <div class="flex items-center gap-1.5">
+            @if (note.isPinned) {
+              <span class="text-accent text-xs">★</span>
+            }
+            @if (note.icon) {
+              <span>{{ note.icon }}</span>
+            }
+            <span class="font-medium truncate">{{ note.title || 'Untitled' }}</span>
+          </div>
+          @if (note.tags.length) {
+            <div class="flex flex-wrap gap-1 mt-1">
+              @for (t of note.tags; track t) {
+                <span class="text-xs px-1.5 py-0.5 bg-surface rounded text-text-muted">
+                  {{ t }}
+                </span>
+              }
+            </div>
+          }
+          <p class="text-xs text-text-muted mt-1">{{ formatDate(note.updatedAt) }}</p>
+        </button>
+      </ng-template>
 
       <section
         [class]="
@@ -154,14 +197,37 @@ export class NotesHomeComponent implements OnInit {
   protected readonly selectedId = signal<string | null>(null);
   protected search = '';
 
-  protected readonly sortedNotes = computed(() => {
-    return this.notes()
-      .slice()
-      .sort((a, b) => {
-        if (a.isPinned !== b.isPinned) return a.isPinned ? -1 : 1;
-        return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
-      });
+  /** How many "All" notes show per horizontal page. */
+  private readonly pageSize = 10;
+  protected readonly page = signal(0);
+
+  private readonly byRecent = (a: Note, b: Note) =>
+    new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+
+  protected readonly pinnedNotes = computed(() =>
+    this.notes().filter((n) => n.isPinned).slice().sort(this.byRecent),
+  );
+
+  private readonly unpinnedNotes = computed(() =>
+    this.notes().filter((n) => !n.isPinned).slice().sort(this.byRecent),
+  );
+
+  protected readonly totalPages = computed(() =>
+    Math.max(1, Math.ceil(this.unpinnedNotes().length / this.pageSize)),
+  );
+
+  protected readonly pagedNotes = computed(() => {
+    const start = this.page() * this.pageSize;
+    return this.unpinnedNotes().slice(start, start + this.pageSize);
   });
+
+  protected prevPage(): void {
+    this.page.update((p) => Math.max(0, p - 1));
+  }
+
+  protected nextPage(): void {
+    this.page.update((p) => Math.min(this.totalPages() - 1, p + 1));
+  }
 
   protected readonly selectedNote = computed(() => {
     const id = this.selectedId();
@@ -187,6 +253,7 @@ export class NotesHomeComponent implements OnInit {
 
   protected reload(): void {
     this.loading.set(true);
+    this.page.set(0);
     this.service.list({ q: this.search || undefined }).subscribe({
       next: (notes) => {
         this.notes.set(notes);

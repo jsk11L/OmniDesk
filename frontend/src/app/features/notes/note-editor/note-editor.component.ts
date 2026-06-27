@@ -545,7 +545,17 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
     const next = !this.pinned();
     this.pinned.set(next);
     this.status.set('saving');
-    this.flush({ isPinned: next });
+    this.service.update(this.note().id, { isPinned: next }).subscribe({
+      next: (updated) => {
+        this.status.set('saved');
+        this.noteUpdated.emit(updated);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.pinned.set(!next); // revert optimistic flip (e.g. pinned-notes cap)
+        this.status.set('saved');
+        this.toastr.error(this.errMsg(err));
+      },
+    });
   }
 
   protected addTag(): void {
