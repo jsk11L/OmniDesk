@@ -118,7 +118,7 @@ const PRIORITY_LABEL: Record<TodoPriority, string> = {
               <div
                 cdkDrag
                 [cdkDragData]="col"
-                class="w-72 shrink-0 bg-surface border border-border rounded flex flex-col max-h-full"
+                class="flex-1 min-w-[280px] bg-surface border border-border-soft rounded-xl overflow-hidden flex flex-col max-h-full"
               >
                 <div
                   class="px-3 py-2 border-b border-border flex items-center justify-between gap-1"
@@ -183,7 +183,7 @@ const PRIORITY_LABEL: Record<TodoPriority, string> = {
                     <div
                       cdkDrag
                       (click)="editItem(col.id, item)"
-                      class="bg-background border border-border rounded p-3 cursor-grab hover:border-primary transition-colors"
+                      class="bg-background border border-border-soft rounded-lg p-3 cursor-grab hover:border-primary transition-colors shadow-sm"
                     >
                       <div class="flex items-start justify-between gap-2 mb-1">
                         <h3 class="text-sm font-medium leading-tight">{{ item.title }}</h3>
