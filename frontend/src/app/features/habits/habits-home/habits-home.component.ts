@@ -24,6 +24,9 @@ import type { Habit, HabitEntryStatus, HabitStats, HabitWeek } from '../habits.t
             <p class="page-subtitle">
               {{ habits().length }} habit(s) · {{ doneTodayCount() }} done today
             </p>
+            <p class="text-xs text-faint mt-1">
+              Dashed cells are editable (today &amp; yesterday) · older days lock 🔒
+            </p>
           }
         </div>
         <button type="button" (click)="openCreate()" class="btn btn-primary">+ New habit</button>
@@ -105,12 +108,14 @@ import type { Habit, HabitEntryStatus, HabitStats, HabitWeek } from '../habits.t
                         (click)="toggleDay(habit, d.date, d.status)"
                         class="week-btn"
                         [class.is-today]="isToday(d.date) && !isDone(d.status)"
+                        [class.is-editable]="isEditable(d.date) && !isDone(d.status)"
+                        [class.is-locked]="!isEditable(d.date) && !isFuture(d.date) && !isDone(d.status)"
                         [class.is-rest]="!isActiveDay(habit, d.date)"
                         [style.background]="dayBg(habit, d.date, d.status)"
                         [style.color]="isDone(d.status) ? '#fff' : 'var(--color-text-faint)'"
-                        [title]="d.date"
+                        [title]="isEditable(d.date) ? d.date : d.date + ' · locked (only today & yesterday)'"
                       >
-                        @if (isDone(d.status)) { ✓ }
+                        @if (isDone(d.status)) { ✓ } @else if (isEditable(d.date)) { + } @else if (isLockedPast(d.date)) { 🔒 }
                       </button>
                     </div>
                   }
@@ -197,6 +202,10 @@ import type { Habit, HabitEntryStatus, HabitStats, HabitWeek } from '../habits.t
     .week-btn:hover:not(:disabled) { transform: scale(1.08); }
     .week-btn:disabled { cursor: default; opacity: 0.5; }
     .week-btn.is-today { outline: 1px solid var(--color-primary); outline-offset: -1px; }
+    /* Editable (today/yesterday, not yet done): dashed ring + clickable cursor. */
+    .week-btn.is-editable { outline: 1px dashed var(--color-primary); outline-offset: -1px; color: var(--color-primary) !important; }
+    /* Locked past day: dimmed, non-interactive look. */
+    .week-btn.is-locked { opacity: 0.45; }
     .week-foot { display: flex; justify-content: space-between; margin-top: 10px; }
   `],
 })
@@ -211,6 +220,7 @@ export class HabitsHomeComponent implements OnInit {
   protected readonly featuredStats = signal<HabitStats | null>(null);
 
   private readonly todayStr = new Date().toISOString().slice(0, 10);
+  private readonly yesterdayStr = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
   private readonly weekDayOrder = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
   /** Habit with the highest active streak — drives the hero panel. */
@@ -300,6 +310,15 @@ export class HabitsHomeComponent implements OnInit {
     return date > this.todayStr;
   }
 
+  /** Only today and yesterday can be checked/unchecked; older days lock. */
+  protected isEditable(date: string): boolean {
+    return date === this.todayStr || date === this.yesterdayStr;
+  }
+
+  protected isLockedPast(date: string): boolean {
+    return !this.isEditable(date) && !this.isFuture(date);
+  }
+
   protected isActiveDay(habit: Habit, date: string): boolean {
     return habit.activeDays.includes(new Date(date + 'T00:00:00').getDay());
   }
@@ -341,7 +360,10 @@ export class HabitsHomeComponent implements OnInit {
   }
 
   protected toggleDay(habit: Habit, date: string, status: HabitEntryStatus | null): void {
-    if (this.isFuture(date)) return;
+    if (!this.isEditable(date)) {
+      this.toastr.info('You can only check today and yesterday');
+      return;
+    }
     const done = this.isDone(status);
     const req$ = done
       ? this.service.deleteEntry(habit.id, date)

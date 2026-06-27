@@ -47,6 +47,9 @@ interface SlotMenu {
         <div>
           <div class="uppercase-tag">Calendar</div>
           <h1 class="text-xl sm:text-2xl font-semibold mt-0.5">Your schedule</h1>
+          <p class="text-xs text-text-muted mt-0.5 flex items-center gap-1">
+            <span>💡</span> Click any day or drag a time range to add an event
+          </p>
         </div>
         <div class="flex items-center gap-2">
           <button type="button" (click)="openCreate()" class="btn btn-sm btn-primary">
