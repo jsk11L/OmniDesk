@@ -135,14 +135,15 @@ const PRIORITY_LABEL: Record<TodoPriority, string> = {
                     (blur)="renameColumn(col, $event)"
                     class="bg-transparent font-medium text-sm outline-none flex-1 mr-2"
                   />
-                  <div class="flex items-center gap-1">
+                  <div class="flex items-center gap-0.5 shrink-0">
                     <button
                       type="button"
                       (click)="toggleCompletionColumn(col)"
                       [class]="
-                        col.isCompletionColumn
-                          ? 'text-success text-xs'
-                          : 'text-text-muted hover:text-text text-xs opacity-50'
+                        'w-7 h-7 grid place-items-center rounded text-sm transition-colors ' +
+                        (col.isCompletionColumn
+                          ? 'text-success hover:bg-surface-hover'
+                          : 'text-text-muted hover:bg-surface-hover hover:text-text opacity-60')
                       "
                       [title]="
                         col.isCompletionColumn
@@ -155,7 +156,7 @@ const PRIORITY_LABEL: Record<TodoPriority, string> = {
                     <button
                       type="button"
                       (click)="addItem(col.id)"
-                      class="text-text-muted hover:text-text text-xs"
+                      class="w-7 h-7 grid place-items-center rounded text-base text-text-muted hover:bg-surface-hover hover:text-text transition-colors"
                       title="Add task"
                     >
                       +
@@ -163,7 +164,7 @@ const PRIORITY_LABEL: Record<TodoPriority, string> = {
                     <button
                       type="button"
                       (click)="deleteColumn(col)"
-                      class="text-text-muted hover:text-danger text-xs"
+                      class="w-7 h-7 grid place-items-center rounded text-base text-text-muted hover:bg-surface-hover hover:text-danger transition-colors"
                       title="Delete column"
                     >
                       ×

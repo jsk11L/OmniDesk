@@ -71,19 +71,22 @@ const ResizableImage = Image.extend({
               @case ('error') { ✗ Save error }
             }
           </span>
-          <div class="flex items-center gap-3">
+          <div class="flex items-center gap-1.5">
             <button
               type="button"
               (click)="togglePin()"
               [title]="pinned() ? 'Unpin' : 'Pin'"
-              class="hover:text-text"
+              [class]="
+                'w-9 h-9 grid place-items-center rounded-lg text-base transition-colors ' +
+                (pinned() ? 'text-accent hover:bg-surface-hover' : 'text-text-muted hover:bg-surface-hover hover:text-text')
+              "
             >
               {{ pinned() ? '★' : '☆' }}
             </button>
             <button
               type="button"
               (click)="downloadMarkdown()"
-              class="hover:text-text"
+              class="w-9 h-9 grid place-items-center rounded-lg text-base text-text-muted hover:bg-surface-hover hover:text-text transition-colors"
               title="Download as Markdown"
             >
               ⬇
@@ -91,7 +94,7 @@ const ResizableImage = Image.extend({
             <button
               type="button"
               (click)="deleteSelected()"
-              class="hover:text-danger"
+              class="w-9 h-9 grid place-items-center rounded-lg text-base text-text-muted hover:bg-surface-hover hover:text-danger transition-colors"
               title="Delete note"
             >
               🗑
@@ -116,7 +119,7 @@ const ResizableImage = Image.extend({
           <button
             type="button"
             (click)="openSettings()"
-            class="px-2 py-1 rounded hover:bg-surface-hover text-sm"
+            class="w-9 h-9 grid place-items-center rounded-lg hover:bg-surface-hover text-base text-text-muted hover:text-text transition-colors shrink-0"
             title="Note settings"
           >⚙</button>
         </div>
