@@ -111,6 +111,53 @@ export class HabitsService {
     return entry;
   }
 
+  /**
+   * Current-week (Monday→Sunday) status per habit, for the week-row UI.
+   * One query for every habit's entries in the window. `status` is the raw
+   * entry status; the client derives REST/active days from `activeDays`.
+   */
+  async week(userId: string): Promise<
+    Array<{ habitId: string; days: Array<{ date: string; status: HabitEntryStatus | null }> }>
+  > {
+    const monday = new Date();
+    monday.setUTCHours(0, 0, 0, 0);
+    monday.setUTCDate(monday.getUTCDate() - ((monday.getUTCDay() + 6) % 7));
+    const end = new Date(monday);
+    end.setUTCDate(end.getUTCDate() + 7);
+
+    const dates: string[] = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(monday);
+      d.setUTCDate(d.getUTCDate() + i);
+      dates.push(d.toISOString().slice(0, 10));
+    }
+
+    const [habits, entries] = await Promise.all([
+      this.prisma.habit.findMany({
+        where: { userId },
+        orderBy: { createdAt: 'asc' },
+        select: { id: true },
+      }),
+      this.prisma.habitEntry.findMany({
+        where: { habit: { userId }, date: { gte: monday, lt: end } },
+        select: { habitId: true, date: true, status: true },
+      }),
+    ]);
+
+    const byHabit = new Map<string, Map<string, HabitEntryStatus>>();
+    for (const e of entries) {
+      const day = new Date(e.date).toISOString().slice(0, 10);
+      const m = byHabit.get(e.habitId) ?? new Map<string, HabitEntryStatus>();
+      m.set(day, e.status);
+      byHabit.set(e.habitId, m);
+    }
+
+    return habits.map((h) => ({
+      habitId: h.id,
+      days: dates.map((date) => ({ date, status: byHabit.get(h.id)?.get(date) ?? null })),
+    }));
+  }
+
   async deleteEntry(userId: string, habitId: string, dateStr: string): Promise<{ date: string }> {
     await this.findById(userId, habitId);
     const date = new Date(dateStr);

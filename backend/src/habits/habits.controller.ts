@@ -34,6 +34,11 @@ export class HabitsController {
     return this.habits.today(user.id);
   }
 
+  @Get('week')
+  week(@CurrentUser() user: AuthUser) {
+    return this.habits.week(user.id);
+  }
+
   @Post()
   create(@CurrentUser() user: AuthUser, @Body() dto: CreateHabitDto) {
     return this.habits.create(user.id, dto);

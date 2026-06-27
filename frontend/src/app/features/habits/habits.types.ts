@@ -11,6 +11,11 @@ export interface HabitStats {
   heatmap: Array<{ date: string; status: HabitEntryStatus | null }>;
 }
 
+export interface HabitWeek {
+  habitId: string;
+  days: Array<{ date: string; status: HabitEntryStatus | null }>;
+}
+
 export interface CreateHabitDto {
   name: string;
   description?: string;
