@@ -137,6 +137,7 @@ export interface CalendarEvent {
   allDay: boolean;
   color: string;
   location: string | null;
+  tags: string[];
   createdAt: string;
   updatedAt: string;
 }

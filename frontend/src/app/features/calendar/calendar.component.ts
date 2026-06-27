@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, OnInit, signal, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal, viewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { FullCalendarComponent, FullCalendarModule } from '@fullcalendar/angular';
 import dayGridPlugin from '@fullcalendar/daygrid';
@@ -65,6 +65,21 @@ interface SlotMenu {
           </button>
         </div>
       </header>
+
+      @if (allTags().length) {
+        <div class="px-4 sm:px-6 py-2 border-b border-border-soft flex items-center gap-1.5 flex-wrap">
+          <span class="uppercase-tag mr-1">Filter</span>
+          <button type="button" (click)="setTagFilter(null)" class="chip"
+            [style.background]="tagFilter() === null ? 'var(--color-primary-ghost)' : null"
+            [style.color]="tagFilter() === null ? 'var(--color-primary)' : null">All</button>
+          @for (t of allTags(); track t) {
+            <button type="button" (click)="setTagFilter(t)" class="chip"
+              [style.background]="tagFilter() === t ? 'var(--color-surface-hover)' : null"
+              [style.color]="tagFilter() === t ? 'var(--color-text)' : null">#{{ t }}</button>
+          }
+          <span class="ml-auto mono text-xs text-text-faint">{{ visibleEvents().length }} shown</span>
+        </div>
+      }
 
       <div class="flex-1 p-3 sm:p-5 overflow-auto">
         <div class="cal-shell" [style.height]="containerHeight()">
@@ -247,6 +262,7 @@ export class CalendarComponent implements OnInit {
   private readonly calendarRef = viewChild(FullCalendarComponent);
 
   protected readonly events = signal<CalendarEvent[]>([]);
+  protected readonly tagFilter = signal<string | null>(null);
   protected readonly settings = signal<CalendarSettings | null>(null);
   protected readonly slotMenu = signal<SlotMenu>({
     visible: false,
@@ -323,29 +339,55 @@ export class CalendarComponent implements OnInit {
     this.loadEvents();
   }
 
+  /** Distinct tags across all events, for the filter bar. */
+  protected readonly allTags = computed(() => {
+    const set = new Set<string>();
+    for (const e of this.events()) for (const t of e.tags ?? []) set.add(t);
+    return Array.from(set).sort();
+  });
+
+  protected readonly visibleEvents = computed(() => {
+    const tag = this.tagFilter();
+    if (!tag) return this.events();
+    return this.events().filter((e) => (e.tags ?? []).includes(tag));
+  });
+
+  protected setTagFilter(tag: string | null): void {
+    this.tagFilter.set(tag);
+    this.renderEvents();
+  }
+
   private loadEvents(): void {
     this.service.list().subscribe({
       next: (events) => {
         this.events.set(events);
-        const mapped: EventInput[] = events.map((e) => ({
-          id: e.id,
-          title: e.title,
-          start: e.startDate,
-          end: e.endDate,
-          allDay: e.allDay,
-          backgroundColor: e.color,
-          borderColor: e.color,
-          extendedProps: { source: e },
-        }));
-        this.calendarOptions = { ...this.calendarOptions, events: mapped };
-        const api = this.calendarRef()?.getApi();
-        if (api) {
-          api.removeAllEventSources();
-          api.addEventSource(mapped);
+        // Drop a filter that no longer matches any event.
+        if (this.tagFilter() && !this.allTags().includes(this.tagFilter()!)) {
+          this.tagFilter.set(null);
         }
+        this.renderEvents();
       },
       error: () => this.toastr.error('Could not load events'),
     });
+  }
+
+  private renderEvents(): void {
+    const mapped: EventInput[] = this.visibleEvents().map((e) => ({
+      id: e.id,
+      title: e.title,
+      start: e.startDate,
+      end: e.endDate,
+      allDay: e.allDay,
+      backgroundColor: e.color,
+      borderColor: e.color,
+      extendedProps: { source: e },
+    }));
+    this.calendarOptions = { ...this.calendarOptions, events: mapped };
+    const api = this.calendarRef()?.getApi();
+    if (api) {
+      api.removeAllEventSources();
+      api.addEventSource(mapped);
+    }
   }
 
   protected openCreate(): void {

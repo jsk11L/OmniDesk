@@ -74,6 +74,7 @@ export class CalendarService {
         allDay: dto.allDay ?? false,
         color: dto.color ?? '#6366f1',
         location: dto.location ?? null,
+        tags: dto.tags ?? [],
       },
     });
   }
@@ -97,6 +98,7 @@ export class CalendarService {
         allDay: dto.allDay ?? event.allDay,
         color: dto.color ?? event.color,
         location: dto.location ?? event.location,
+        tags: dto.tags ?? event.tags,
       },
     });
   }

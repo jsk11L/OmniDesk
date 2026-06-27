@@ -100,6 +100,16 @@ function toLocalInput(date: Date): string {
           </label>
         </div>
 
+        <label class="block">
+          <span class="block text-xs text-text-muted mb-1">Tags (comma-separated)</span>
+          <input
+            type="text"
+            formControlName="tags"
+            class="w-full px-3 py-2 bg-background border border-border rounded outline-none focus:border-primary"
+            placeholder="work, personal, health"
+          />
+        </label>
+
         @if (data.event) {
           <div class="border-t border-border pt-3">
             <app-notification-attach-panel entityType="calendar-event" [entityId]="data.event.id" />
@@ -173,6 +183,7 @@ export class EventDialogComponent {
       allDay: [event?.allDay ?? false],
       color: [event?.color ?? '#6366f1'],
       location: [event?.location ?? ''],
+      tags: [(event?.tags ?? []).join(', ')],
     });
   }
 
@@ -199,6 +210,7 @@ export class EventDialogComponent {
       allDay: raw.allDay,
       color: raw.color,
       location: raw.location?.trim() || undefined,
+      tags: this.parseTags(raw.tags),
     };
 
     const request$ = this.data.event
@@ -253,6 +265,14 @@ export class EventDialogComponent {
       },
       error: (err: HttpErrorResponse) => this.toastr.error(this.errMsg(err)),
     });
+  }
+
+  private parseTags(raw: string): string[] {
+    const seen = new Set<string>();
+    return raw
+      .split(',')
+      .map((t) => t.trim())
+      .filter((t) => t.length > 0 && !seen.has(t) && seen.add(t));
   }
 
   private errMsg(err: HttpErrorResponse): string {
