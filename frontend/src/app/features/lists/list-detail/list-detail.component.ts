@@ -36,6 +36,7 @@ import {
   type ListItem,
   type ViewConfig,
   type GridTemplate,
+  type ListAction,
 } from '../lists.types';
 
 interface ItemGroup {
@@ -192,31 +193,43 @@ interface ItemGroup {
               @case ('card-large') {
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6">
                   @for (item of group.items; track item.id) {
-                    <button type="button" (click)="openEditItem(item)"
-                      class="text-left bg-surface border border-border rounded-lg overflow-hidden hover:border-primary transition-colors">
-                      @if (gridConfig().showImage && resolveImage(item); as src) {
-                        <img [src]="src" alt="" class="w-full h-40 object-cover" />
-                      }
-                      <div class="p-3">
-                        <h3 class="font-medium truncate">{{ item.title }}</h3>
-                        @for (fieldId of gridConfig().visibleFields; track fieldId) {
-                          @if (fieldById(fieldId); as f) {
-                            <p class="text-xs text-text-muted mt-0.5">
-                              <strong>{{ f.name }}:</strong> {{ formatField(item.customFields[f.id]) }}
-                            </p>
-                          }
+                    <div class="bg-surface border border-border rounded-lg overflow-hidden hover:border-primary transition-colors flex flex-col">
+                      <button type="button" (click)="openEditItem(item)" class="text-left">
+                        @if (gridConfig().showImage && resolveImage(item); as src) {
+                          <img [src]="src" alt="" class="w-full h-40 object-cover" />
                         }
-                        @if (gridConfig().showTags && item.tags?.length) {
-                          <div class="flex flex-wrap gap-1 mt-2">
-                            @for (t of item.tags!; track t.tagId) {
-                              @if (tagLookup(t.tagId); as tag) {
-                                <app-tag-chip [label]="tag.name" [color]="tag.color" />
-                              }
+                        <div class="p-3">
+                          <h3 class="font-medium truncate">{{ item.title }}</h3>
+                          @for (fieldId of gridConfig().visibleFields; track fieldId) {
+                            @if (fieldById(fieldId); as f) {
+                              <p class="text-xs text-text-muted mt-0.5">
+                                <strong>{{ f.name }}:</strong> {{ formatField(item.customFields[f.id]) }}
+                              </p>
                             }
-                          </div>
-                        }
-                      </div>
-                    </button>
+                          }
+                          @if (gridConfig().showTags && item.tags?.length) {
+                            <div class="flex flex-wrap gap-1 mt-2">
+                              @for (t of item.tags!; track t.tagId) {
+                                @if (tagLookup(t.tagId); as tag) {
+                                  <app-tag-chip [label]="tag.name" [color]="tag.color" />
+                                }
+                              }
+                            </div>
+                          }
+                        </div>
+                      </button>
+                      @if (actions().length) {
+                        <div class="flex flex-wrap gap-1 px-3 pb-3 mt-auto">
+                          @for (a of actions(); track a.id) {
+                            <button type="button" (click)="runAction(item, a, $event)"
+                              class="text-xs px-2 py-1 rounded border border-border hover:border-primary hover:bg-surface-hover transition-colors"
+                              [style.color]="a.color || null">
+                              {{ a.label }}
+                            </button>
+                          }
+                        </div>
+                      }
+                    </div>
                   }
                 </div>
               }
@@ -413,6 +426,23 @@ export class ListDetailComponent implements OnInit {
     const rest = fields.filter((f) => !visible.includes(f.id));
     return [...ordered, ...rest];
   });
+
+  protected readonly actions = computed<ListAction[]>(() => this.viewConfig().actions ?? []);
+
+  /** Applies an action's field=value to the item, then refreshes. */
+  protected runAction(item: ListItem, action: ListAction, event: Event): void {
+    event.stopPropagation();
+    const customFields = { ...item.customFields, [action.fieldId]: action.value };
+    this.service.updateItem(this.id, item.id, { customFields }).subscribe({
+      next: () => {
+        this.rawItems.update((arr) =>
+          arr.map((it) => (it.id === item.id ? { ...it, customFields } : it)),
+        );
+        this.toastr.success(`${item.title} → ${action.value}`);
+      },
+      error: (err: HttpErrorResponse) => this.toastr.error(this.errMsg(err)),
+    });
+  }
 
   protected isFieldVisible(fieldId: string): boolean {
     return this.gridConfig().visibleFields.includes(fieldId);

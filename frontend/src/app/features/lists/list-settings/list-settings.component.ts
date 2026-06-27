@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Inject, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Inject, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -7,7 +7,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 
 import { ListsService } from '../services/lists.service';
 import { DialogService } from '../../../shared/services/dialog.service';
-import type { List, ListField, ListFieldType, ListTag } from '../lists.types';
+import type { List, ListAction, ListField, ListFieldType, ListTag, ViewConfig } from '../lists.types';
 
 export interface ListSettingsData {
   list: List;
@@ -180,6 +180,56 @@ const FIELD_TYPES: { value: ListFieldType; label: string }[] = [
         </form>
       </section>
 
+      <section class="mb-6">
+        <h3 class="text-sm font-medium mb-1">Item action buttons</h3>
+        <p class="text-xs text-text-muted mb-3">
+          One-click buttons on cards that set a Select field to a value (e.g. Status → Completed).
+        </p>
+        @if (selectFields().length === 0) {
+          <p class="text-xs text-text-muted mb-3">Add a Select field first to create actions.</p>
+        } @else {
+          @if (actions().length) {
+            <ul class="space-y-1 mb-3">
+              @for (a of actions(); track a.id) {
+                <li class="flex items-center justify-between text-sm bg-background px-3 py-2 rounded border border-border">
+                  <span class="min-w-0 truncate">
+                    <span class="font-medium" [style.color]="a.color || null">{{ a.label }}</span>
+                    <span class="text-xs text-text-muted ml-2">→ {{ fieldName(a.fieldId) }} = {{ a.value }}</span>
+                  </span>
+                  <button type="button" (click)="removeAction(a.id)" class="text-text-muted hover:text-danger shrink-0" aria-label="Remove action">×</button>
+                </li>
+              }
+            </ul>
+          }
+          <form [formGroup]="actionForm" (ngSubmit)="addAction()" class="grid grid-cols-2 gap-2">
+            <input
+              type="text"
+              formControlName="label"
+              placeholder="Button label"
+              maxlength="40"
+              class="px-3 py-2 bg-background border border-border rounded outline-none focus:border-primary text-sm"
+            />
+            <input type="color" formControlName="color" class="w-full h-10 bg-background border border-border rounded cursor-pointer" />
+            <select formControlName="fieldId" class="px-3 py-2 bg-background border border-border rounded outline-none focus:border-primary text-sm">
+              <option value="">Select field…</option>
+              @for (f of selectFields(); track f.id) {
+                <option [value]="f.id">{{ f.name }}</option>
+              }
+            </select>
+            <select formControlName="value" class="px-3 py-2 bg-background border border-border rounded outline-none focus:border-primary text-sm">
+              <option value="">Value…</option>
+              @for (o of actionValueOptions(); track o) {
+                <option [value]="o">{{ o }}</option>
+              }
+            </select>
+            <button type="submit" [disabled]="actionForm.invalid"
+              class="col-span-2 px-3 py-1.5 text-sm rounded bg-primary text-white hover:opacity-90 disabled:opacity-50">
+              + Add action
+            </button>
+          </form>
+        }
+      </section>
+
       <section class="mb-2">
         <h3 class="text-sm font-medium mb-3">Predefined tags</h3>
         @if (tags().length === 0) {
@@ -257,9 +307,23 @@ export class ListSettingsComponent {
   /** Mirrors fieldForm.fieldType so the options input shows/hides under OnPush. */
   protected readonly newFieldType = signal<ListFieldType>('TEXT');
 
+  protected readonly actions = signal<ListAction[]>([]);
+  /** Mirrors actionForm.fieldId so the value dropdown reacts under OnPush. */
+  protected readonly actionFieldId = signal<string>('');
+
+  protected readonly selectFields = computed(() =>
+    this.fields().filter((f) => f.fieldType === 'SELECT' || f.fieldType === 'MULTI_SELECT'),
+  );
+
+  protected readonly actionValueOptions = computed<string[]>(() => {
+    const field = this.fields().find((f) => f.id === this.actionFieldId());
+    return field ? this.optionsOf(field) : [];
+  });
+
   protected readonly listForm;
   protected readonly fieldForm;
   protected readonly tagForm;
+  protected readonly actionForm;
 
   constructor(
     public ref: MatDialogRef<ListSettingsComponent, 'changed' | 'deleted' | undefined>,
@@ -290,6 +354,52 @@ export class ListSettingsComponent {
     this.tagForm = this.fb.nonNullable.group({
       name: ['', [Validators.required, Validators.maxLength(50)]],
       color: ['#94a3b8'],
+    });
+
+    this.actions.set(list.viewConfig?.actions ?? []);
+    this.actionForm = this.fb.nonNullable.group({
+      label: ['', [Validators.required, Validators.maxLength(40)]],
+      color: ['#6366f1'],
+      fieldId: ['', Validators.required],
+      value: ['', Validators.required],
+    });
+    this.actionForm.controls.fieldId.valueChanges
+      .pipe(takeUntilDestroyed())
+      .subscribe((id) => {
+        this.actionFieldId.set(id);
+        this.actionForm.controls.value.setValue('');
+      });
+  }
+
+  protected fieldName(fieldId: string): string {
+    return this.fields().find((f) => f.id === fieldId)?.name ?? '—';
+  }
+
+  addAction(): void {
+    if (this.actionForm.invalid) return;
+    const raw = this.actionForm.getRawValue();
+    const action: ListAction = {
+      id: crypto.randomUUID(),
+      label: raw.label.trim(),
+      fieldId: raw.fieldId,
+      value: raw.value,
+      color: raw.color,
+    };
+    this.saveActions([...this.actions(), action]);
+    this.actionForm.reset({ label: '', color: '#6366f1', fieldId: '', value: '' });
+    this.actionFieldId.set('');
+  }
+
+  removeAction(id: string): void {
+    this.saveActions(this.actions().filter((a) => a.id !== id));
+  }
+
+  private saveActions(next: ListAction[]): void {
+    this.actions.set(next);
+    const viewConfig: Partial<ViewConfig> = { ...(this.data.list.viewConfig ?? {}), actions: next };
+    this.data.list = { ...this.data.list, viewConfig };
+    this.service.update(this.data.list.id, { viewConfig }).subscribe({
+      error: (err: HttpErrorResponse) => this.toastr.error(this.errMsg(err)),
     });
   }
 

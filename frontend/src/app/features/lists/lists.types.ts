@@ -64,11 +64,21 @@ export interface ListFilter {
   value: unknown;
 }
 
+/** A one-click button on an item card that sets a SELECT field to a fixed value. */
+export interface ListAction {
+  id: string;
+  label: string;
+  fieldId: string;
+  value: string;
+  color?: string;
+}
+
 export interface ViewConfig {
   groupBy: string | null;
   sortBy: string;
   sortDir: 'asc' | 'desc';
   filters: ListFilter[];
+  actions?: ListAction[];
 }
 
 export const DEFAULT_GRID_CONFIG: GridConfig = {
