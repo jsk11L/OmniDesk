@@ -5,6 +5,10 @@ All notable changes to OmniDesk. Breaking changes are called out explicitly.
 ## [Unreleased]
 
 ### Added
+- **Notes & TO-DO polish (design handoff):** notes list shows a total count,
+  a Pinned section above All, and pages the All list horizontally (‹ x/y ›)
+  instead of scrolling — pinned capped at 5 (server-enforced). Kanban columns
+  now flex to fill the board width with softer, rounded borders.
 - **Sidebar favorites:** pin any list or note to a Favorites section in the
   sidebar (★ on a list, 🔖 in the note editor), backed by a generic `Favorite`
   model that resolves each target's live label + icon and drops stale entries.
