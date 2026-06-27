@@ -3,6 +3,7 @@ import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 
 import { AuthService } from '../../../core/services/auth.service';
 import { UploadsService } from '../../services/uploads.service';
+import { FavoritesStore } from '../../services/favorites.store';
 
 interface NavItem {
   path: string;
@@ -41,6 +42,16 @@ interface NavItem {
             <span class="nav-ico">{{ item.icon }}</span>
             <span>{{ item.label }}</span>
           </a>
+        }
+
+        @if (favorites().length > 0) {
+          <div class="sb-section-label" style="margin-top: 8px">Favorites</div>
+          @for (f of favorites(); track f.id) {
+            <a [routerLink]="favRoute(f)" [queryParams]="favParams(f)" class="nav-item">
+              <span class="nav-ico">{{ f.icon ?? (f.kind === 'LIST' ? '🗂️' : '📝') }}</span>
+              <span class="truncate">{{ f.label }}</span>
+            </a>
+          }
         }
       </nav>
 
@@ -159,6 +170,7 @@ interface NavItem {
       border-radius: 2px;
     }
     .nav-ico { width: 18px; font-size: 14px; flex-shrink: 0; text-align: center; }
+    .nav-item .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
     .sb-footer {
       padding: 8px;
@@ -218,6 +230,21 @@ export class SidebarComponent {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   private readonly uploads = inject(UploadsService);
+  private readonly favoritesStore = inject(FavoritesStore);
+
+  readonly favorites = this.favoritesStore.favorites;
+
+  constructor() {
+    this.favoritesStore.load();
+  }
+
+  protected favRoute(f: { kind: 'LIST' | 'NOTE'; entityId: string }): string {
+    return f.kind === 'LIST' ? `/app/lists/${f.entityId}` : '/app/notes';
+  }
+
+  protected favParams(f: { kind: 'LIST' | 'NOTE'; entityId: string }): Record<string, string> | null {
+    return f.kind === 'NOTE' ? { note: f.entityId } : null;
+  }
 
   readonly userEmail = computed(() => this.auth.user()?.email ?? null);
   readonly isAdmin = computed(() => this.auth.user()?.isAdmin ?? false);

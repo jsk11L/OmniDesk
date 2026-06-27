@@ -23,6 +23,7 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { UploadsModule } from './uploads/uploads.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { HabitsModule } from './habits/habits.module';
+import { FavoritesModule } from './favorites/favorites.module';
 import { AdminModule } from './admin/admin.module';
 import { ExporterModule } from './exporter/exporter.module';
 import { ImporterModule } from './importer/importer.module';
@@ -68,6 +69,7 @@ import { SearchModule } from './search/search.module';
     UploadsModule,
     DashboardModule,
     HabitsModule,
+    FavoritesModule,
     AdminModule,
     ExporterModule,
     ImporterModule,

@@ -5,6 +5,14 @@ All notable changes to OmniDesk. Breaking changes are called out explicitly.
 ## [Unreleased]
 
 ### Added
+- **Sidebar favorites:** pin any list or note to a Favorites section in the
+  sidebar (★ on a list, 🔖 in the note editor), backed by a generic `Favorite`
+  model that resolves each target's live label + icon and drops stale entries.
+- **Shell redesign (design handoff):** sidebar with gradient logo, a ⌘K
+  search/command pill, iconned nav with an active accent bar, and a footer of
+  Notifications · Settings · Admin + a profile pill with sign-out; a more
+  prominent top-bar search and roomier breadcrumb padding; and bigger tap
+  targets for note + kanban icon buttons.
 - **Recurring transactions:** finance templates (subscriptions, salary, rent…)
   with daily/weekly/monthly/yearly cadence, materialized into real transactions
   by an hourly scheduler (with bounded catch-up), pause without deleting, and a

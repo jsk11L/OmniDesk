@@ -26,6 +26,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { NotesService } from '../services/notes.service';
 import { DialogService } from '../../../shared/services/dialog.service';
 import { DataExportService } from '../../../core/services/data-export.service';
+import { FavoritesStore } from '../../../shared/services/favorites.store';
 import { EmojiPickerComponent } from '../../../shared/components/emoji-picker/emoji-picker.component';
 import {
   NoteSettingsDialogComponent,
@@ -72,6 +73,17 @@ const ResizableImage = Image.extend({
             }
           </span>
           <div class="flex items-center gap-1.5">
+            <button
+              type="button"
+              (click)="toggleFavorite()"
+              [title]="isFavorite() ? 'Remove from sidebar favorites' : 'Add to sidebar favorites'"
+              [class]="
+                'w-9 h-9 grid place-items-center rounded-lg text-base transition-all ' +
+                (isFavorite() ? 'bg-primary/20' : 'opacity-50 hover:opacity-100 hover:bg-surface-hover')
+              "
+            >
+              🔖
+            </button>
             <button
               type="button"
               (click)="togglePin()"
@@ -314,6 +326,15 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
   private readonly dialog = inject(MatDialog);
   private readonly dialogs = inject(DialogService);
   private readonly exportService = inject(DataExportService);
+  private readonly favoritesStore = inject(FavoritesStore);
+
+  protected isFavorite(): boolean {
+    return this.favoritesStore.isFavorite('NOTE', this.note().id);
+  }
+
+  protected toggleFavorite(): void {
+    this.favoritesStore.toggle('NOTE', this.note().id);
+  }
 
   readonly note = input.required<Note>();
   readonly noteDeleted = output<string>();

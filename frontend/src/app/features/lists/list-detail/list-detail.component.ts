@@ -16,6 +16,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { ListsService } from '../services/lists.service';
 import { TagChipComponent } from '../../../shared/components/tag-chip/tag-chip.component';
 import { UploadsService } from '../../../shared/services/uploads.service';
+import { FavoritesStore } from '../../../shared/services/favorites.store';
 import {
   ListItemDialogComponent,
   type ListItemDialogData,
@@ -62,6 +63,17 @@ interface ItemGroup {
             </h1>
           </div>
           <div class="flex items-center gap-2">
+            @if (list(); as l) {
+              <button
+                type="button"
+                (click)="toggleFavorite(l.id)"
+                [title]="isFavorite(l.id) ? 'Remove from sidebar favorites' : 'Add to sidebar favorites'"
+                [class]="
+                  'w-10 h-10 grid place-items-center rounded-lg text-lg transition-colors ' +
+                  (isFavorite(l.id) ? 'text-accent hover:bg-surface-hover' : 'text-text-muted hover:bg-surface-hover hover:text-text')
+                "
+              >{{ isFavorite(l.id) ? '★' : '☆' }}</button>
+            }
             <button type="button" (click)="openSettings()" class="px-3 py-2 rounded text-sm hover:bg-surface-hover">
               ⚙ Settings
             </button>
@@ -336,6 +348,15 @@ export class ListDetailComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly toastr = inject(ToastrService);
   private readonly uploads = inject(UploadsService);
+  private readonly favoritesStore = inject(FavoritesStore);
+
+  protected isFavorite(listId: string): boolean {
+    return this.favoritesStore.isFavorite('LIST', listId);
+  }
+
+  protected toggleFavorite(listId: string): void {
+    this.favoritesStore.toggle('LIST', listId);
+  }
 
   @Input({ required: true }) id!: string;
 

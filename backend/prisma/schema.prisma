@@ -70,10 +70,33 @@ model User {
   todoBoards        TodoBoard[]
   habits            Habit[]
   financeBoards     FinanceBoard[]
+  favorites         Favorite[]
   notifications     NotificationConfig[]
   themes            Theme[]              @relation("ThemeOwner")
   activeThemeId     String?
   activeTheme       Theme?               @relation("ActiveTheme", fields: [activeThemeId], references: [id])
+}
+
+/// Sidebar shortcut to a user-chosen entity (list, note…). Stores only the
+/// reference; label + icon are resolved from the target at read time so they
+/// stay in sync, and stale favorites (deleted targets) are filtered out.
+model Favorite {
+  id        String       @id @default(uuid())
+  userId    String
+  kind      FavoriteKind
+  entityId  String
+  position  Int          @default(0)
+  createdAt DateTime     @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, kind, entityId])
+  @@index([userId, position])
+}
+
+enum FavoriteKind {
+  LIST
+  NOTE
 }
 
 model PushSubscription {
