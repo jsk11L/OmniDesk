@@ -5,6 +5,11 @@ All notable changes to OmniDesk. Breaking changes are called out explicitly.
 ## [Unreleased]
 
 ### Added
+- **Calendar event tags + filter:** events carry tags and the calendar shows a
+  tag filter bar; plus a visible hint that clicking a day adds an event.
+- **Finance tabs + currency switcher:** Expenses & Budgets and Wishlist &
+  Savings are now tabs; the dead board switcher is replaced by a display-currency
+  selector (USD/EUR/CLP/…).
 - **Lists power-features:** pick which custom fields show on cards and reorder
   them (Fields popover); group by a DATE field at Year or Month granularity;
   and configurable one-click **action buttons** on cards that set a Select field
@@ -68,7 +73,13 @@ All notable changes to OmniDesk. Breaking changes are called out explicitly.
   `User.timezone` / `User.deletedAt` / `Note.plainText` / `TodoColumn.isCompletionColumn`,
   soft-delete purge cron, env validation, offset pagination, smoke test.
 
+### Fixed
+- **Dialogs no longer double-play** their open animation on first interaction
+  (switched from async to eager animation providers).
+
 ### Changed
+- **Habits** can only be checked for today and yesterday; older days lock with a
+  clear visual indicator.
 - Full UI + backend message migration to **English**.
 - `prisma` and `tsx` moved to backend production dependencies (needed by the
   container entrypoint to run migrations and the idempotent seed).
