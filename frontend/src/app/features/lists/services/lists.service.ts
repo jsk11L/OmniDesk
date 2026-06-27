@@ -9,6 +9,7 @@ import type {
   CreateListFieldDto,
   CreateListItemDto,
   CreateListTagDto,
+  ImportListReport,
   List,
   ListField,
   ListItem,
@@ -34,6 +35,21 @@ export class ListsService {
 
   create(dto: CreateListDto): Observable<List> {
     return this.http.post<ApiResponse<List>>(this.base, dto).pipe(map((r) => r.data));
+  }
+
+  /**
+   * Import an Obsidian vault zip as list items (frontmatter → custom fields).
+   * Pass `listId` to append into an existing list, or `name` to create a new one.
+   */
+  importObsidian(file: File, opts: { listId?: string; name?: string } = {}): Observable<ImportListReport> {
+    const fd = new FormData();
+    fd.append('file', file);
+    let params = new HttpParams();
+    if (opts.listId) params = params.set('listId', opts.listId);
+    if (opts.name) params = params.set('name', opts.name);
+    return this.http
+      .post<ApiResponse<ImportListReport>>(`${environment.apiUrl}/import/obsidian-list`, fd, { params })
+      .pipe(map((r) => r.data));
   }
 
   update(id: string, dto: UpdateListDto): Observable<List> {

@@ -14,6 +14,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser, type AuthUser } from '../common/decorators/current-user.decorator';
 import {
   ImporterService,
+  type ImportListReport,
   type ImportMode,
   type ImportOwnReport,
   type ImportReport,
@@ -33,6 +34,19 @@ export class ImporterController {
   ): Promise<ImportReport> {
     if (!file) throw new BadRequestException('A vault .zip file is required');
     return this.importer.importObsidian(user.id, file.buffer);
+  }
+
+  @Throttle({ default: { limit: 5, ttl: 15 * 60 * 1000 } })
+  @Post('obsidian-list')
+  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: 200 * 1024 * 1024 } }))
+  async obsidianToList(
+    @UploadedFile() file: Express.Multer.File,
+    @CurrentUser() user: AuthUser,
+    @Query('listId') listId?: string,
+    @Query('name') name?: string,
+  ): Promise<ImportListReport> {
+    if (!file) throw new BadRequestException('A vault .zip file is required');
+    return this.importer.importObsidianToList(user.id, file.buffer, { listId, listName: name });
   }
 
   @Throttle({ default: { limit: 5, ttl: 15 * 60 * 1000 } })

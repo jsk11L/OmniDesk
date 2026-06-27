@@ -6,6 +6,7 @@ import { ToastrService } from 'ngx-toastr';
 import { HttpErrorResponse } from '@angular/common/http';
 
 import { ListsService } from '../services/lists.service';
+import { DialogService } from '../../../shared/services/dialog.service';
 import { ImageCellComponent } from '../../../shared/components/image-cell/image-cell.component';
 import {
   CreateListDialogComponent,
@@ -34,6 +35,16 @@ import type { List } from '../lists.types';
             placeholder="Search lists…"
             class="px-3 py-2 bg-surface border border-border rounded text-sm outline-none focus:border-primary w-64"
           />
+          <input #vaultInput type="file" accept=".zip" class="hidden" (change)="onVaultPicked($event)" />
+          <button
+            type="button"
+            (click)="vaultInput.click()"
+            [disabled]="importing()"
+            title="Create a list from an Obsidian vault (.zip) — frontmatter becomes custom fields"
+            class="px-3 py-2 rounded border border-border text-sm hover:bg-surface-hover disabled:opacity-50"
+          >
+            {{ importing() ? 'Importing…' : '⬇ Obsidian' }}
+          </button>
           <button
             type="button"
             (click)="openCreate()"
@@ -96,11 +107,13 @@ import type { List } from '../lists.types';
 export class ListHomeComponent implements OnInit {
   private readonly service = inject(ListsService);
   private readonly dialog = inject(MatDialog);
+  private readonly dialogs = inject(DialogService);
   private readonly router = inject(Router);
   private readonly toastr = inject(ToastrService);
 
   protected readonly loading = signal(true);
   protected readonly lists = signal<List[]>([]);
+  protected readonly importing = signal(false);
   protected search = '';
 
   protected readonly filtered = computed(() => {
@@ -123,6 +136,40 @@ export class ListHomeComponent implements OnInit {
       },
       error: (err: HttpErrorResponse) => {
         this.loading.set(false);
+        this.toastr.error(this.errMsg(err));
+      },
+    });
+  }
+
+  protected async onVaultPicked(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+
+    const name = await this.dialogs.prompt({
+      title: 'Import Obsidian vault',
+      label: 'Name for the new list',
+      placeholder: 'My games, Books read…',
+      initialValue: file.name.replace(/\.zip$/i, ''),
+      confirmLabel: 'Import',
+    });
+    if (name === null) return; // cancelled
+
+    this.importing.set(true);
+    this.service.importObsidian(file, { name: name || undefined }).subscribe({
+      next: (report) => {
+        this.importing.set(false);
+        this.toastr.success(
+          `Imported ${report.itemsCreated} items · ${report.fieldsCreated} fields · ${report.tagsCreated} tags`,
+        );
+        if (report.errors.length) {
+          this.toastr.warning(`${report.errors.length} notes had issues and were skipped`);
+        }
+        void this.router.navigate(['/app/lists', report.listId]);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.importing.set(false);
         this.toastr.error(this.errMsg(err));
       },
     });

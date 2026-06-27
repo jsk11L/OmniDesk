@@ -52,6 +52,17 @@ export interface ImportReport {
   errors: string[];
 }
 
+export interface ImportListReport {
+  listId: string;
+  listName: string;
+  itemsCreated: number;
+  fieldsCreated: number;
+  tagsCreated: number;
+  assetsUploaded: number;
+  skipped: string[];
+  errors: string[];
+}
+
 @Injectable()
 export class ImporterService {
   private readonly logger = new Logger(ImporterService.name);
@@ -166,6 +177,215 @@ export class ImporterService {
         report.errors.push(`note ${c.id}: ${(err as Error).message}`);
       }
     }
+
+    return report;
+  }
+
+  // ─── Import an Obsidian vault AS LIST ITEMS (frontmatter → custom fields) ──
+
+  /**
+   * Turns each note in a vault into a list item, mapping YAML frontmatter keys
+   * to custom fields (types inferred), folder + `tags` to list tags, and the
+   * note title/filename to the item title. Body content is ignored — this is a
+   * structured import, not a notes import. Pass `listId` to append into an
+   * existing list (fields matched by name); otherwise a new list is created.
+   */
+  async importObsidianToList(
+    userId: string,
+    buffer: Buffer,
+    opts: { listId?: string; listName?: string },
+  ): Promise<ImportListReport> {
+    if (buffer.length > MAX_BYTES) {
+      throw new BadRequestException('Vault exceeds the 200 MB limit. Split it and import in parts.');
+    }
+    let zip: AdmZip;
+    try {
+      zip = new AdmZip(buffer);
+    } catch {
+      throw new BadRequestException('Could not read the zip file');
+    }
+
+    const report: ImportListReport = {
+      listId: '',
+      listName: '',
+      itemsCreated: 0,
+      fieldsCreated: 0,
+      tagsCreated: 0,
+      assetsUploaded: 0,
+      skipped: [],
+      errors: [],
+    };
+
+    const entries = zip.getEntries().filter((e) => !e.isDirectory && !IGNORE.test(e.entryName));
+
+    // 1) Assets → uploaded images, mapped by basename (for IMAGE_URL fields).
+    const assetUrls = new Map<string, string>();
+    for (const e of entries) {
+      const name = e.entryName;
+      if (!IMAGE_EXT.test(name)) continue;
+      try {
+        const data = e.getData();
+        const { url } = await this.uploads.process(
+          {
+            buffer: data,
+            mimetype: MIME[extname(name).toLowerCase()] ?? 'image/png',
+            originalname: basename(name),
+            size: data.length,
+          } as Express.Multer.File,
+          userId,
+        );
+        assetUrls.set(basename(name).toLowerCase(), url);
+        report.assetsUploaded++;
+      } catch (err) {
+        report.skipped.push(name);
+        this.logger.warn(`Asset skipped (${name}): ${(err as Error).message}`);
+      }
+    }
+
+    // 2) Parse every note's frontmatter.
+    const mdEntries = entries.filter((e) => e.entryName.toLowerCase().endsWith('.md'));
+    if (mdEntries.length === 0) {
+      throw new BadRequestException('No Markdown notes found in the vault');
+    }
+
+    interface ParsedNote {
+      title: string;
+      tags: string[];
+      fields: Record<string, string | string[]>;
+    }
+    const notes: ParsedNote[] = [];
+    const fieldSamples = new Map<string, (string | string[])[]>(); // key → values seen
+    const fieldOrder: string[] = []; // first-seen order, preserves original key casing
+
+    for (const e of mdEntries) {
+      try {
+        const text = e.getData().toString('utf8');
+        const { frontmatter } = parseFrontmatterFull(text);
+        const dir = dirname(e.entryName);
+        const folderTags = dir && dir !== '.' ? dir.split('/').filter(Boolean) : [];
+        const tags = [...new Set([...frontmatter.tags, ...folderTags])];
+        const title =
+          (frontmatter.title || basename(e.entryName, '.md')).trim() || 'Untitled';
+
+        for (const [key, value] of Object.entries(frontmatter.fields)) {
+          if (!fieldSamples.has(key)) {
+            fieldSamples.set(key, []);
+            fieldOrder.push(key);
+          }
+          fieldSamples.get(key)!.push(value);
+        }
+        notes.push({ title, tags, fields: frontmatter.fields });
+      } catch (err) {
+        report.errors.push(`${e.entryName}: ${(err as Error).message}`);
+      }
+    }
+
+    // 3) Resolve the target list (existing or new).
+    let list: { id: string; name: string };
+    if (opts.listId) {
+      const existing = await this.prisma.list.findFirst({
+        where: { id: opts.listId, userId },
+        include: { fields: true },
+      });
+      if (!existing) throw new BadRequestException('Target list not found');
+      list = { id: existing.id, name: existing.name };
+    } else {
+      const created = await this.prisma.list.create({
+        data: {
+          userId,
+          name: (opts.listName || 'Imported from Obsidian').trim() || 'Imported from Obsidian',
+          defaultView: 'GRID',
+          defaultSortDir: 'DESC',
+          gridConfig: {} as Json,
+          viewConfig: {} as Json,
+        },
+      });
+      list = { id: created.id, name: created.name };
+    }
+    report.listId = list.id;
+    report.listName = list.name;
+
+    // 4) Map frontmatter keys → fields (reuse existing fields by name, create the rest).
+    const existingFields = await this.prisma.listField.findMany({ where: { listId: list.id } });
+    const fieldByName = new Map<string, { id: string; fieldType: ListFieldType }>();
+    for (const f of existingFields) {
+      fieldByName.set(f.name.toLowerCase(), { id: f.id, fieldType: f.fieldType });
+    }
+    const keyToField = new Map<string, { id: string; fieldType: ListFieldType }>();
+    let position = existingFields.length;
+    for (const key of fieldOrder) {
+      const existing = fieldByName.get(key.toLowerCase());
+      if (existing) {
+        keyToField.set(key, existing);
+        continue;
+      }
+      const fieldType = inferFieldType(key, fieldSamples.get(key) ?? []);
+      const nf = await this.prisma.listField.create({
+        data: { listId: list.id, name: key, fieldType, position: position++ },
+      });
+      keyToField.set(key, { id: nf.id, fieldType });
+      report.fieldsCreated++;
+    }
+
+    // 5) Tags (create per unique name, reuse existing).
+    const existingTags = await this.prisma.listTag.findMany({ where: { listId: list.id } });
+    const tagByName = new Map(existingTags.map((t) => [t.name.toLowerCase(), t.id]));
+    const ensureTag = async (name: string): Promise<string> => {
+      const found = tagByName.get(name.toLowerCase());
+      if (found) return found;
+      const t = await this.prisma.listTag.create({
+        data: { listId: list.id, name, color: '#6366f1' },
+      });
+      tagByName.set(name.toLowerCase(), t.id);
+      report.tagsCreated++;
+      return t.id;
+    };
+
+    // 6) Create items.
+    let itemPos = 0;
+    for (const note of notes) {
+      try {
+        const customFields: Record<string, unknown> = {};
+        for (const [key, raw] of Object.entries(note.fields)) {
+          const field = keyToField.get(key);
+          if (!field) continue;
+          customFields[field.id] = coerceValue(field.fieldType, raw, assetUrls);
+        }
+        const item = await this.prisma.listItem.create({
+          data: {
+            listId: list.id,
+            title: note.title,
+            customFields: customFields as Json,
+            position: itemPos++,
+          },
+        });
+        for (const tagName of note.tags) {
+          const tagId = await ensureTag(tagName);
+          await this.prisma.listItemTag.create({ data: { itemId: item.id, tagId } });
+        }
+        report.itemsCreated++;
+      } catch (err) {
+        report.errors.push(`${note.title}: ${(err as Error).message}`);
+      }
+    }
+
+    // 7) Surface the imported fields on the cards.
+    const allFields = await this.prisma.listField.findMany({
+      where: { listId: list.id },
+      orderBy: { position: 'asc' },
+    });
+    await this.prisma.list.update({
+      where: { id: list.id },
+      data: {
+        gridConfig: {
+          template: 'card-large',
+          visibleFields: allFields.map((f) => f.id),
+          showImage: true,
+          imagePosition: 'top',
+          showTags: true,
+        } as Json,
+      },
+    });
 
     return report;
   }
@@ -572,6 +792,104 @@ function parseFrontmatter(text: string): { frontmatter: Frontmatter; body: strin
     }
   }
   return { frontmatter: fm, body };
+}
+
+interface FullFrontmatter {
+  title?: string;
+  tags: string[];
+  fields: Record<string, string | string[]>;
+}
+
+/** Like parseFrontmatter, but keeps ALL keys (for list-item custom fields). */
+function parseFrontmatterFull(text: string): { frontmatter: FullFrontmatter; body: string } {
+  const fm: FullFrontmatter = { tags: [], fields: {} };
+  if (!text.startsWith('---')) return { frontmatter: fm, body: text };
+  const end = text.indexOf('\n---', 3);
+  if (end === -1) return { frontmatter: fm, body: text };
+  const block = text.slice(3, end).trim();
+  const body = text.slice(end + 4).replace(/^\s*\n/, '');
+
+  const unquote = (s: string): string => s.trim().replace(/^["']|["']$/g, '');
+  const inlineArray = (v: string): string[] =>
+    v
+      .replace(/^\[|\]$/g, '')
+      .split(',')
+      .map(unquote)
+      .filter(Boolean);
+
+  const lines = block.split('\n');
+  for (let i = 0; i < lines.length; i++) {
+    const m = /^([\w \-]+):\s*(.*)$/.exec(lines[i]);
+    if (!m) continue;
+    const rawKey = m[1].trim();
+    const key = rawKey.toLowerCase();
+    const value = m[2].trim();
+
+    // A bare "key:" may be followed by indented "- item" list lines.
+    const listItems: string[] = [];
+    if (value === '') {
+      for (let j = i + 1; j < lines.length && /^\s*-\s+/.test(lines[j]); j++) {
+        listItems.push(unquote(lines[j].replace(/^\s*-\s+/, '')));
+        i = j;
+      }
+    }
+
+    if (key === 'title') {
+      fm.title = unquote(value);
+    } else if (key === 'tags' || key === 'tag') {
+      if (listItems.length) fm.tags = listItems;
+      else if (value.startsWith('[')) fm.tags = inlineArray(value);
+      else if (value) fm.tags = value.split(/[\s,]+/).map(unquote).filter(Boolean);
+    } else if (listItems.length) {
+      fm.fields[rawKey] = listItems;
+    } else if (value.startsWith('[')) {
+      fm.fields[rawKey] = inlineArray(value);
+    } else if (value !== '') {
+      fm.fields[rawKey] = unquote(value);
+    }
+  }
+  return { frontmatter: fm, body };
+}
+
+/** Best-effort field-type inference from the sampled values of one key. */
+function inferFieldType(key: string, values: (string | string[])[]): ListFieldType {
+  const present = values.filter((v) => (Array.isArray(v) ? v.length > 0 : v !== ''));
+  if (present.length === 0) return 'TEXT';
+  if (present.some((v) => Array.isArray(v))) return 'MULTI_SELECT';
+  const strs = present as string[];
+  if (
+    /(image|cover|thumbnail|portada|poster|icon|art)/i.test(key) &&
+    strs.some((s) => /^(https?:\/\/|\/)/.test(s) || /\.(png|jpe?g|gif|webp)$/i.test(s))
+  ) {
+    return 'IMAGE_URL';
+  }
+  if (strs.every((s) => /^https?:\/\//i.test(s))) return 'URL';
+  if (strs.every((s) => s.trim() !== '' && !Number.isNaN(Number(s)))) return 'NUMBER';
+  if (
+    /(date|fecha|day|d[ií]a|when|release|launch|finished|started|completed)/i.test(key) &&
+    strs.every((s) => !Number.isNaN(Date.parse(s)))
+  ) {
+    return 'DATE';
+  }
+  return 'TEXT';
+}
+
+/** Coerce a raw frontmatter value to the stored custom-field shape. */
+function coerceValue(
+  type: ListFieldType,
+  value: string | string[],
+  assets: Map<string, string>,
+): unknown {
+  if (Array.isArray(value)) return value;
+  if (type === 'NUMBER') {
+    const n = Number(value);
+    return Number.isNaN(n) ? value : n;
+  }
+  if (type === 'IMAGE_URL') {
+    const asset = assets.get(basename(value).toLowerCase());
+    return asset ?? value;
+  }
+  return value;
 }
 
 interface ExportData {
