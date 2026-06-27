@@ -30,6 +30,8 @@ import {
   resolveGridConfig,
   resolveViewConfig,
   findImageField,
+  CARD_MATRIX_SLOTS,
+  DEFAULT_FIELD_LAYOUT,
   type GridConfig,
   type List,
   type ListField,
@@ -37,6 +39,9 @@ import {
   type ViewConfig,
   type GridTemplate,
   type ListAction,
+  type CardSlot,
+  type FieldCardLayout,
+  type DateDisplayFormat,
 } from '../lists.types';
 
 interface ItemGroup {
@@ -111,15 +116,53 @@ interface ItemGroup {
                 ⚙ Fields
               </button>
               @if (fieldsPanelOpen()) {
-                <div class="absolute z-30 mt-1 right-0 w-64 bg-surface border border-border rounded-lg shadow-lg p-2">
+                <div class="absolute z-30 mt-1 right-0 w-72 bg-surface border border-border rounded-lg shadow-lg p-2 max-h-[70vh] overflow-auto">
                   <p class="uppercase-tag px-2 pb-1">Fields shown on cards</p>
                   @for (f of fieldConfigRows(); track f.id) {
-                    <div class="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-surface-hover text-sm">
-                      <input type="checkbox" [checked]="isFieldVisible(f.id)" (change)="toggleFieldVisible(f.id)" class="accent-primary" />
-                      <span class="flex-1 truncate">{{ f.name }}</span>
-                      @if (isFieldVisible(f.id)) {
-                        <button type="button" (click)="moveField(f.id, -1)" class="w-6 h-6 grid place-items-center rounded hover:bg-background text-text-muted" title="Move up">↑</button>
-                        <button type="button" (click)="moveField(f.id, 1)" class="w-6 h-6 grid place-items-center rounded hover:bg-background text-text-muted" title="Move down">↓</button>
+                    <div class="rounded hover:bg-surface-hover">
+                      <div class="flex items-center gap-2 px-2 py-1.5 text-sm">
+                        <input type="checkbox" [checked]="isFieldVisible(f.id)" (change)="toggleFieldVisible(f.id)" class="accent-primary" />
+                        <span class="flex-1 truncate">{{ f.name }}</span>
+                        @if (isFieldVisible(f.id)) {
+                          <button type="button" (click)="moveField(f.id, -1)" class="w-6 h-6 grid place-items-center rounded hover:bg-background text-text-muted" title="Move up">↑</button>
+                          <button type="button" (click)="moveField(f.id, 1)" class="w-6 h-6 grid place-items-center rounded hover:bg-background text-text-muted" title="Move down">↓</button>
+                          <button type="button" (click)="toggleLayoutEditor(f.id)"
+                            [class]="'w-6 h-6 grid place-items-center rounded text-xs ' + (layoutEditorFieldId() === f.id ? 'bg-primary/20 text-primary' : 'hover:bg-background text-text-muted')"
+                            title="Card layout (Large card)">▦</button>
+                        }
+                      </div>
+                      @if (layoutEditorFieldId() === f.id && isFieldVisible(f.id)) {
+                        <div class="px-2 pb-2 pt-1.5 mt-0.5 border-t border-border">
+                          <p class="uppercase-tag mb-1">Position on card</p>
+                          <div class="grid grid-cols-3 gap-0.5 w-[84px] mb-1.5">
+                            @for (slot of matrixSlots; track slot) {
+                              <button type="button" (click)="setFieldSlot(f.id, slot)"
+                                [class]="'h-6 rounded text-[9px] grid place-items-center border transition-colors ' + (layoutOf(f.id).slot === slot ? 'border-primary bg-primary/20 text-primary' : 'border-border text-text-faint hover:bg-background')"
+                                [title]="'Anchor: ' + slot">●</button>
+                            }
+                          </div>
+                          <div class="flex gap-1 mb-2">
+                            <button type="button" (click)="setFieldSlot(f.id, 'stack')"
+                              [class]="'px-2 py-1 rounded text-xs border transition-colors ' + (layoutOf(f.id).slot === 'stack' ? 'border-primary text-primary bg-primary/10' : 'border-border text-text-muted hover:bg-background')"
+                              title="Stack above the title (auto-scaled)">Stack ↑ title</button>
+                            <button type="button" (click)="setFieldSlot(f.id, 'body')"
+                              [class]="'px-2 py-1 rounded text-xs border transition-colors ' + (layoutOf(f.id).slot === 'body' ? 'border-primary text-primary bg-primary/10' : 'border-border text-text-muted hover:bg-background')"
+                              title="Default flow under the title">Body</button>
+                          </div>
+                          <label class="flex items-center gap-1.5 text-xs text-text-muted cursor-pointer">
+                            <input type="checkbox" [checked]="layoutOf(f.id).showLabel" (change)="toggleFieldLabel(f.id)" class="accent-primary" />
+                            Show "{{ f.name }}:" label
+                          </label>
+                          @if (f.fieldType === 'DATE') {
+                            <select [ngModel]="layoutOf(f.id).dateFormat ?? 'full'" (ngModelChange)="setFieldDateFormat(f.id, $event)"
+                              class="w-full mt-1.5 px-2 py-1 bg-background border border-border rounded text-xs outline-none focus:border-primary">
+                              <option value="full">Date: full</option>
+                              <option value="month">Date: month only (May)</option>
+                              <option value="month-year">Date: month + year (May 2026)</option>
+                              <option value="year">Date: year only (2026)</option>
+                            </select>
+                          }
+                        </div>
                       }
                     </div>
                   }
@@ -198,15 +241,27 @@ interface ItemGroup {
                         @if (gridConfig().showImage && resolveImage(item); as src) {
                           <img [src]="src" alt="" class="w-full h-40 object-cover" />
                         }
-                        <div class="p-3">
-                          <h3 class="font-medium truncate">{{ item.title }}</h3>
-                          @for (fieldId of gridConfig().visibleFields; track fieldId) {
+                        <div class="p-3 relative min-h-[3.25rem]">
+                          <!-- Fields stacked ABOVE the title (Obsidian header, auto-scaled) -->
+                          @for (s of stackEntries(); track s.id) {
+                            @if (fieldById(s.id); as f) {
+                              <div [class]="s.cls + ' truncate leading-tight'">
+                                @if (layoutOf(s.id).showLabel) { <span class="text-text-muted">{{ f.name }}: </span> }{{ formatFieldFor(f, item.customFields[f.id]) }}
+                              </div>
+                            }
+                          }
+
+                          <h3 class="font-semibold text-lg leading-tight truncate">{{ item.title }}</h3>
+
+                          <!-- Fields in the default body flow -->
+                          @for (fieldId of bodyFields(); track fieldId) {
                             @if (fieldById(fieldId); as f) {
-                              <p class="text-xs text-text-muted mt-0.5">
-                                <strong>{{ f.name }}:</strong> {{ formatField(item.customFields[f.id]) }}
+                              <p class="text-xs text-text-muted mt-0.5 truncate">
+                                @if (layoutOf(fieldId).showLabel) { <strong>{{ f.name }}:</strong> }{{ formatFieldFor(f, item.customFields[f.id]) }}
                               </p>
                             }
                           }
+
                           @if (gridConfig().showTags && item.tags?.length) {
                             <div class="flex flex-wrap gap-1 mt-2">
                               @for (t of item.tags!; track t.tagId) {
@@ -215,6 +270,15 @@ interface ItemGroup {
                                 }
                               }
                             </div>
+                          }
+
+                          <!-- Fields anchored to one of the 9 matrix zones -->
+                          @for (a of anchoredFields(); track a.id) {
+                            @if (fieldById(a.id); as f) {
+                              <span [class]="'card-anchor ' + a.cls">
+                                @if (layoutOf(a.id).showLabel) { <span class="opacity-70">{{ f.name }}: </span> }{{ formatFieldFor(f, item.customFields[f.id]) }}
+                              </span>
+                            }
                           }
                         </div>
                       </button>
@@ -269,7 +333,7 @@ interface ItemGroup {
                         <div>
                           @for (fieldId of gridConfig().visibleFields; track fieldId) {
                             @if (fieldById(fieldId); as f) {
-                              <div class="card-cover-meta">{{ f.name }}: {{ formatField(item.customFields[f.id]) }}</div>
+                              <div class="card-cover-meta">@if (layoutOf(fieldId).showLabel) { <span>{{ f.name }}: </span> }{{ formatFieldFor(f, item.customFields[f.id]) }}</div>
                             }
                           }
                           <div class="card-cover-title">{{ item.title }}</div>
@@ -294,7 +358,7 @@ interface ItemGroup {
                           @for (fieldId of gridConfig().visibleFields; track fieldId) {
                             @if (fieldById(fieldId); as f) {
                               <span class="text-xs text-text-muted mr-2">
-                                {{ f.name }}: {{ formatField(item.customFields[f.id]) }}
+                                @if (layoutOf(fieldId).showLabel) { <strong>{{ f.name }}:</strong> }{{ formatFieldFor(f, item.customFields[f.id]) }}
                               </span>
                             }
                           }
@@ -323,7 +387,7 @@ interface ItemGroup {
                       @for (fieldId of gridConfig().visibleFields; track fieldId) {
                         @if (fieldById(fieldId); as f) {
                           <p class="text-sm text-text-muted">
-                            <strong>{{ f.name }}:</strong> {{ formatField(item.customFields[f.id]) }}
+                            @if (layoutOf(fieldId).showLabel) { <strong>{{ f.name }}:</strong> }{{ formatFieldFor(f, item.customFields[f.id]) }}
                           </p>
                         }
                       }
@@ -392,6 +456,25 @@ interface ItemGroup {
       </div>
     </div>
   `,
+  styles: [`
+    /* Fields anchored to the 3×3 matrix on the Large card */
+    .card-anchor {
+      position: absolute;
+      z-index: 10;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      line-height: 1;
+      color: var(--color-text-muted);
+      background: color-mix(in srgb, var(--color-surface) 85%, transparent);
+      padding: 2px 6px;
+      border-radius: 6px;
+      pointer-events: none;
+      max-width: 72%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  `],
 })
 export class ListDetailComponent implements OnInit {
   private readonly service = inject(ListsService);
@@ -415,6 +498,9 @@ export class ListDetailComponent implements OnInit {
   protected readonly list = signal<List | null>(null);
   protected readonly rawItems = signal<ListItem[]>([]);
   protected readonly fieldsPanelOpen = signal(false);
+  /** Which field's per-card layout editor (3×3 matrix) is expanded, if any. */
+  protected readonly layoutEditorFieldId = signal<string | null>(null);
+  protected readonly matrixSlots = CARD_MATRIX_SLOTS;
   protected search = '';
 
   /** All fields ordered so the currently-visible ones (in their saved order) come first. */
@@ -467,6 +553,97 @@ export class ListDetailComponent implements OnInit {
 
   protected patchGrid(patch: Partial<GridConfig>): void {
     this.patchGridConfig(patch);
+  }
+
+  // ─── Per-field card layout (Large card designer) ─────────
+  protected layoutOf(fieldId: string): FieldCardLayout {
+    return this.gridConfig().cardLayout?.[fieldId] ?? DEFAULT_FIELD_LAYOUT;
+  }
+
+  protected toggleLayoutEditor(fieldId: string): void {
+    this.layoutEditorFieldId.update((cur) => (cur === fieldId ? null : fieldId));
+  }
+
+  protected setFieldSlot(fieldId: string, slot: CardSlot): void {
+    this.patchFieldLayout(fieldId, { slot });
+  }
+
+  protected toggleFieldLabel(fieldId: string): void {
+    this.patchFieldLayout(fieldId, { showLabel: !this.layoutOf(fieldId).showLabel });
+  }
+
+  protected setFieldDateFormat(fieldId: string, fmt: DateDisplayFormat): void {
+    this.patchFieldLayout(fieldId, { dateFormat: fmt });
+  }
+
+  private patchFieldLayout(fieldId: string, patch: Partial<FieldCardLayout>): void {
+    const current = this.gridConfig().cardLayout ?? {};
+    const next: Record<string, FieldCardLayout> = {
+      ...current,
+      [fieldId]: { ...this.layoutOf(fieldId), ...patch },
+    };
+    this.patchGridConfig({ cardLayout: next });
+  }
+
+  /** Visible 'stack' fields ordered top→bottom, each with its size class. */
+  protected readonly stackEntries = computed<{ id: string; cls: string }[]>(() => {
+    const stack = this.gridConfig().visibleFields.filter(
+      (id) => this.layoutOf(id).slot === 'stack',
+    );
+    // stack[0] sits closest to the title (largest); fields higher up shrink.
+    return stack.map((id, i) => ({ id, cls: this.stackTierClass(i) })).reverse();
+  });
+
+  protected readonly bodyFields = computed<string[]>(() =>
+    this.gridConfig().visibleFields.filter((id) => this.layoutOf(id).slot === 'body'),
+  );
+
+  protected readonly anchoredFields = computed<{ id: string; cls: string }[]>(() => {
+    const matrix = new Set<CardSlot>(CARD_MATRIX_SLOTS);
+    return this.gridConfig()
+      .visibleFields.filter((id) => matrix.has(this.layoutOf(id).slot))
+      .map((id) => ({ id, cls: this.anchorClass(this.layoutOf(id).slot) }));
+  });
+
+  private stackTierClass(indexFromTitle: number): string {
+    if (indexFromTitle === 0) return 'text-base font-medium text-text';
+    if (indexFromTitle === 1) return 'text-sm text-text-muted';
+    return 'text-xs text-text-faint';
+  }
+
+  private anchorClass(slot: CardSlot): string {
+    switch (slot) {
+      case 'tl': return 'top-2 left-2';
+      case 'tc': return 'top-2 left-1/2 -translate-x-1/2';
+      case 'tr': return 'top-2 right-2';
+      case 'ml': return 'top-1/2 left-2 -translate-y-1/2';
+      case 'mc': return 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2';
+      case 'mr': return 'top-1/2 right-2 -translate-y-1/2';
+      case 'bl': return 'bottom-2 left-2';
+      case 'bc': return 'bottom-2 left-1/2 -translate-x-1/2';
+      case 'br': return 'bottom-2 right-2';
+      default: return '';
+    }
+  }
+
+  protected formatFieldFor(field: ListField, value: unknown): string {
+    const layout = this.layoutOf(field.id);
+    if (
+      field.fieldType === 'DATE' &&
+      layout.dateFormat &&
+      layout.dateFormat !== 'full' &&
+      value !== null &&
+      value !== undefined &&
+      value !== ''
+    ) {
+      const d = new Date(String(value));
+      if (!isNaN(d.getTime())) {
+        if (layout.dateFormat === 'year') return String(d.getFullYear());
+        if (layout.dateFormat === 'month') return d.toLocaleDateString('en-US', { month: 'short' });
+        return d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+      }
+    }
+    return this.formatField(value);
   }
 
   protected readonly gridConfig = computed<GridConfig>(() => {

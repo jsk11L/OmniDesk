@@ -42,13 +42,54 @@ export type GridTemplate =
   | 'gallery-no-image'
   | 'table';
 
+/**
+ * Where a field is rendered on the Large card:
+ * - `body`  → default flow, right under the title (legacy behaviour)
+ * - `stack` → stacked ABOVE the title, auto-scaled (Obsidian-style header)
+ * - `tl…br` → absolutely anchored to one of the 9 zones (3×3 matrix). `br`
+ *   gives the classic "index in the bottom-right corner" look.
+ */
+export type CardSlot =
+  | 'body'
+  | 'stack'
+  | 'tl'
+  | 'tc'
+  | 'tr'
+  | 'ml'
+  | 'mc'
+  | 'mr'
+  | 'bl'
+  | 'bc'
+  | 'br';
+
+/** How a DATE value is shown on a card (e.g. "May" when you group by year). */
+export type DateDisplayFormat = 'full' | 'month' | 'month-year' | 'year';
+
+export interface FieldCardLayout {
+  slot: CardSlot;
+  /** Show the "Field name:" prefix. Off → just the raw value. */
+  showLabel: boolean;
+  dateFormat?: DateDisplayFormat;
+}
+
 export interface GridConfig {
   template: GridTemplate;
   visibleFields: string[];
   showImage: boolean;
   imagePosition: 'top' | 'left';
   showTags: boolean;
+  /** Per-field card layout (Large card only). Keyed by field id. */
+  cardLayout?: Record<string, FieldCardLayout>;
 }
+
+/** The 3×3 anchor matrix, row-major, for the layout picker UI. */
+export const CARD_MATRIX_SLOTS: CardSlot[] = [
+  'tl', 'tc', 'tr',
+  'ml', 'mc', 'mr',
+  'bl', 'bc', 'br',
+];
+
+export const DEFAULT_FIELD_LAYOUT: FieldCardLayout = { slot: 'body', showLabel: true };
 
 export type FilterType =
   | 'text-contains'
@@ -158,6 +199,17 @@ export type UpdateListFieldDto = Partial<CreateListFieldDto>;
 export interface CreateListTagDto {
   name: string;
   color?: string;
+}
+
+export interface ImportListReport {
+  listId: string;
+  listName: string;
+  itemsCreated: number;
+  fieldsCreated: number;
+  tagsCreated: number;
+  assetsUploaded: number;
+  skipped: string[];
+  errors: string[];
 }
 
 export function resolveGridConfig(list: List): GridConfig {
