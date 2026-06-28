@@ -128,5 +128,6 @@ Point a domain at Cloudflare Pages (Custom domains tab). Then update Render's
 | All API calls 404 / go to the wrong host | `API_URL` wasn't set at build → rebuild Pages with the env var; confirm the build log shows `[set-env] wrote … apiUrl=…`. |
 | Deep links 404 on refresh | `_redirects` missing from the output — confirm `frontend/src/_redirects` exists and the asset is copied. |
 | First request hangs ~50 s | Render free cold start. Expected; upgrade the plan to keep it warm. |
-| Boot fails on `prisma migrate deploy` | `DATABASE_URL` wrong or using the pooled endpoint — use Neon's **direct** string with `sslmode=require`. |
+| Boot fails on `prisma migrate deploy` | `DATABASE_URL` wrong or using the pooled endpoint — use Neon's **direct** string (host without `-pooler`) with `sslmode=require`. Prisma migrations can't acquire their advisory lock through Neon's PgBouncer pooler. |
+| `P1002 … Timed out trying to acquire a postgres advisory lock` (even on the direct URL) | A previous migrate left the lock held by a zombie session. Clear it once in **Neon → SQL Editor**, then redeploy: `SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'neondb' AND pid <> pg_backend_pid();` (or restart the Neon compute). The entrypoint also retries migrations 5× to ride over transient cases. |
 | Uploaded images disappear | Render free ephemeral disk — add a paid Disk at `/app/uploads` or external storage. |
