@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>OmniDesk · landing</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600;6..72,700&family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* ─── Print-specific styles ─── */
+    @media print {
+      @page {
+        size: A4 landscape;
+        margin: 0;
+      }
+
+      html, body {
+        background: var(--color-background) !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        color-adjust: exact !important;
+      }
+
+      /* Hide chrome that doesn't belong in a PDF */
+      .tweaks-panel,
+      .tweaks-toggle,
+      [class*="tweak"],
+      .toast,
+      .modal-backdrop,
+      .palette-backdrop {
+        display: none !important;
+      }
+
+      /* Sticky nav becomes a normal block */
+      .land-nav {
+        position: static !important;
+        backdrop-filter: none !important;
+        background: var(--color-background) !important;
+      }
+
+      /* Don't let the 3D-transformed preview hover state stick */
+      .land-app-preview {
+        transform: perspective(1400px) rotateY(-4deg) rotateX(3deg) scale(0.98) !important;
+      }
+
+      /* Each major section gets its own page */
+      .land-hero,
+      .land-section,
+      .land-footer {
+        break-before: page;
+        break-inside: avoid;
+        page-break-inside: avoid;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        padding-top: 24px !important;
+        padding-bottom: 24px !important;
+      }
+      .land-nav + .land-hero {
+        break-before: avoid; /* hero shares page with nav */
+      }
+      .land-footer { min-height: auto; padding: 24px 0 !important; break-before: page; }
+
+      /* Avoid orphaned feature cards / pricing cards */
+      .land-feature, .land-price-card, .land-shot {
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+
+      /* Force preserved background colors and gradients */
+      .land-hero-bg,
+      .land-app-preview,
+      .land-shot,
+      .land-feature,
+      .land-price-card,
+      .panel,
+      .sidebar-logo,
+      .chip {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      /* Tighter hero spacing on a printed page */
+      .land-hero { padding: 60px 0 !important; }
+      .land-section { padding: 56px 0 !important; }
+
+      a { color: inherit !important; text-decoration: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <!-- React + Babel -->
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <!-- Data + utilities -->
+  <script type="text/babel" src="data.jsx"></script>
+  <script type="text/babel" src="components/icons.jsx"></script>
+  <script type="text/babel" src="components/sidebar.jsx"></script>
+  <script type="text/babel" src="components/modals.jsx"></script>
+
+  <!-- Screens -->
+  <script type="text/babel" src="screens/landing.jsx"></script>
+  <script type="text/babel" src="screens/dashboard.jsx"></script>
+  <script type="text/babel" src="screens/calendar.jsx"></script>
+  <script type="text/babel" src="screens/lists.jsx"></script>
+  <script type="text/babel" src="screens/notes.jsx"></script>
+  <script type="text/babel" src="screens/todos.jsx"></script>
+  <script type="text/babel" src="screens/finance.jsx"></script>
+  <script type="text/babel" src="screens/habits.jsx"></script>
+  <script type="text/babel" src="screens/notifications.jsx"></script>
+  <script type="text/babel" src="screens/settings.jsx"></script>
+
+  <!-- Tweaks panel + App -->
+  <script type="text/babel" src="tweaks-panel.jsx"></script>
+  <script type="text/babel" src="app.jsx"></script>
+
+  <!-- Auto-print: wait for fonts + Babel + React to render, then print -->
+  <script type="text/babel">
+    (async () => {
+      try { if (document.fonts && document.fonts.ready) await document.fonts.ready; } catch (e) {}
+      // Wait for the landing markup to appear in the DOM
+      const waitFor = (sel, timeoutMs = 4000) => new Promise((res) => {
+        const start = Date.now();
+        const t = setInterval(() => {
+          if (document.querySelector(sel) || Date.now() - start > timeoutMs) {
+            clearInterval(t); res();
+          }
+        }, 50);
+      });
+      await waitFor('.land-hero');
+      await new Promise(r => setTimeout(r, 600));
+      window.print();
+    })();
+  </script>
+</body>
+</html>
