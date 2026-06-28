@@ -7,7 +7,15 @@ import { HttpErrorResponse } from '@angular/common/http';
 
 import { ListsService } from '../services/lists.service';
 import { DialogService } from '../../../shared/services/dialog.service';
-import type { List, ListAction, ListField, ListFieldType, ListTag, ViewConfig } from '../lists.types';
+import type {
+  List,
+  ListAction,
+  ListField,
+  ListFieldType,
+  ListTag,
+  UpdateListFieldDto,
+  ViewConfig,
+} from '../lists.types';
 
 export interface ListSettingsData {
   list: List;
@@ -112,31 +120,62 @@ const FIELD_TYPES: { value: ListFieldType; label: string }[] = [
         } @else {
           <ul class="space-y-1 mb-3">
             @for (f of fields(); track f.id) {
-              <li
-                class="flex items-center justify-between text-sm bg-background px-3 py-2 rounded border border-border"
-              >
-                <div class="min-w-0">
-                  <span class="font-medium">{{ f.name }}</span>
-                  <span class="text-xs text-text-muted ml-2">{{ f.fieldType }}</span>
-                  @if (f.isRequired) {
-                    <span class="text-xs text-danger ml-1">required</span>
-                  }
-                  @if (optionsOf(f).length) {
-                    <div class="flex flex-wrap gap-1 mt-1">
-                      @for (o of optionsOf(f); track o) {
-                        <span class="text-xs px-1.5 py-0.5 rounded bg-surface text-text-muted">{{ o }}</span>
-                      }
-                    </div>
-                  }
+              <li class="text-sm bg-background rounded border border-border">
+                <div class="flex items-center justify-between px-3 py-2">
+                  <div class="min-w-0">
+                    <span class="font-medium">{{ f.name }}</span>
+                    <span class="text-xs text-text-muted ml-2">{{ fieldTypeLabel(f.fieldType) }}</span>
+                    @if (f.isRequired) {
+                      <span class="text-xs text-danger ml-1">required</span>
+                    }
+                    @if (optionsOf(f).length) {
+                      <div class="flex flex-wrap gap-1 mt-1">
+                        @for (o of optionsOf(f); track o) {
+                          <span class="text-xs px-1.5 py-0.5 rounded bg-surface text-text-muted">{{ o }}</span>
+                        }
+                      </div>
+                    }
+                  </div>
+                  <div class="flex items-center gap-1 shrink-0">
+                    <button type="button" (click)="startEdit(f)"
+                      class="px-1 text-text-muted hover:text-primary" title="Edit field">✏️</button>
+                    <button type="button" (click)="deleteField(f)"
+                      class="px-1 text-text-muted hover:text-danger" aria-label="Delete field">×</button>
+                  </div>
                 </div>
-                <button
-                  type="button"
-                  (click)="deleteField(f.id)"
-                  class="text-text-muted hover:text-danger"
-                  aria-label="Delete field"
-                >
-                  ×
-                </button>
+
+                @if (editingFieldId() === f.id) {
+                  <form [formGroup]="editForm" (ngSubmit)="saveEdit()" class="px-3 pb-3 pt-1 border-t border-border space-y-2">
+                    <div class="grid grid-cols-3 gap-2">
+                      <input type="text" formControlName="name" maxlength="100" placeholder="Field name"
+                        class="col-span-2 px-3 py-2 bg-surface border border-border rounded outline-none focus:border-primary text-sm" />
+                      <select formControlName="fieldType"
+                        class="px-3 py-2 bg-surface border border-border rounded outline-none focus:border-primary text-sm">
+                        @for (t of fieldTypes; track t.value) {
+                          <option [value]="t.value">{{ t.label }}</option>
+                        }
+                      </select>
+                    </div>
+                    @if (editFieldType() === 'SELECT' || editFieldType() === 'MULTI_SELECT') {
+                      <input type="text" formControlName="options" placeholder="Options, comma-separated"
+                        class="w-full px-3 py-2 bg-surface border border-border rounded outline-none focus:border-primary text-sm" />
+                    }
+                    <label class="flex items-center gap-2 text-xs text-text-muted cursor-pointer">
+                      <input type="checkbox" formControlName="isRequired" class="accent-primary" /> Required field
+                    </label>
+                    @for (w of editWarnings(); track w) {
+                      <p class="text-xs text-warning">⚠ {{ w }}</p>
+                    }
+                    <div class="flex gap-2 pt-1">
+                      <button type="submit" [disabled]="savingField()"
+                        class="px-3 py-1.5 text-sm rounded bg-primary text-white hover:opacity-90 disabled:opacity-50">
+                        {{ savingField() ? 'Saving…' : 'Save changes' }}
+                      </button>
+                      <button type="button" (click)="cancelEdit()"
+                        class="px-3 py-1.5 text-sm rounded hover:bg-surface-hover">Cancel</button>
+                    </div>
+                  </form>
+                }
               </li>
             }
           </ul>
@@ -307,6 +346,12 @@ export class ListSettingsComponent {
   /** Mirrors fieldForm.fieldType so the options input shows/hides under OnPush. */
   protected readonly newFieldType = signal<ListFieldType>('TEXT');
 
+  // ─── Editing an existing field ───────────────────────────
+  protected readonly editingFieldId = signal<string | null>(null);
+  protected readonly editFieldType = signal<ListFieldType>('TEXT');
+  protected readonly savingField = signal(false);
+  private editOriginal: ListField | null = null;
+
   protected readonly actions = signal<ListAction[]>([]);
   /** Mirrors actionForm.fieldId so the value dropdown reacts under OnPush. */
   protected readonly actionFieldId = signal<string>('');
@@ -322,6 +367,7 @@ export class ListSettingsComponent {
 
   protected readonly listForm;
   protected readonly fieldForm;
+  protected readonly editForm;
   protected readonly tagForm;
   protected readonly actionForm;
 
@@ -350,6 +396,16 @@ export class ListSettingsComponent {
     this.fieldForm.controls.fieldType.valueChanges
       .pipe(takeUntilDestroyed())
       .subscribe((t) => this.newFieldType.set(t));
+
+    this.editForm = this.fb.nonNullable.group({
+      name: ['', [Validators.required, Validators.maxLength(100)]],
+      fieldType: ['TEXT' as ListFieldType],
+      isRequired: [false],
+      options: [''],
+    });
+    this.editForm.controls.fieldType.valueChanges
+      .pipe(takeUntilDestroyed())
+      .subscribe((t) => this.editFieldType.set(t));
 
     this.tagForm = this.fb.nonNullable.group({
       name: ['', [Validators.required, Validators.maxLength(50)]],
@@ -475,17 +531,102 @@ export class ListSettingsComponent {
       .filter((o) => o.length > 0 && !seen.has(o) && seen.add(o));
   }
 
-  async deleteField(fieldId: string): Promise<void> {
+  protected fieldTypeLabel(t: ListFieldType): string {
+    return FIELD_TYPES.find((x) => x.value === t)?.label ?? t;
+  }
+
+  startEdit(field: ListField): void {
+    this.editOriginal = field;
+    this.editFieldType.set(field.fieldType);
+    this.editForm.reset({
+      name: field.name,
+      fieldType: field.fieldType,
+      isRequired: field.isRequired,
+      options: this.optionsOf(field).join(', '),
+    });
+    this.editingFieldId.set(field.id);
+  }
+
+  cancelEdit(): void {
+    this.editingFieldId.set(null);
+    this.editOriginal = null;
+  }
+
+  /** Live warnings about what the pending change implies. */
+  protected editWarnings(): string[] {
+    const orig = this.editOriginal;
+    if (!orig || this.editingFieldId() !== orig.id) return [];
+    const v = this.editForm.getRawValue();
+    const isSel = (t: ListFieldType): boolean => t === 'SELECT' || t === 'MULTI_SELECT';
+    const warns: string[] = [];
+
+    if (v.fieldType !== orig.fieldType) {
+      warns.push(
+        `Type ${this.fieldTypeLabel(orig.fieldType)} → ${this.fieldTypeLabel(v.fieldType)}: existing values are kept as-is and may not fit the new type until you edit each item.`,
+      );
+    }
+    if (isSel(orig.fieldType)) {
+      const newOpts = this.parseOptions(v.options);
+      const removed = this.optionsOf(orig).filter((o) => !newOpts.includes(o));
+      if (removed.length) {
+        warns.push(
+          `Removing "${removed.join('", "')}": items set to those keep an orphaned value until you change them.`,
+        );
+      }
+    }
+    if (isSel(v.fieldType) && this.parseOptions(v.options).length === 0) {
+      warns.push('A Select field needs at least one option.');
+    }
+    return warns;
+  }
+
+  saveEdit(): void {
+    const orig = this.editOriginal;
+    if (!orig || this.savingField()) return;
+    const v = this.editForm.getRawValue();
+    const name = v.name.trim();
+    if (!name) {
+      this.toastr.error('Field name is required');
+      return;
+    }
+    const isSel = v.fieldType === 'SELECT' || v.fieldType === 'MULTI_SELECT';
+    const dto: UpdateListFieldDto = { name, fieldType: v.fieldType, isRequired: v.isRequired };
+    if (isSel) {
+      const parsed = this.parseOptions(v.options);
+      if (parsed.length === 0) {
+        this.toastr.error('Add at least one option for a Select field');
+        return;
+      }
+      dto.options = { options: parsed };
+    }
+
+    this.savingField.set(true);
+    this.service.updateField(this.data.list.id, orig.id, dto).subscribe({
+      next: (updated) => {
+        this.savingField.set(false);
+        this.fields.update((arr) => arr.map((f) => (f.id === updated.id ? updated : f)));
+        this.cancelEdit();
+        this.toastr.success('Field updated');
+      },
+      error: (err: HttpErrorResponse) => {
+        this.savingField.set(false);
+        this.toastr.error(this.errMsg(err));
+      },
+    });
+  }
+
+  async deleteField(field: ListField): Promise<void> {
     const ok = await this.dialogs.confirm({
-      title: 'Delete field',
-      message: 'Delete this field? Values on items will be orphaned.',
-      confirmLabel: 'Delete',
+      title: `Delete field "${field.name}"`,
+      message: `This removes the "${field.name}" column and its value from every item in this list. This can't be undone.`,
+      confirmLabel: 'Delete field',
       destructive: true,
     });
     if (!ok) return;
-    this.service.deleteField(this.data.list.id, fieldId).subscribe({
+    this.service.deleteField(this.data.list.id, field.id).subscribe({
       next: () => {
-        this.fields.update((arr) => arr.filter((f) => f.id !== fieldId));
+        this.fields.update((arr) => arr.filter((f) => f.id !== field.id));
+        if (this.editingFieldId() === field.id) this.cancelEdit();
         this.toastr.success('Field deleted');
       },
       error: (err: HttpErrorResponse) => this.toastr.error(this.errMsg(err)),
