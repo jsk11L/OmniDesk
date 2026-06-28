@@ -71,9 +71,9 @@ You don't need to create tables: the backend container runs
 2. Build settings:
    - **Framework preset:** None.
    - **Root directory:** *(leave as repo root)*.
-   - **Build command:**
+   - **Build command** (Cloudflare runs `pnpm install` for you first, so only build):
      ```
-     corepack enable && pnpm install --frozen-lockfile && pnpm --filter frontend build:cloud
+     pnpm --filter frontend build:cloud
      ```
    - **Build output directory:**
      ```
