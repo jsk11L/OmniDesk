@@ -94,6 +94,24 @@ const PRIORITY_LABEL: Record<TodoPriority, string> = {
         </div>
       </header>
 
+      @if (allTags().length) {
+        <div class="px-4 sm:px-6 py-2 border-b border-border-soft flex items-center gap-1.5 flex-wrap text-sm">
+          <span class="uppercase-tag">Filter</span>
+          <button type="button" (click)="clearTags()" [class]="chipClass(selectedTags().length === 0)">All</button>
+          @for (t of allTags(); track t) {
+            <button type="button" (click)="toggleTag(t)" [class]="chipClass(isTagSelected(t))">#{{ t }}</button>
+          }
+          @if (selectedTags().length > 1) {
+            <span class="text-xs text-text-faint ml-1">match</span>
+            <button type="button" (click)="setTagMode('or')" [class]="modeClass(tagMode() === 'or')" title="Items with ANY selected tag">Any</button>
+            <button type="button" (click)="setTagMode('and')" [class]="modeClass(tagMode() === 'and')" title="Items with ALL selected tags">All</button>
+          }
+          <span class="ml-auto text-xs text-text-muted">
+            {{ shownCount() }} shown@if (isFiltering()) { <span class="text-text-faint">· reorder off</span> }
+          </span>
+        </div>
+      }
+
       <div class="flex-1 overflow-auto p-4">
         @if (loading()) {
           <p class="text-text-muted">Loading…</p>
@@ -178,11 +196,12 @@ const PRIORITY_LABEL: Record<TodoPriority, string> = {
                 <div
                   cdkDropList
                   [cdkDropListData]="col.items"
+                  [cdkDropListDisabled]="isFiltering()"
                   [id]="col.id"
                   (cdkDropListDropped)="onDrop($event)"
                   class="flex-1 overflow-y-auto p-2 space-y-2 min-h-[80px]"
                 >
-                  @for (item of col.items; track item.id) {
+                  @for (item of visibleItems(col); track item.id) {
                     <div
                       cdkDrag
                       (click)="editItem(col.id, item)"
@@ -252,6 +271,73 @@ export class KanbanBoardComponent implements OnInit {
   protected readonly board = signal<TodoBoard | null>(null);
   protected selectedBoardId = '';
 
+  // ─── Tag filter ──────────────────────────────────────────
+  protected readonly selectedTags = signal<string[]>([]);
+  protected readonly tagMode = signal<'or' | 'and'>('or');
+
+  /** Distinct tags across every item on the board, sorted. */
+  protected readonly allTags = computed<string[]>(() => {
+    const set = new Set<string>();
+    for (const col of this.board()?.columns ?? []) {
+      for (const it of col.items ?? []) {
+        for (const t of it.tags ?? []) set.add(t);
+      }
+    }
+    return [...set].sort((a, b) => a.localeCompare(b));
+  });
+
+  protected readonly isFiltering = computed(() => this.selectedTags().length > 0);
+
+  protected readonly shownCount = computed<number>(() =>
+    (this.board()?.columns ?? []).reduce((n, col) => n + this.visibleItems(col).length, 0),
+  );
+
+  /** Items in a column that pass the active tag filter (ANY vs ALL). */
+  protected visibleItems(col: TodoColumn): TodoItem[] {
+    const sel = this.selectedTags();
+    const items = col.items ?? [];
+    if (sel.length === 0) return items;
+    const all = this.tagMode() === 'and';
+    return items.filter((it) => {
+      const tags = it.tags ?? [];
+      return all ? sel.every((t) => tags.includes(t)) : sel.some((t) => tags.includes(t));
+    });
+  }
+
+  protected isTagSelected(tag: string): boolean {
+    return this.selectedTags().includes(tag);
+  }
+
+  protected toggleTag(tag: string): void {
+    this.selectedTags.update((arr) =>
+      arr.includes(tag) ? arr.filter((t) => t !== tag) : [...arr, tag],
+    );
+  }
+
+  protected clearTags(): void {
+    this.selectedTags.set([]);
+  }
+
+  protected setTagMode(mode: 'or' | 'and'): void {
+    this.tagMode.set(mode);
+  }
+
+  protected chipClass(active: boolean): string {
+    return (
+      'px-2 py-0.5 rounded-full border text-xs transition-colors ' +
+      (active
+        ? 'border-primary text-primary bg-primary-ghost'
+        : 'border-border-soft text-text-muted hover:text-text hover:bg-surface-hover')
+    );
+  }
+
+  protected modeClass(active: boolean): string {
+    return (
+      'px-2 py-0.5 rounded border text-xs transition-colors ' +
+      (active ? 'border-primary text-primary' : 'border-border-soft text-text-muted hover:text-text')
+    );
+  }
+
   ngOnInit(): void {
     this.service.listBoards().subscribe({
       next: (boards) => {
@@ -287,6 +373,7 @@ export class KanbanBoardComponent implements OnInit {
   }
 
   protected onBoardChange(id: string): void {
+    this.clearTags();
     this.loadBoard(id);
   }
 
