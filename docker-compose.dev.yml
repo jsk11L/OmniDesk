@@ -1,0 +1,25 @@
+# Development convenience: Postgres only, exposed on localhost:5432.
+# Run the apps locally with hot reload (no image builds):
+#   docker compose -f docker-compose.dev.yml up -d
+#   (backend)  cd backend  && pnpm prisma migrate dev && pnpm prisma:seed && pnpm start:dev
+#   (frontend) cd frontend && pnpm start
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-omnidesk}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-omnidesk}
+      POSTGRES_DB: ${POSTGRES_DB:-omnidesk}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data_dev:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-omnidesk}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pg_data_dev:

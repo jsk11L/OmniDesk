@@ -5,6 +5,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
+import { CaptchaService } from './captcha.service';
+import { TwoFactorService } from './two-factor.service';
 import { JwtStrategy } from './jwt.strategy';
 import { UsersModule } from '../users/users.module';
 
@@ -24,7 +26,7 @@ import { UsersModule } from '../users/users.module';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
+  providers: [AuthService, CaptchaService, TwoFactorService, JwtStrategy],
   exports: [AuthService, JwtStrategy, PassportModule],
 })
 export class AuthModule {}

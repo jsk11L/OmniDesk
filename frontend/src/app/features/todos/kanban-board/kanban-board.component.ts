@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import {
   CdkDragDrop,
   CdkDrag,
+  CdkDragHandle,
   CdkDropList,
   CdkDropListGroup,
   moveItemInArray,
@@ -11,6 +12,7 @@ import {
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ToastrService } from 'ngx-toastr';
 import { HttpErrorResponse } from '@angular/common/http';
+import { forkJoin } from 'rxjs';
 
 import { TodosService } from '../services/todos.service';
 import { DialogService } from '../../../shared/services/dialog.service';
@@ -35,21 +37,21 @@ const PRIORITY_COLORS: Record<TodoPriority, string> = {
 };
 
 const PRIORITY_LABEL: Record<TodoPriority, string> = {
-  LOW: 'Baja',
-  MEDIUM: 'Media',
-  HIGH: 'Alta',
-  URGENT: 'Urgente',
+  LOW: 'Low',
+  MEDIUM: 'Medium',
+  HIGH: 'High',
+  URGENT: 'Urgent',
 };
 
 @Component({
   selector: 'app-kanban-board',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, CdkDropList, CdkDrag, CdkDropListGroup, MatDialogModule],
+  imports: [FormsModule, CdkDropList, CdkDrag, CdkDragHandle, CdkDropListGroup, MatDialogModule],
   template: `
     <div class="h-full flex flex-col">
-      <header class="px-6 py-4 border-b border-border">
-        <div class="flex items-center justify-between gap-4 mb-3">
+      <header class="px-4 sm:px-6 py-4 border-b border-border">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
           <div class="flex items-center gap-3">
             <h1 class="text-2xl font-semibold">TO-DO</h1>
             @if (boards().length > 0) {
@@ -70,7 +72,7 @@ const PRIORITY_LABEL: Record<TodoPriority, string> = {
               (click)="createBoard()"
               class="px-3 py-2 rounded text-sm hover:bg-surface-hover"
             >
-              + Tablero
+              + Board
             </button>
             <button
               type="button"
@@ -78,7 +80,7 @@ const PRIORITY_LABEL: Record<TodoPriority, string> = {
               [disabled]="!board()"
               class="px-3 py-2 rounded text-sm hover:bg-surface-hover disabled:opacity-50"
             >
-              + Columna
+              + Column
             </button>
             <button
               type="button"
@@ -86,7 +88,7 @@ const PRIORITY_LABEL: Record<TodoPriority, string> = {
               [disabled]="!board()?.columns?.length"
               class="px-4 py-2 rounded bg-primary text-white text-sm font-medium hover:opacity-90 disabled:opacity-50"
             >
-              + Tarea
+              + Task
             </button>
           </div>
         </div>
@@ -94,47 +96,62 @@ const PRIORITY_LABEL: Record<TodoPriority, string> = {
 
       <div class="flex-1 overflow-auto p-4">
         @if (loading()) {
-          <p class="text-text-muted">Cargando…</p>
+          <p class="text-text-muted">Loading…</p>
         } @else if (!board()) {
           <p class="text-text-muted text-center py-16">
-            Crea un tablero para empezar.
+            Create a board to get started.
           </p>
         } @else if (!board()!.columns?.length) {
           <p class="text-text-muted text-center py-16">
-            Este tablero no tiene columnas todavía.
+            This board has no columns yet.
           </p>
         } @else {
           <div
+            cdkDropList
+            cdkDropListOrientation="horizontal"
+            [cdkDropListData]="board()!.columns!"
+            (cdkDropListDropped)="onColumnDrop($event)"
             class="flex gap-4 h-full"
-            cdkDropListGroup
           >
+            <ng-container cdkDropListGroup>
             @for (col of board()!.columns!; track col.id) {
               <div
-                class="w-72 shrink-0 bg-surface border border-border rounded flex flex-col max-h-full"
+                cdkDrag
+                [cdkDragData]="col"
+                class="flex-1 min-w-[280px] bg-surface border border-border-soft rounded-xl overflow-hidden flex flex-col max-h-full"
               >
                 <div
-                  class="px-3 py-2 border-b border-border flex items-center justify-between"
-                  [style.border-top]="'3px solid ' + col.color"
+                  class="px-3 py-2 border-b border-border-soft flex items-center justify-between gap-1"
                 >
+                  <span
+                    cdkDragHandle
+                    class="cursor-grab text-text-muted hover:text-text text-xs select-none"
+                    title="Drag to reorder column"
+                  >⠿</span>
+                  <span
+                    class="w-2 h-2 rounded-full shrink-0"
+                    [style.background-color]="col.color || 'var(--color-text-muted)'"
+                  ></span>
                   <input
                     type="text"
                     [value]="col.name"
                     (blur)="renameColumn(col, $event)"
                     class="bg-transparent font-medium text-sm outline-none flex-1 mr-2"
                   />
-                  <div class="flex items-center gap-1">
+                  <div class="flex items-center gap-0.5 shrink-0">
                     <button
                       type="button"
                       (click)="toggleCompletionColumn(col)"
                       [class]="
-                        col.isCompletionColumn
-                          ? 'text-success text-xs'
-                          : 'text-text-muted hover:text-text text-xs opacity-50'
+                        'w-7 h-7 grid place-items-center rounded text-sm transition-colors ' +
+                        (col.isCompletionColumn
+                          ? 'text-success hover:bg-surface-hover'
+                          : 'text-text-muted hover:bg-surface-hover hover:text-text opacity-60')
                       "
                       [title]="
                         col.isCompletionColumn
-                          ? 'Columna de finalización (clic para quitar)'
-                          : 'Marcar como columna de finalización'
+                          ? 'Completion column (click to unset)'
+                          : 'Mark as completion column'
                       "
                     >
                       ✓
@@ -142,16 +159,16 @@ const PRIORITY_LABEL: Record<TodoPriority, string> = {
                     <button
                       type="button"
                       (click)="addItem(col.id)"
-                      class="text-text-muted hover:text-text text-xs"
-                      title="Añadir tarea"
+                      class="w-7 h-7 grid place-items-center rounded text-base text-text-muted hover:bg-surface-hover hover:text-text transition-colors"
+                      title="Add task"
                     >
                       +
                     </button>
                     <button
                       type="button"
                       (click)="deleteColumn(col)"
-                      class="text-text-muted hover:text-danger text-xs"
-                      title="Eliminar columna"
+                      class="w-7 h-7 grid place-items-center rounded text-base text-text-muted hover:bg-surface-hover hover:text-danger transition-colors"
+                      title="Delete column"
                     >
                       ×
                     </button>
@@ -169,7 +186,7 @@ const PRIORITY_LABEL: Record<TodoPriority, string> = {
                     <div
                       cdkDrag
                       (click)="editItem(col.id, item)"
-                      class="bg-background border border-border rounded p-3 cursor-grab hover:border-primary transition-colors"
+                      class="bg-background border border-border-soft rounded-lg p-3 cursor-grab hover:border-primary transition-colors shadow-sm"
                     >
                       <div class="flex items-start justify-between gap-2 mb-1">
                         <h3 class="text-sm font-medium leading-tight">{{ item.title }}</h3>
@@ -203,6 +220,7 @@ const PRIORITY_LABEL: Record<TodoPriority, string> = {
                 </div>
               </div>
             }
+            </ng-container>
           </div>
         }
       </div>
@@ -262,7 +280,7 @@ export class KanbanBoardComponent implements OnInit {
   }
 
   protected formatDueDate(iso: string): string {
-    return new Date(iso).toLocaleDateString('es-CL', {
+    return new Date(iso).toLocaleDateString('en-US', {
       day: '2-digit',
       month: 'short',
     });
@@ -295,9 +313,9 @@ export class KanbanBoardComponent implements OnInit {
 
   protected async createBoard(): Promise<void> {
     const name = await this.dialogs.prompt({
-      title: 'Nuevo tablero',
-      label: 'Nombre del tablero',
-      confirmLabel: 'Crear',
+      title: 'New board',
+      label: 'Board name',
+      confirmLabel: 'Create',
     });
     if (!name?.trim()) return;
     this.service.createBoard({ name: name.trim() }).subscribe({
@@ -305,7 +323,7 @@ export class KanbanBoardComponent implements OnInit {
         this.boards.update((arr) => [...arr, board]);
         this.selectedBoardId = board.id;
         this.loadBoard(board.id);
-        this.toastr.success('Tablero creado');
+        this.toastr.success('Board created');
       },
       error: (err: HttpErrorResponse) => this.toastr.error(this.errMsg(err)),
     });
@@ -315,16 +333,16 @@ export class KanbanBoardComponent implements OnInit {
     const board = this.board();
     if (!board) return;
     const name = await this.dialogs.prompt({
-      title: 'Nueva columna',
-      label: 'Nombre de la columna',
-      confirmLabel: 'Crear',
+      title: 'New column',
+      label: 'Column name',
+      confirmLabel: 'Create',
     });
     if (!name?.trim()) return;
     this.service.createColumn(board.id, { name: name.trim() }).subscribe({
       next: (column) => {
         const next = { ...board, columns: [...(board.columns ?? []), { ...column, items: [] }] };
         this.board.set(next);
-        this.toastr.success('Columna creada');
+        this.toastr.success('Column created');
       },
       error: (err: HttpErrorResponse) => this.toastr.error(this.errMsg(err)),
     });
@@ -336,7 +354,7 @@ export class KanbanBoardComponent implements OnInit {
     const newName = (event.target as HTMLInputElement).value.trim();
     if (!newName || newName === col.name) return;
     this.service.updateColumn(board.id, col.id, { name: newName }).subscribe({
-      next: () => this.toastr.success('Columna renombrada'),
+      next: () => this.toastr.success('Column renamed'),
       error: (err: HttpErrorResponse) => this.toastr.error(this.errMsg(err)),
     });
   }
@@ -345,9 +363,9 @@ export class KanbanBoardComponent implements OnInit {
     const board = this.board();
     if (!board) return;
     const ok = await this.dialogs.confirm({
-      title: 'Eliminar columna',
-      message: `¿Eliminar la columna "${col.name}" con sus tareas?`,
-      confirmLabel: 'Eliminar',
+      title: 'Delete column',
+      message: `Delete the column "${col.name}" with its tasks?`,
+      confirmLabel: 'Delete',
       destructive: true,
     });
     if (!ok) return;
@@ -358,7 +376,7 @@ export class KanbanBoardComponent implements OnInit {
           columns: (board.columns ?? []).filter((c) => c.id !== col.id),
         };
         this.board.set(next);
-        this.toastr.success('Columna eliminada');
+        this.toastr.success('Column deleted');
       },
       error: (err: HttpErrorResponse) => this.toastr.error(this.errMsg(err)),
     });
@@ -373,7 +391,7 @@ export class KanbanBoardComponent implements OnInit {
         col.isCompletionColumn = next;
         this.board.set({ ...board });
         this.toastr.success(
-          next ? 'Columna marcada como de finalización' : 'Marca de finalización quitada',
+          next ? 'Column marked as completion' : 'Completion mark removed',
         );
       },
       error: (err: HttpErrorResponse) => this.toastr.error(this.errMsg(err)),
@@ -400,6 +418,34 @@ export class KanbanBoardComponent implements OnInit {
     );
     ref.afterClosed().subscribe((result) => {
       if (result) this.loadBoard(board.id);
+    });
+  }
+
+  protected onColumnDrop(event: CdkDragDrop<TodoColumn[]>): void {
+    const board = this.board();
+    if (!board?.columns) return;
+    if (event.previousIndex === event.currentIndex) return;
+
+    moveItemInArray(board.columns, event.previousIndex, event.currentIndex);
+
+    // Persist only the columns whose position actually changed.
+    const changed: { id: string; position: number }[] = [];
+    board.columns.forEach((c, idx) => {
+      if (c.position !== idx) {
+        changed.push({ id: c.id, position: idx });
+        c.position = idx;
+      }
+    });
+    this.board.set({ ...board });
+    if (!changed.length) return;
+
+    forkJoin(
+      changed.map((u) => this.service.updateColumn(board.id, u.id, { position: u.position })),
+    ).subscribe({
+      error: (err: HttpErrorResponse) => {
+        this.toastr.error('Could not save the column order: ' + this.errMsg(err));
+        this.loadBoard(board.id);
+      },
     });
   }
 
@@ -430,7 +476,7 @@ export class KanbanBoardComponent implements OnInit {
 
     this.service.reorder(payload).subscribe({
       error: (err: HttpErrorResponse) => {
-        this.toastr.error('No se pudo guardar el orden: ' + this.errMsg(err));
+        this.toastr.error('Could not save the order: ' + this.errMsg(err));
         this.loadBoard(board.id);
       },
     });
@@ -441,6 +487,6 @@ export class KanbanBoardComponent implements OnInit {
     const msg = body?.error?.message;
     if (Array.isArray(msg)) return msg.join('. ');
     if (typeof msg === 'string') return msg;
-    return 'Error inesperado';
+    return 'Unexpected error';
   }
 }

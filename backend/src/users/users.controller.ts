@@ -20,6 +20,7 @@ export class UsersController {
       displayName: found.displayName,
       avatarUrl: found.avatarUrl,
       isEmailVerified: found.isEmailVerified,
+      isAdmin: found.isAdmin,
       activeThemeId: found.activeThemeId,
       createdAt: found.createdAt,
     };
@@ -34,6 +35,7 @@ export class UsersController {
       displayName: updated.displayName,
       avatarUrl: updated.avatarUrl,
       isEmailVerified: updated.isEmailVerified,
+      isAdmin: updated.isAdmin,
       activeThemeId: updated.activeThemeId,
       createdAt: updated.createdAt,
     };

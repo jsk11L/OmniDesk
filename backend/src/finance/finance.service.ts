@@ -9,6 +9,8 @@ import type {
   FinanceCategory,
   FinanceCategoryType,
   Prisma,
+  RecurringFrequency,
+  RecurringTransaction,
   Transaction,
 } from '@prisma/client';
 
@@ -27,6 +29,8 @@ import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { CreateBudgetDto } from './dto/create-budget.dto';
 import { UpdateBudgetDto } from './dto/update-budget.dto';
+import { CreateRecurringTransactionDto } from './dto/create-recurring-transaction.dto';
+import { UpdateRecurringTransactionDto } from './dto/update-recurring-transaction.dto';
 
 export interface ListTransactionsParams extends PaginationQuery {
   start?: string;
@@ -305,6 +309,127 @@ export class FinanceService {
     return { id: budId };
   }
 
+  // ─── Recurring transactions ──────────────────────────────
+
+  async listRecurring(
+    userId: string,
+    boardId: string,
+  ): Promise<RecurringTransaction[]> {
+    await this.assertBoardOwner(userId, boardId);
+    return this.prisma.recurringTransaction.findMany({
+      where: { boardId },
+      orderBy: [{ isActive: 'desc' }, { nextRun: 'asc' }],
+      include: { category: true },
+    });
+  }
+
+  async createRecurring(
+    userId: string,
+    boardId: string,
+    dto: CreateRecurringTransactionDto,
+  ): Promise<RecurringTransaction> {
+    await this.assertBoardOwner(userId, boardId);
+    if (dto.categoryId) {
+      await this.findCategoryInBoard(userId, boardId, dto.categoryId);
+    }
+    return this.prisma.recurringTransaction.create({
+      data: {
+        boardId,
+        categoryId: dto.categoryId ?? null,
+        title: dto.title,
+        amount: dto.amount,
+        type: dto.type,
+        frequency: dto.frequency,
+        notes: dto.notes ?? null,
+        tags: dto.tags ?? [],
+        nextRun: new Date(dto.nextRun),
+      },
+    });
+  }
+
+  async updateRecurring(
+    userId: string,
+    boardId: string,
+    recId: string,
+    dto: UpdateRecurringTransactionDto,
+  ): Promise<RecurringTransaction> {
+    const rec = await this.findRecurringInBoard(userId, boardId, recId);
+    if (dto.categoryId) {
+      await this.findCategoryInBoard(userId, boardId, dto.categoryId);
+    }
+    return this.prisma.recurringTransaction.update({
+      where: { id: recId },
+      data: {
+        title: dto.title ?? rec.title,
+        amount: dto.amount ?? rec.amount,
+        type: dto.type ?? rec.type,
+        frequency: dto.frequency ?? rec.frequency,
+        nextRun: dto.nextRun ? new Date(dto.nextRun) : rec.nextRun,
+        isActive: dto.isActive ?? rec.isActive,
+        categoryId: dto.categoryId ?? rec.categoryId,
+        notes: dto.notes ?? rec.notes,
+        tags: dto.tags ?? rec.tags,
+      },
+    });
+  }
+
+  async deleteRecurring(
+    userId: string,
+    boardId: string,
+    recId: string,
+  ): Promise<{ id: string }> {
+    await this.findRecurringInBoard(userId, boardId, recId);
+    await this.prisma.recurringTransaction.delete({ where: { id: recId } });
+    return { id: recId };
+  }
+
+  /**
+   * Materializes every active recurring template whose `nextRun` has passed,
+   * creating a real Transaction and advancing `nextRun` by `frequency`. A single
+   * template can fire several times if it was due more than once (e.g. the
+   * scheduler was offline) — the loop is bounded to avoid runaway catch-up.
+   * Returns the number of transactions created. Used by the scheduler.
+   */
+  async materializeDueRecurring(now: Date = new Date()): Promise<number> {
+    const due = await this.prisma.recurringTransaction.findMany({
+      where: { isActive: true, nextRun: { lte: now } },
+    });
+
+    let created = 0;
+    for (const rec of due) {
+      let cursor = rec.nextRun;
+      const operations: Prisma.PrismaPromise<unknown>[] = [];
+      // Cap catch-up at 60 occurrences to stay bounded if a template was paused
+      // for a long time or has a daily cadence with a stale nextRun.
+      for (let i = 0; i < 60 && cursor <= now; i++) {
+        operations.push(
+          this.prisma.transaction.create({
+            data: {
+              boardId: rec.boardId,
+              categoryId: rec.categoryId,
+              title: rec.title,
+              amount: rec.amount,
+              type: rec.type,
+              date: cursor,
+              notes: rec.notes,
+              tags: rec.tags,
+            },
+          }),
+        );
+        cursor = advanceDate(cursor, rec.frequency);
+      }
+      operations.push(
+        this.prisma.recurringTransaction.update({
+          where: { id: rec.id },
+          data: { nextRun: cursor, lastRun: now },
+        }),
+      );
+      await this.prisma.$transaction(operations);
+      created += operations.length - 1;
+    }
+    return created;
+  }
+
   // ─── Summary ─────────────────────────────────────────────
 
   async summary(
@@ -346,7 +471,7 @@ export class FinanceService {
       } else {
         byCategoryMap.set(key, {
           categoryId: t.categoryId,
-          categoryName: t.category?.name ?? 'Sin categoría',
+          categoryName: t.category?.name ?? 'Uncategorized',
           categoryColor: t.category?.color ?? '#94a3b8',
           total: t.amount,
         });
@@ -416,8 +541,43 @@ export class FinanceService {
     }
     return budget;
   }
+
+  private async findRecurringInBoard(
+    userId: string,
+    boardId: string,
+    recId: string,
+  ): Promise<RecurringTransaction> {
+    const rec = await this.prisma.recurringTransaction.findFirst({
+      where: { id: recId, boardId, board: { userId } },
+    });
+    if (!rec) {
+      throw new NotFoundException('Recurring transaction not found');
+    }
+    return rec;
+  }
 }
 
 function round2(value: number): number {
   return Math.round(value * 100) / 100;
+}
+
+/** Returns a new Date advanced by one cadence step. Month/year math uses
+ * setMonth/setFullYear, which JS clamps correctly (e.g. Jan 31 + 1 month → Feb 28/29). */
+function advanceDate(from: Date, frequency: RecurringFrequency): Date {
+  const next = new Date(from);
+  switch (frequency) {
+    case 'DAILY':
+      next.setDate(next.getDate() + 1);
+      break;
+    case 'WEEKLY':
+      next.setDate(next.getDate() + 7);
+      break;
+    case 'MONTHLY':
+      next.setMonth(next.getMonth() + 1);
+      break;
+    case 'YEARLY':
+      next.setFullYear(next.getFullYear() + 1);
+      break;
+  }
+  return next;
 }

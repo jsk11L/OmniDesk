@@ -16,6 +16,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { ListsService } from '../services/lists.service';
 import { TagChipComponent } from '../../../shared/components/tag-chip/tag-chip.component';
 import { UploadsService } from '../../../shared/services/uploads.service';
+import { FavoritesStore } from '../../../shared/services/favorites.store';
 import {
   ListItemDialogComponent,
   type ListItemDialogData,
@@ -29,12 +30,18 @@ import {
   resolveGridConfig,
   resolveViewConfig,
   findImageField,
+  CARD_MATRIX_SLOTS,
+  DEFAULT_FIELD_LAYOUT,
   type GridConfig,
   type List,
   type ListField,
   type ListItem,
   type ViewConfig,
   type GridTemplate,
+  type ListAction,
+  type CardSlot,
+  type FieldCardLayout,
+  type DateDisplayFormat,
 } from '../lists.types';
 
 interface ItemGroup {
@@ -62,12 +69,23 @@ interface ItemGroup {
             </h1>
           </div>
           <div class="flex items-center gap-2">
+            @if (list(); as l) {
+              <button
+                type="button"
+                (click)="toggleFavorite(l.id)"
+                [title]="isFavorite(l.id) ? 'Remove from sidebar favorites' : 'Add to sidebar favorites'"
+                [class]="
+                  'w-10 h-10 grid place-items-center rounded-lg text-lg transition-colors ' +
+                  (isFavorite(l.id) ? 'text-accent hover:bg-surface-hover' : 'text-text-muted hover:bg-surface-hover hover:text-text')
+                "
+              >{{ isFavorite(l.id) ? '★' : '☆' }}</button>
+            }
             <button type="button" (click)="openSettings()" class="px-3 py-2 rounded text-sm hover:bg-surface-hover">
-              ⚙ Ajustes
+              ⚙ Settings
             </button>
             <button type="button" (click)="openCreateItem()" [disabled]="!list()"
               class="px-4 py-2 rounded bg-primary text-white text-sm font-medium hover:opacity-90 disabled:opacity-50">
-              + Nuevo ítem
+              + New item
             </button>
           </div>
         </div>
@@ -77,35 +95,111 @@ interface ItemGroup {
             type="search"
             [(ngModel)]="search"
             (ngModelChange)="reload()"
-            placeholder="Buscar…"
+            placeholder="Search…"
             class="px-3 py-2 bg-surface border border-border rounded text-sm outline-none focus:border-primary w-64"
           />
 
           <select [ngModel]="gridConfig().template" (ngModelChange)="setTemplate($event)"
             class="px-3 py-2 bg-surface border border-border rounded text-sm outline-none focus:border-primary">
-            <option value="card-large">Tarjeta grande</option>
-            <option value="card-compact">Tarjeta compacta</option>
-            <option value="card-cover">Tarjeta cover (Obsidian)</option>
-            <option value="dense-list">Lista densa</option>
-            <option value="gallery-no-image">Galería sin imagen</option>
-            <option value="table">Tabla</option>
+            <option value="card-large">Large card</option>
+            <option value="card-compact">Compact card</option>
+            <option value="card-cover">Cover card (Obsidian)</option>
+            <option value="dense-list">Dense list</option>
+            <option value="gallery-no-image">Gallery without image</option>
+            <option value="table">Table</option>
           </select>
+
+          @if ((list()?.fields?.length ?? 0) > 0) {
+            <div class="relative">
+              <button type="button" (click)="fieldsPanelOpen.set(!fieldsPanelOpen())"
+                class="px-3 py-2 bg-surface border border-border rounded text-sm hover:bg-surface-hover">
+                ⚙ Fields
+              </button>
+              @if (fieldsPanelOpen()) {
+                <div class="absolute z-30 mt-1 right-0 w-72 bg-surface border border-border rounded-lg shadow-lg p-2 max-h-[70vh] overflow-auto">
+                  <p class="uppercase-tag px-2 pb-1">Fields shown on cards</p>
+                  @for (f of fieldConfigRows(); track f.id) {
+                    <div class="rounded hover:bg-surface-hover">
+                      <div class="flex items-center gap-2 px-2 py-1.5 text-sm">
+                        <input type="checkbox" [checked]="isFieldVisible(f.id)" (change)="toggleFieldVisible(f.id)" class="accent-primary" />
+                        <span class="flex-1 truncate">{{ f.name }}</span>
+                        @if (isFieldVisible(f.id)) {
+                          <button type="button" (click)="moveField(f.id, -1)" class="w-6 h-6 grid place-items-center rounded hover:bg-background text-text-muted" title="Move up">↑</button>
+                          <button type="button" (click)="moveField(f.id, 1)" class="w-6 h-6 grid place-items-center rounded hover:bg-background text-text-muted" title="Move down">↓</button>
+                          <button type="button" (click)="toggleLayoutEditor(f.id)"
+                            [class]="'w-6 h-6 grid place-items-center rounded text-xs ' + (layoutEditorFieldId() === f.id ? 'bg-primary/20 text-primary' : 'hover:bg-background text-text-muted')"
+                            title="Card layout (Large card)">▦</button>
+                        }
+                      </div>
+                      @if (layoutEditorFieldId() === f.id && isFieldVisible(f.id)) {
+                        <div class="px-2 pb-2 pt-1.5 mt-0.5 border-t border-border">
+                          <p class="uppercase-tag mb-1">Position on card</p>
+                          <div class="grid grid-cols-3 gap-0.5 w-[84px] mb-1.5">
+                            @for (slot of matrixSlots; track slot) {
+                              <button type="button" (click)="setFieldSlot(f.id, slot)"
+                                [class]="'h-6 rounded text-[9px] grid place-items-center border transition-colors ' + (layoutOf(f.id).slot === slot ? 'border-primary bg-primary/20 text-primary' : 'border-border text-text-faint hover:bg-background')"
+                                [title]="'Anchor: ' + slot">●</button>
+                            }
+                          </div>
+                          <div class="flex gap-1 mb-2">
+                            <button type="button" (click)="setFieldSlot(f.id, 'stack')"
+                              [class]="'px-2 py-1 rounded text-xs border transition-colors ' + (layoutOf(f.id).slot === 'stack' ? 'border-primary text-primary bg-primary/10' : 'border-border text-text-muted hover:bg-background')"
+                              title="Stack above the title (auto-scaled)">Stack ↑ title</button>
+                            <button type="button" (click)="setFieldSlot(f.id, 'body')"
+                              [class]="'px-2 py-1 rounded text-xs border transition-colors ' + (layoutOf(f.id).slot === 'body' ? 'border-primary text-primary bg-primary/10' : 'border-border text-text-muted hover:bg-background')"
+                              title="Default flow under the title">Body</button>
+                          </div>
+                          <label class="flex items-center gap-1.5 text-xs text-text-muted cursor-pointer">
+                            <input type="checkbox" [checked]="layoutOf(f.id).showLabel" (change)="toggleFieldLabel(f.id)" class="accent-primary" />
+                            Show "{{ f.name }}:" label
+                          </label>
+                          @if (f.fieldType === 'DATE') {
+                            <select [ngModel]="layoutOf(f.id).dateFormat ?? 'full'" (ngModelChange)="setFieldDateFormat(f.id, $event)"
+                              class="w-full mt-1.5 px-2 py-1 bg-background border border-border rounded text-xs outline-none focus:border-primary">
+                              <option value="full">Date: full</option>
+                              <option value="month">Date: month only (May)</option>
+                              <option value="month-year">Date: month + year (May 2026)</option>
+                              <option value="year">Date: year only (2026)</option>
+                            </select>
+                          }
+                        </div>
+                      }
+                    </div>
+                  }
+                  <div class="flex items-center justify-between gap-2 px-2 pt-2 mt-1 border-t border-border">
+                    <label class="flex items-center gap-1.5 text-xs text-text-muted cursor-pointer">
+                      <input type="checkbox" [checked]="gridConfig().showImage" (change)="patchGrid({ showImage: !gridConfig().showImage })" class="accent-primary" /> Image
+                    </label>
+                    <label class="flex items-center gap-1.5 text-xs text-text-muted cursor-pointer">
+                      <input type="checkbox" [checked]="gridConfig().showTags" (change)="patchGrid({ showTags: !gridConfig().showTags })" class="accent-primary" /> Tags
+                    </label>
+                    <button type="button" (click)="fieldsPanelOpen.set(false)" class="text-xs text-primary hover:underline">Done</button>
+                  </div>
+                </div>
+              }
+            </div>
+          }
 
           @if ((list()?.fields?.length ?? 0) > 0) {
             <select [ngModel]="viewConfig().groupBy ?? ''" (ngModelChange)="setGroupBy($event || null)"
               class="px-3 py-2 bg-surface border border-border rounded text-sm outline-none focus:border-primary">
-              <option value="">Sin agrupar</option>
+              <option value="">No grouping</option>
               @for (f of list()!.fields!; track f.id) {
-                <option [value]="f.id">Agrupar por {{ f.name }}</option>
+                @if (f.fieldType === 'DATE') {
+                  <option [value]="f.id + ':year'">Group by {{ f.name }} · Year</option>
+                  <option [value]="f.id + ':month'">Group by {{ f.name }} · Month</option>
+                } @else {
+                  <option [value]="f.id">Group by {{ f.name }}</option>
+                }
               }
             </select>
 
             <select [ngModel]="viewConfig().sortBy" (ngModelChange)="setSortBy($event)"
               class="px-3 py-2 bg-surface border border-border rounded text-sm outline-none focus:border-primary">
-              <option value="createdAt">Ordenar: creación</option>
-              <option value="title">Ordenar: título</option>
+              <option value="createdAt">Sort: created</option>
+              <option value="title">Sort: title</option>
               @for (f of list()!.fields!; track f.id) {
-                <option [value]="f.id">Ordenar: {{ f.name }}</option>
+                <option [value]="f.id">Sort: {{ f.name }}</option>
               }
             </select>
 
@@ -115,19 +209,19 @@ interface ItemGroup {
             </button>
           }
 
-          <span class="text-xs text-text-muted ml-auto">{{ filteredItems().length }} ítems</span>
+          <span class="text-xs text-text-muted ml-auto">{{ filteredItems().length }} items</span>
         </div>
       </header>
 
       <div class="flex-1 overflow-auto p-6">
         @if (loading()) {
-          <p class="text-text-muted">Cargando…</p>
+          <p class="text-text-muted">Loading…</p>
         } @else if (filteredItems().length === 0) {
           <div class="text-center py-16 text-text-muted">
-            <p class="mb-4">Esta lista aún no tiene ítems.</p>
+            <p class="mb-4">This list has no items yet.</p>
             <button type="button" (click)="openCreateItem()"
               class="px-4 py-2 rounded bg-primary text-white text-sm font-medium hover:opacity-90">
-              + Crear el primer ítem
+              + Create the first item
             </button>
           </div>
         } @else {
@@ -142,31 +236,64 @@ interface ItemGroup {
               @case ('card-large') {
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6">
                   @for (item of group.items; track item.id) {
-                    <button type="button" (click)="openEditItem(item)"
-                      class="text-left bg-surface border border-border rounded-lg overflow-hidden hover:border-primary transition-colors">
-                      @if (gridConfig().showImage && resolveImage(item); as src) {
-                        <img [src]="src" alt="" class="w-full h-40 object-cover" />
-                      }
-                      <div class="p-3">
-                        <h3 class="font-medium truncate">{{ item.title }}</h3>
-                        @for (fieldId of gridConfig().visibleFields; track fieldId) {
-                          @if (fieldById(fieldId); as f) {
-                            <p class="text-xs text-text-muted mt-0.5">
-                              <strong>{{ f.name }}:</strong> {{ formatField(item.customFields[f.id]) }}
-                            </p>
-                          }
+                    <div class="bg-surface border border-border rounded-lg overflow-hidden hover:border-primary transition-colors flex flex-col">
+                      <button type="button" (click)="openEditItem(item)" class="text-left">
+                        @if (gridConfig().showImage && resolveImage(item); as src) {
+                          <img [src]="src" alt="" class="w-full h-40 object-cover" />
                         }
-                        @if (gridConfig().showTags && item.tags?.length) {
-                          <div class="flex flex-wrap gap-1 mt-2">
-                            @for (t of item.tags!; track t.tagId) {
-                              @if (tagLookup(t.tagId); as tag) {
-                                <app-tag-chip [label]="tag.name" [color]="tag.color" />
-                              }
+                        <div class="p-3 relative min-h-[3.25rem]">
+                          <!-- Fields stacked ABOVE the title (Obsidian header, auto-scaled) -->
+                          @for (s of stackEntries(); track s.id) {
+                            @if (fieldById(s.id); as f) {
+                              <div [class]="s.cls + ' truncate leading-tight'">
+                                @if (layoutOf(s.id).showLabel) { <span class="text-text-muted">{{ f.name }}: </span> }{{ formatFieldFor(f, item.customFields[f.id]) }}
+                              </div>
                             }
-                          </div>
-                        }
-                      </div>
-                    </button>
+                          }
+
+                          <h3 class="font-semibold text-lg leading-tight truncate">{{ item.title }}</h3>
+
+                          <!-- Fields in the default body flow -->
+                          @for (fieldId of bodyFields(); track fieldId) {
+                            @if (fieldById(fieldId); as f) {
+                              <p class="text-xs text-text-muted mt-0.5 truncate">
+                                @if (layoutOf(fieldId).showLabel) { <strong>{{ f.name }}:</strong> }{{ formatFieldFor(f, item.customFields[f.id]) }}
+                              </p>
+                            }
+                          }
+
+                          @if (gridConfig().showTags && item.tags?.length) {
+                            <div class="flex flex-wrap gap-1 mt-2">
+                              @for (t of item.tags!; track t.tagId) {
+                                @if (tagLookup(t.tagId); as tag) {
+                                  <app-tag-chip [label]="tag.name" [color]="tag.color" />
+                                }
+                              }
+                            </div>
+                          }
+
+                          <!-- Fields anchored to one of the 9 matrix zones -->
+                          @for (a of anchoredFields(); track a.id) {
+                            @if (fieldById(a.id); as f) {
+                              <span [class]="'card-anchor ' + a.cls">
+                                @if (layoutOf(a.id).showLabel) { <span class="opacity-70">{{ f.name }}: </span> }{{ formatFieldFor(f, item.customFields[f.id]) }}
+                              </span>
+                            }
+                          }
+                        </div>
+                      </button>
+                      @if (actions().length) {
+                        <div class="flex flex-wrap gap-1 px-3 pb-3 mt-auto">
+                          @for (a of actions(); track a.id) {
+                            <button type="button" (click)="runAction(item, a, $event)"
+                              class="text-xs px-2 py-1 rounded border border-border hover:border-primary hover:bg-surface-hover transition-colors"
+                              [style.color]="a.color || null">
+                              {{ a.label }}
+                            </button>
+                          }
+                        </div>
+                      }
+                    </div>
                   }
                 </div>
               }
@@ -206,7 +333,7 @@ interface ItemGroup {
                         <div>
                           @for (fieldId of gridConfig().visibleFields; track fieldId) {
                             @if (fieldById(fieldId); as f) {
-                              <div class="card-cover-meta">{{ f.name }}: {{ formatField(item.customFields[f.id]) }}</div>
+                              <div class="card-cover-meta">@if (layoutOf(fieldId).showLabel) { <span>{{ f.name }}: </span> }{{ formatFieldFor(f, item.customFields[f.id]) }}</div>
                             }
                           }
                           <div class="card-cover-title">{{ item.title }}</div>
@@ -231,7 +358,7 @@ interface ItemGroup {
                           @for (fieldId of gridConfig().visibleFields; track fieldId) {
                             @if (fieldById(fieldId); as f) {
                               <span class="text-xs text-text-muted mr-2">
-                                {{ f.name }}: {{ formatField(item.customFields[f.id]) }}
+                                @if (layoutOf(fieldId).showLabel) { <strong>{{ f.name }}:</strong> }{{ formatFieldFor(f, item.customFields[f.id]) }}
                               </span>
                             }
                           }
@@ -260,7 +387,7 @@ interface ItemGroup {
                       @for (fieldId of gridConfig().visibleFields; track fieldId) {
                         @if (fieldById(fieldId); as f) {
                           <p class="text-sm text-text-muted">
-                            <strong>{{ f.name }}:</strong> {{ formatField(item.customFields[f.id]) }}
+                            @if (layoutOf(fieldId).showLabel) { <strong>{{ f.name }}:</strong> }{{ formatFieldFor(f, item.customFields[f.id]) }}
                           </p>
                         }
                       }
@@ -283,7 +410,7 @@ interface ItemGroup {
                   <table class="w-full text-sm">
                     <thead class="bg-surface text-text-muted text-xs uppercase">
                       <tr>
-                        <th class="px-3 py-2 text-left">Título</th>
+                        <th class="px-3 py-2 text-left">Title</th>
                         @for (f of list()?.fields ?? []; track f.id) {
                           <th class="px-3 py-2 text-left">{{ f.name }}</th>
                         }
@@ -329,6 +456,25 @@ interface ItemGroup {
       </div>
     </div>
   `,
+  styles: [`
+    /* Fields anchored to the 3×3 matrix on the Large card */
+    .card-anchor {
+      position: absolute;
+      z-index: 10;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      line-height: 1;
+      color: var(--color-text-muted);
+      background: color-mix(in srgb, var(--color-surface) 85%, transparent);
+      padding: 2px 6px;
+      border-radius: 6px;
+      pointer-events: none;
+      max-width: 72%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  `],
 })
 export class ListDetailComponent implements OnInit {
   private readonly service = inject(ListsService);
@@ -336,13 +482,169 @@ export class ListDetailComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly toastr = inject(ToastrService);
   private readonly uploads = inject(UploadsService);
+  private readonly favoritesStore = inject(FavoritesStore);
+
+  protected isFavorite(listId: string): boolean {
+    return this.favoritesStore.isFavorite('LIST', listId);
+  }
+
+  protected toggleFavorite(listId: string): void {
+    this.favoritesStore.toggle('LIST', listId);
+  }
 
   @Input({ required: true }) id!: string;
 
   protected readonly loading = signal(true);
   protected readonly list = signal<List | null>(null);
   protected readonly rawItems = signal<ListItem[]>([]);
+  protected readonly fieldsPanelOpen = signal(false);
+  /** Which field's per-card layout editor (3×3 matrix) is expanded, if any. */
+  protected readonly layoutEditorFieldId = signal<string | null>(null);
+  protected readonly matrixSlots = CARD_MATRIX_SLOTS;
   protected search = '';
+
+  /** All fields ordered so the currently-visible ones (in their saved order) come first. */
+  protected readonly fieldConfigRows = computed<ListField[]>(() => {
+    const fields = this.list()?.fields ?? [];
+    const visible = this.gridConfig().visibleFields;
+    const byId = new Map(fields.map((f) => [f.id, f]));
+    const ordered = visible.map((id) => byId.get(id)).filter((f): f is ListField => !!f);
+    const rest = fields.filter((f) => !visible.includes(f.id));
+    return [...ordered, ...rest];
+  });
+
+  protected readonly actions = computed<ListAction[]>(() => this.viewConfig().actions ?? []);
+
+  /** Applies an action's field=value to the item, then refreshes. */
+  protected runAction(item: ListItem, action: ListAction, event: Event): void {
+    event.stopPropagation();
+    const customFields = { ...item.customFields, [action.fieldId]: action.value };
+    this.service.updateItem(this.id, item.id, { customFields }).subscribe({
+      next: () => {
+        this.rawItems.update((arr) =>
+          arr.map((it) => (it.id === item.id ? { ...it, customFields } : it)),
+        );
+        this.toastr.success(`${item.title} → ${action.value}`);
+      },
+      error: (err: HttpErrorResponse) => this.toastr.error(this.errMsg(err)),
+    });
+  }
+
+  protected isFieldVisible(fieldId: string): boolean {
+    return this.gridConfig().visibleFields.includes(fieldId);
+  }
+
+  protected toggleFieldVisible(fieldId: string): void {
+    const visible = this.gridConfig().visibleFields;
+    const next = visible.includes(fieldId)
+      ? visible.filter((id) => id !== fieldId)
+      : [...visible, fieldId];
+    this.patchGridConfig({ visibleFields: next });
+  }
+
+  protected moveField(fieldId: string, delta: number): void {
+    const visible = [...this.gridConfig().visibleFields];
+    const i = visible.indexOf(fieldId);
+    const j = i + delta;
+    if (i < 0 || j < 0 || j >= visible.length) return;
+    [visible[i], visible[j]] = [visible[j], visible[i]];
+    this.patchGridConfig({ visibleFields: visible });
+  }
+
+  protected patchGrid(patch: Partial<GridConfig>): void {
+    this.patchGridConfig(patch);
+  }
+
+  // ─── Per-field card layout (Large card designer) ─────────
+  protected layoutOf(fieldId: string): FieldCardLayout {
+    return this.gridConfig().cardLayout?.[fieldId] ?? DEFAULT_FIELD_LAYOUT;
+  }
+
+  protected toggleLayoutEditor(fieldId: string): void {
+    this.layoutEditorFieldId.update((cur) => (cur === fieldId ? null : fieldId));
+  }
+
+  protected setFieldSlot(fieldId: string, slot: CardSlot): void {
+    this.patchFieldLayout(fieldId, { slot });
+  }
+
+  protected toggleFieldLabel(fieldId: string): void {
+    this.patchFieldLayout(fieldId, { showLabel: !this.layoutOf(fieldId).showLabel });
+  }
+
+  protected setFieldDateFormat(fieldId: string, fmt: DateDisplayFormat): void {
+    this.patchFieldLayout(fieldId, { dateFormat: fmt });
+  }
+
+  private patchFieldLayout(fieldId: string, patch: Partial<FieldCardLayout>): void {
+    const current = this.gridConfig().cardLayout ?? {};
+    const next: Record<string, FieldCardLayout> = {
+      ...current,
+      [fieldId]: { ...this.layoutOf(fieldId), ...patch },
+    };
+    this.patchGridConfig({ cardLayout: next });
+  }
+
+  /** Visible 'stack' fields ordered top→bottom, each with its size class. */
+  protected readonly stackEntries = computed<{ id: string; cls: string }[]>(() => {
+    const stack = this.gridConfig().visibleFields.filter(
+      (id) => this.layoutOf(id).slot === 'stack',
+    );
+    // stack[0] sits closest to the title (largest); fields higher up shrink.
+    return stack.map((id, i) => ({ id, cls: this.stackTierClass(i) })).reverse();
+  });
+
+  protected readonly bodyFields = computed<string[]>(() =>
+    this.gridConfig().visibleFields.filter((id) => this.layoutOf(id).slot === 'body'),
+  );
+
+  protected readonly anchoredFields = computed<{ id: string; cls: string }[]>(() => {
+    const matrix = new Set<CardSlot>(CARD_MATRIX_SLOTS);
+    return this.gridConfig()
+      .visibleFields.filter((id) => matrix.has(this.layoutOf(id).slot))
+      .map((id) => ({ id, cls: this.anchorClass(this.layoutOf(id).slot) }));
+  });
+
+  private stackTierClass(indexFromTitle: number): string {
+    if (indexFromTitle === 0) return 'text-base font-medium text-text';
+    if (indexFromTitle === 1) return 'text-sm text-text-muted';
+    return 'text-xs text-text-faint';
+  }
+
+  private anchorClass(slot: CardSlot): string {
+    switch (slot) {
+      case 'tl': return 'top-2 left-2';
+      case 'tc': return 'top-2 left-1/2 -translate-x-1/2';
+      case 'tr': return 'top-2 right-2';
+      case 'ml': return 'top-1/2 left-2 -translate-y-1/2';
+      case 'mc': return 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2';
+      case 'mr': return 'top-1/2 right-2 -translate-y-1/2';
+      case 'bl': return 'bottom-2 left-2';
+      case 'bc': return 'bottom-2 left-1/2 -translate-x-1/2';
+      case 'br': return 'bottom-2 right-2';
+      default: return '';
+    }
+  }
+
+  protected formatFieldFor(field: ListField, value: unknown): string {
+    const layout = this.layoutOf(field.id);
+    if (
+      field.fieldType === 'DATE' &&
+      layout.dateFormat &&
+      layout.dateFormat !== 'full' &&
+      value !== null &&
+      value !== undefined &&
+      value !== ''
+    ) {
+      const d = new Date(String(value));
+      if (!isNaN(d.getTime())) {
+        if (layout.dateFormat === 'year') return String(d.getFullYear());
+        if (layout.dateFormat === 'month') return d.toLocaleDateString('en-US', { month: 'short' });
+        return d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+      }
+    }
+    return this.formatField(value);
+  }
 
   protected readonly gridConfig = computed<GridConfig>(() => {
     const l = this.list();
@@ -391,10 +693,15 @@ export class ListDetailComponent implements OnInit {
       return [{ key: '__all__', label: '', items }];
     }
 
+    // groupBy is either a fieldId, or "fieldId:year" / "fieldId:month" for dates.
+    const [fieldId, granularity] = config.groupBy.split(':') as [string, 'year' | 'month' | undefined];
+
     const groups = new Map<string, ListItem[]>();
+    const labels = new Map<string, string>();
     for (const item of items) {
-      const raw = item.customFields[config.groupBy];
-      const key = raw === null || raw === undefined || raw === '' ? '__none__' : String(raw);
+      const raw = item.customFields[fieldId];
+      const { key, label } = this.groupKey(raw, granularity);
+      labels.set(key, label);
       const arr = groups.get(key) ?? [];
       arr.push(item);
       groups.set(key, arr);
@@ -411,10 +718,36 @@ export class ListDetailComponent implements OnInit {
 
     return sortedKeys.map((k) => ({
       key: k,
-      label: k === '__none__' ? 'Sin clasificar' : k,
+      label: k === '__none__' ? 'Unclassified' : labels.get(k) ?? k,
       items: groups.get(k)!,
     }));
   });
+
+  /**
+   * Computes the group key + display label for a value. For date fields with a
+   * year/month granularity, the key is sortable ("2026" / "2026-05") while the
+   * label is human ("2026" / "May 2026") — so the per-day uniqueness problem
+   * (one item per date) collapses into useful year/month buckets.
+   */
+  private groupKey(
+    raw: unknown,
+    granularity: 'year' | 'month' | undefined,
+  ): { key: string; label: string } {
+    if (raw === null || raw === undefined || raw === '') {
+      return { key: '__none__', label: 'Unclassified' };
+    }
+    if (granularity) {
+      const d = new Date(String(raw));
+      if (!isNaN(d.getTime())) {
+        const year = d.getFullYear();
+        if (granularity === 'year') return { key: String(year), label: String(year) };
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const label = d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+        return { key: `${year}-${month}`, label };
+      }
+    }
+    return { key: String(raw), label: String(raw) };
+  }
 
   ngOnInit(): void {
     this.loadList();
@@ -431,7 +764,7 @@ export class ListDetailComponent implements OnInit {
   protected formatField(value: unknown): string {
     if (value === null || value === undefined || value === '') return '—';
     if (Array.isArray(value)) return value.join(', ');
-    if (typeof value === 'boolean') return value ? 'Sí' : 'No';
+    if (typeof value === 'boolean') return value ? 'Yes' : 'No';
     return String(value);
   }
 
@@ -478,7 +811,7 @@ export class ListDetailComponent implements OnInit {
     if (!list) return;
     this.list.set({ ...list, gridConfig: next });
     this.service.update(this.id, { gridConfig: next }).subscribe({
-      error: () => this.toastr.error('No se pudo guardar la configuración'),
+      error: () => this.toastr.error('Could not save the settings'),
     });
   }
 
@@ -489,7 +822,7 @@ export class ListDetailComponent implements OnInit {
     if (!list) return;
     this.list.set({ ...list, viewConfig: next });
     this.service.update(this.id, { viewConfig: next }).subscribe({
-      error: () => this.toastr.error('No se pudo guardar la configuración'),
+      error: () => this.toastr.error('Could not save the settings'),
     });
   }
 
@@ -539,7 +872,7 @@ export class ListDetailComponent implements OnInit {
     if (!list) return;
     const ref = this.dialog.open<ListItemDialogComponent, ListItemDialogData, ListItemDialogResult>(
       ListItemDialogComponent,
-      { data: { list } },
+      { data: { list }, width: 'min(620px, 95vw)', maxWidth: '95vw' },
     );
     ref.afterClosed().subscribe((item) => {
       if (item !== undefined) this.reload();
@@ -551,7 +884,7 @@ export class ListDetailComponent implements OnInit {
     if (!list) return;
     const ref = this.dialog.open<ListItemDialogComponent, ListItemDialogData, ListItemDialogResult>(
       ListItemDialogComponent,
-      { data: { list, item } },
+      { data: { list, item }, width: 'min(620px, 95vw)', maxWidth: '95vw' },
     );
     ref.afterClosed().subscribe(() => this.reload());
   }
@@ -561,7 +894,7 @@ export class ListDetailComponent implements OnInit {
     if (!list) return;
     const ref = this.dialog.open<ListSettingsComponent, ListSettingsData, 'changed' | 'deleted' | undefined>(
       ListSettingsComponent,
-      { data: { list } },
+      { data: { list }, width: 'min(680px, 95vw)', maxWidth: '95vw' },
     );
     ref.afterClosed().subscribe((result) => {
       if (result === 'deleted') {
@@ -577,6 +910,6 @@ export class ListDetailComponent implements OnInit {
     const msg = body?.error?.message;
     if (Array.isArray(msg)) return msg.join('. ');
     if (typeof msg === 'string') return msg;
-    return 'Error inesperado';
+    return 'Unexpected error';
   }
 }

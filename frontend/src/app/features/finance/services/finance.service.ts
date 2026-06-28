@@ -9,11 +9,15 @@ import type {
   CreateBoardDto,
   CreateBudgetDto,
   CreateCategoryDto,
+  CreateRecurringDto,
   CreateTransactionDto,
   FinanceBoard,
   FinanceCategory,
   FinanceSummary,
+  RecurringTransaction,
   Transaction,
+  UpdateBudgetDto,
+  UpdateRecurringDto,
   UpdateTransactionDto,
 } from '../finance.types';
 
@@ -37,6 +41,12 @@ export class FinanceService {
   createBoard(dto: CreateBoardDto): Observable<FinanceBoard> {
     return this.http
       .post<ApiResponse<FinanceBoard>>(`${this.base}/boards`, dto)
+      .pipe(map((r) => r.data));
+  }
+
+  updateBoard(id: string, dto: { name?: string; currency?: string }): Observable<FinanceBoard> {
+    return this.http
+      .patch<ApiResponse<FinanceBoard>>(`${this.base}/boards/${id}`, dto)
       .pipe(map((r) => r.data));
   }
 
@@ -93,6 +103,39 @@ export class FinanceService {
       .pipe(map((r) => r.data));
   }
 
+  // ─── Recurring transactions ──────────────────────────────
+
+  listRecurring(boardId: string): Observable<RecurringTransaction[]> {
+    return this.http
+      .get<ApiResponse<RecurringTransaction[]>>(`${this.base}/boards/${boardId}/recurring`)
+      .pipe(map((r) => r.data));
+  }
+
+  createRecurring(boardId: string, dto: CreateRecurringDto): Observable<RecurringTransaction> {
+    return this.http
+      .post<ApiResponse<RecurringTransaction>>(`${this.base}/boards/${boardId}/recurring`, dto)
+      .pipe(map((r) => r.data));
+  }
+
+  updateRecurring(
+    boardId: string,
+    recId: string,
+    dto: UpdateRecurringDto,
+  ): Observable<RecurringTransaction> {
+    return this.http
+      .patch<ApiResponse<RecurringTransaction>>(
+        `${this.base}/boards/${boardId}/recurring/${recId}`,
+        dto,
+      )
+      .pipe(map((r) => r.data));
+  }
+
+  deleteRecurring(boardId: string, recId: string): Observable<{ id: string }> {
+    return this.http
+      .delete<ApiResponse<{ id: string }>>(`${this.base}/boards/${boardId}/recurring/${recId}`)
+      .pipe(map((r) => r.data));
+  }
+
   createCategory(boardId: string, dto: CreateCategoryDto): Observable<FinanceCategory> {
     return this.http
       .post<ApiResponse<FinanceCategory>>(`${this.base}/boards/${boardId}/categories`, dto)
@@ -110,6 +153,12 @@ export class FinanceService {
   createBudget(boardId: string, dto: CreateBudgetDto): Observable<Budget> {
     return this.http
       .post<ApiResponse<Budget>>(`${this.base}/boards/${boardId}/budgets`, dto)
+      .pipe(map((r) => r.data));
+  }
+
+  updateBudget(boardId: string, budId: string, dto: UpdateBudgetDto): Observable<Budget> {
+    return this.http
+      .patch<ApiResponse<Budget>>(`${this.base}/boards/${boardId}/budgets/${budId}`, dto)
       .pipe(map((r) => r.data));
   }
 

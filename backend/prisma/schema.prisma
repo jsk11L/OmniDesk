@@ -2,6 +2,21 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// Generates plain TypeScript interfaces for the models into the shared
+// workspace package (D-011, Stage 1). Plain interfaces — no zod, no
+// @prisma/client import — so the non-Prisma frontend can consume them type-only
+// to kill frontend↔backend drift. Dates are emitted as strings to match the
+// JSON the REST API actually sends. Backend Zod DTOs are a separate Stage 2.
+generator interfaces {
+  provider     = "prisma-generator-typescript-interfaces"
+  output       = "../../shared/src/generated/models.ts"
+  modelType    = "interface"
+  enumType     = "stringUnion"
+  dateType     = "string"
+  jsonType     = "unknown"
+  relations    = "none"
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -23,6 +38,27 @@ model User {
   resetPasswordExpiry DateTime?
   timezone            String?
   deletedAt           DateTime?
+
+  // Block 2 · public multi-user
+  isAdmin             Boolean   @default(false)
+  isSuspended         Boolean   @default(false)
+  acceptedTermsAt     DateTime?
+  termsVersion        String?
+  uploadBytesUsed     BigInt    @default(0)
+  lastLoginAt         DateTime?
+  failedLoginAttempts Int       @default(0)
+  lockedUntil         DateTime?
+
+  // 2FA (TOTP)
+  totpSecret          String?
+  totpEnabledAt       DateTime?
+  totpBackupCodes     String[]
+
+  // Notification preferences (Block 3) — do-not-disturb window, local "HH:MM"
+  dndStart            String?
+  dndEnd              String?
+  quietDays           Int[]     @default([]) // 0=Sun … 6=Sat; no push on these days
+
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
 
@@ -34,21 +70,65 @@ model User {
   todoBoards        TodoBoard[]
   habits            Habit[]
   financeBoards     FinanceBoard[]
+  favorites         Favorite[]
   notifications     NotificationConfig[]
   themes            Theme[]              @relation("ThemeOwner")
   activeThemeId     String?
   activeTheme       Theme?               @relation("ActiveTheme", fields: [activeThemeId], references: [id])
 }
 
-model PushSubscription {
-  id        String   @id @default(uuid())
+/// Sidebar shortcut to a user-chosen entity (list, note…). Stores only the
+/// reference; label + icon are resolved from the target at read time so they
+/// stay in sync, and stale favorites (deleted targets) are filtered out.
+model Favorite {
+  id        String       @id @default(uuid())
   userId    String
-  endpoint  String   @unique
-  p256dh    String
-  auth      String
-  createdAt DateTime @default(now())
+  kind      FavoriteKind
+  entityId  String
+  position  Int          @default(0)
+  createdAt DateTime     @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, kind, entityId])
+  @@index([userId, position])
+}
+
+enum FavoriteKind {
+  LIST
+  NOTE
+}
+
+model PushSubscription {
+  id          String    @id @default(uuid())
+  userId      String
+  endpoint    String    @unique
+  p256dh      String
+  auth        String
+  userAgent   String?
+  deviceLabel String?
+  platform    String? // 'desktop' | 'mobile' | 'tablet' | 'unknown'
+  lastUsedAt  DateTime?
+  createdAt   DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Significant/destructive event log (Block 2, §3.3.3). Intentionally has no
+// relation to User so entries survive a hard account deletion for forensics.
+model AuditLog {
+  id         String   @id @default(uuid())
+  userId     String?
+  action     String
+  entityType String?
+  entityId   String?
+  metadata   Json?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([action, createdAt])
 }
 
 // ─────────────────────────────────────────
@@ -73,10 +153,16 @@ model NotificationConfig {
   createdAt     DateTime              @default(now())
   updatedAt     DateTime              @updatedAt
 
-  user           User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  calendarEvents CalendarEventNotification[]
-  notes          NoteNotification[]
-  inAppQueue     InAppNotification[]
+  user             User                          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  calendarEvents   CalendarEventNotification[]
+  notes            NoteNotification[]
+  listItems        ListItemNotification[]
+  todoItems        TodoItemNotification[]
+  habits           HabitNotification[]
+  wishlistItems    WishlistItemNotification[]
+  plannedPurchases PlannedPurchaseNotification[]
+  savingsGoals     SavingsGoalNotification[]
+  inAppQueue       InAppNotification[]
 }
 
 enum NotificationTrigger {
@@ -115,11 +201,14 @@ model CalendarEvent {
   allDay      Boolean  @default(false)
   color       String   @default("#6366f1")
   location    String?
+  tags        String[] @default([])
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   user          User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
   notifications CalendarEventNotification[]
+
+  @@index([userId, startDate])
 }
 
 model CalendarEventNotification {
@@ -236,8 +325,9 @@ model ListItem {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  list List          @relation(fields: [listId], references: [id], onDelete: Cascade)
-  tags ListItemTag[]
+  list          List                   @relation(fields: [listId], references: [id], onDelete: Cascade)
+  tags          ListItemTag[]
+  notifications ListItemNotification[]
 }
 
 model ListItemTag {
@@ -270,6 +360,8 @@ model Note {
 
   user          User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   notifications NoteNotification[]
+
+  @@index([userId, updatedAt])
 }
 
 model NoteNotification {
@@ -278,6 +370,67 @@ model NoteNotification {
   notificationId String
 
   note         Note               @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  notification NotificationConfig @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+}
+
+// ─────────────────────────────────────────
+// ATTACHABLE NOTIFICATIONS · 6 new entities (Block 3, §3.4.3)
+// ─────────────────────────────────────────
+
+model ListItemNotification {
+  id             String @id @default(uuid())
+  listItemId     String
+  notificationId String
+
+  listItem     ListItem           @relation(fields: [listItemId], references: [id], onDelete: Cascade)
+  notification NotificationConfig @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+}
+
+model TodoItemNotification {
+  id             String @id @default(uuid())
+  todoItemId     String
+  notificationId String
+  minutesBefore  Int? // fires N minutes before the item's dueDate
+
+  todoItem     TodoItem           @relation(fields: [todoItemId], references: [id], onDelete: Cascade)
+  notification NotificationConfig @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+}
+
+model HabitNotification {
+  id             String @id @default(uuid())
+  habitId        String
+  notificationId String
+  timeOfDay      String? // "HH:MM" in the user's local time
+
+  habit        Habit              @relation(fields: [habitId], references: [id], onDelete: Cascade)
+  notification NotificationConfig @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+}
+
+model WishlistItemNotification {
+  id             String @id @default(uuid())
+  wishlistItemId String
+  notificationId String
+
+  wishlistItem WishlistItem       @relation(fields: [wishlistItemId], references: [id], onDelete: Cascade)
+  notification NotificationConfig @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+}
+
+model PlannedPurchaseNotification {
+  id                String @id @default(uuid())
+  plannedPurchaseId String
+  notificationId    String
+  daysBefore        Int? // fires N days before the targetDate
+
+  plannedPurchase PlannedPurchase    @relation(fields: [plannedPurchaseId], references: [id], onDelete: Cascade)
+  notification    NotificationConfig @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+}
+
+model SavingsGoalNotification {
+  id             String @id @default(uuid())
+  savingsGoalId  String
+  notificationId String
+
+  savingsGoal  SavingsGoal        @relation(fields: [savingsGoalId], references: [id], onDelete: Cascade)
   notification NotificationConfig @relation(fields: [notificationId], references: [id], onDelete: Cascade)
 }
 
@@ -324,7 +477,8 @@ model TodoItem {
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
-  column TodoColumn @relation(fields: [columnId], references: [id], onDelete: Cascade)
+  column        TodoColumn             @relation(fields: [columnId], references: [id], onDelete: Cascade)
+  notifications TodoItemNotification[]
 }
 
 enum TodoPriority {
@@ -347,14 +501,17 @@ model Habit {
   color         String   @default("#6366f1")
   activeDays    Int[]    @default([1, 2, 3, 4, 5, 6, 0])
   weeklyGoal    Int?
+  goalPeriod    GoalPeriod?
+  goalTarget    Int?
   currentStreak Int      @default(0)
   longestStreak Int      @default(0)
   perfectWeeks  Int      @default(0)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  user    User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  entries HabitEntry[]
+  user          User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  entries       HabitEntry[]
+  notifications HabitNotification[]
 }
 
 model HabitEntry {
@@ -377,6 +534,12 @@ enum HabitEntryStatus {
   REST
 }
 
+enum GoalPeriod {
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
 // ─────────────────────────────────────────
 // FINANCE
 // ─────────────────────────────────────────
@@ -390,13 +553,14 @@ model FinanceBoard {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  categories        FinanceCategory[]
-  transactions      Transaction[]
-  budgets           Budget[]
-  wishlistItems     WishlistItem[]
-  plannedPurchases  PlannedPurchase[]
-  savingsGoals      SavingsGoal[]
+  user                  User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categories            FinanceCategory[]
+  transactions          Transaction[]
+  recurringTransactions RecurringTransaction[]
+  budgets               Budget[]
+  wishlistItems         WishlistItem[]
+  plannedPurchases      PlannedPurchase[]
+  savingsGoals          SavingsGoal[]
 }
 
 model FinanceCategory {
@@ -407,10 +571,11 @@ model FinanceCategory {
   icon         String?
   categoryType FinanceCategoryType
 
-  board             FinanceBoard       @relation(fields: [boardId], references: [id], onDelete: Cascade)
-  transactions      Transaction[]
-  budgets           Budget[]
-  plannedPurchases  PlannedPurchase[]
+  board                 FinanceBoard           @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  transactions          Transaction[]
+  recurringTransactions RecurringTransaction[]
+  budgets               Budget[]
+  plannedPurchases      PlannedPurchase[]
 }
 
 enum FinanceCategoryType {
@@ -433,6 +598,40 @@ model Transaction {
 
   board    FinanceBoard     @relation(fields: [boardId], references: [id], onDelete: Cascade)
   category FinanceCategory? @relation(fields: [categoryId], references: [id])
+
+  @@index([boardId, date])
+}
+
+/// A template that the scheduler materializes into real Transactions on each
+/// due date (subscriptions, salary, rent…). `nextRun` is advanced by `frequency`
+/// after each materialization; `isActive=false` pauses it without deleting.
+model RecurringTransaction {
+  id         String              @id @default(uuid())
+  boardId    String
+  categoryId String?
+  title      String
+  amount     Float
+  type       FinanceCategoryType
+  frequency  RecurringFrequency  @default(MONTHLY)
+  notes      String?
+  tags       String[]            @default([])
+  nextRun    DateTime
+  lastRun    DateTime?
+  isActive   Boolean             @default(true)
+  createdAt  DateTime            @default(now())
+  updatedAt  DateTime            @updatedAt
+
+  board    FinanceBoard     @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  category FinanceCategory? @relation(fields: [categoryId], references: [id])
+
+  @@index([isActive, nextRun])
+}
+
+enum RecurringFrequency {
+  DAILY
+  WEEKLY
+  MONTHLY
+  YEARLY
 }
 
 model Budget {
@@ -469,7 +668,8 @@ model WishlistItem {
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
 
-  board FinanceBoard @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  board         FinanceBoard               @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  notifications WishlistItemNotification[]
 }
 
 enum WishlistPriority {
@@ -492,8 +692,9 @@ model PlannedPurchase {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
-  board    FinanceBoard     @relation(fields: [boardId], references: [id], onDelete: Cascade)
-  category FinanceCategory? @relation(fields: [categoryId], references: [id])
+  board         FinanceBoard                  @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  category      FinanceCategory?              @relation(fields: [categoryId], references: [id])
+  notifications PlannedPurchaseNotification[]
 }
 
 model SavingsGoal {
@@ -511,8 +712,9 @@ model SavingsGoal {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  board         FinanceBoard          @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  board         FinanceBoard              @relation(fields: [boardId], references: [id], onDelete: Cascade)
   contributions SavingsContribution[]
+  notifications SavingsGoalNotification[]
 }
 
 model SavingsContribution {

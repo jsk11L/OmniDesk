@@ -20,4 +20,8 @@ export const AUTH_ROUTES: Routes = [
     loadComponent: () =>
       import('./verify-email/verify-email.component').then((m) => m.VerifyEmailComponent),
   },
+  {
+    path: 'restore',
+    loadComponent: () => import('./restore/restore.component').then((m) => m.RestoreComponent),
+  },
 ];

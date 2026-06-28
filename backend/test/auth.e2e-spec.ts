@@ -31,7 +31,13 @@ describe('Auth flow (e2e)', () => {
   it('register → verify-email → login → /auth/me happy path', async () => {
     const reg = await request(ctx.app.getHttpServer())
       .post('/auth/register')
-      .send({ email, password, displayName: 'E2E Auth' })
+      .send({
+        email,
+        password,
+        displayName: 'E2E Auth',
+        acceptedTerms: true,
+        acceptedNoDataSelling: true,
+      })
       .expect(201);
 
     expect(reg.body.data.message).toMatch(/verification/i);
@@ -95,7 +101,7 @@ describe('Auth flow (e2e)', () => {
   it('rejects duplicate registration', async () => {
     await request(ctx.app.getHttpServer())
       .post('/auth/register')
-      .send({ email, password })
+      .send({ email, password, acceptedTerms: true, acceptedNoDataSelling: true })
       .expect(409);
   });
 

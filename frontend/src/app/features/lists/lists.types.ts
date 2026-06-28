@@ -1,15 +1,10 @@
-export type ListViewType = 'GRID' | 'TABLE' | 'GALLERY' | 'LIST';
-export type SortDirection = 'ASC' | 'DESC';
-export type ListFieldType =
-  | 'TEXT'
-  | 'NUMBER'
-  | 'DATE'
-  | 'URL'
-  | 'BOOLEAN'
-  | 'SELECT'
-  | 'MULTI_SELECT'
-  | 'RATING'
-  | 'IMAGE_URL';
+// Enums and the relation-free ListTag come from the Prisma-generated source
+// (D-011). List, ListField and ListItem stay local: they expose the JSON
+// columns (gridConfig, viewConfig, options, customFields) as frontend-specific
+// shapes rather than the generated `unknown`.
+import type { ListViewType, SortDirection, ListFieldType, ListTag } from '@omnidesk/shared';
+
+export type { ListViewType, SortDirection, ListFieldType, ListTag };
 
 export interface ListField {
   id: string;
@@ -20,13 +15,6 @@ export interface ListField {
   position: number;
   options: Record<string, unknown> | null;
   defaultValue: string | null;
-}
-
-export interface ListTag {
-  id: string;
-  listId: string;
-  name: string;
-  color: string;
 }
 
 export interface ListItemTagLink {
@@ -54,13 +42,54 @@ export type GridTemplate =
   | 'gallery-no-image'
   | 'table';
 
+/**
+ * Where a field is rendered on the Large card:
+ * - `body`  → default flow, right under the title (legacy behaviour)
+ * - `stack` → stacked ABOVE the title, auto-scaled (Obsidian-style header)
+ * - `tl…br` → absolutely anchored to one of the 9 zones (3×3 matrix). `br`
+ *   gives the classic "index in the bottom-right corner" look.
+ */
+export type CardSlot =
+  | 'body'
+  | 'stack'
+  | 'tl'
+  | 'tc'
+  | 'tr'
+  | 'ml'
+  | 'mc'
+  | 'mr'
+  | 'bl'
+  | 'bc'
+  | 'br';
+
+/** How a DATE value is shown on a card (e.g. "May" when you group by year). */
+export type DateDisplayFormat = 'full' | 'month' | 'month-year' | 'year';
+
+export interface FieldCardLayout {
+  slot: CardSlot;
+  /** Show the "Field name:" prefix. Off → just the raw value. */
+  showLabel: boolean;
+  dateFormat?: DateDisplayFormat;
+}
+
 export interface GridConfig {
   template: GridTemplate;
   visibleFields: string[];
   showImage: boolean;
   imagePosition: 'top' | 'left';
   showTags: boolean;
+  /** Per-field card layout (Large card only). Keyed by field id. */
+  cardLayout?: Record<string, FieldCardLayout>;
 }
+
+/** The 3×3 anchor matrix, row-major, for the layout picker UI. */
+export const CARD_MATRIX_SLOTS: CardSlot[] = [
+  'tl', 'tc', 'tr',
+  'ml', 'mc', 'mr',
+  'bl', 'bc', 'br',
+];
+
+export const DEFAULT_FIELD_LAYOUT: FieldCardLayout = { slot: 'body', showLabel: true };
 
 export type FilterType =
   | 'text-contains'
@@ -76,11 +105,21 @@ export interface ListFilter {
   value: unknown;
 }
 
+/** A one-click button on an item card that sets a SELECT field to a fixed value. */
+export interface ListAction {
+  id: string;
+  label: string;
+  fieldId: string;
+  value: string;
+  color?: string;
+}
+
 export interface ViewConfig {
   groupBy: string | null;
   sortBy: string;
   sortDir: 'asc' | 'desc';
   filters: ListFilter[];
+  actions?: ListAction[];
 }
 
 export const DEFAULT_GRID_CONFIG: GridConfig = {
@@ -160,6 +199,48 @@ export type UpdateListFieldDto = Partial<CreateListFieldDto>;
 export interface CreateListTagDto {
   name: string;
   color?: string;
+}
+
+export interface ImportListReport {
+  listId: string;
+  listName: string;
+  itemsCreated: number;
+  fieldsCreated: number;
+  tagsCreated: number;
+  assetsUploaded: number;
+  skipped: string[];
+  errors: string[];
+}
+
+export interface DetectedField {
+  key: string;
+  suggestedName: string;
+  suggestedType: ListFieldType;
+  noteCount: number;
+  totalValues: number;
+  numericCount: number;
+  dateCount: number;
+  arrayCount: number;
+  sampleValues: string[];
+}
+
+export interface ImportAnalysis {
+  noteCount: number;
+  tagCount: number;
+  fields: DetectedField[];
+}
+
+export interface FieldOverride {
+  key: string;
+  name?: string;
+  type?: ListFieldType;
+  include?: boolean;
+}
+
+export interface ObsidianImportConfig {
+  name?: string;
+  listId?: string;
+  fields: FieldOverride[];
 }
 
 export function resolveGridConfig(list: List): GridConfig {

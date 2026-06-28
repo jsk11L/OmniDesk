@@ -1,0 +1,120 @@
+# Changelog
+
+All notable changes to OmniDesk. Breaking changes are called out explicitly.
+
+## [Unreleased]
+
+### Added
+- **Free-tier deployment (Cloudflare Pages + Render + Neon):** a `render.yaml`
+  blueprint for the Docker backend (auto-generated JWT secrets, health check,
+  env contract), a build-time `set-env.js` that bakes the API URL into the
+  Angular bundle, an `_redirects` SPA fallback, and a step-by-step runbook at
+  `docs/operations/deploy-cloudflare-render-neon.md`.
+- **Language selector (i18n):** runtime English/Spanish switch via ngx-translate,
+  persisted to `localStorage` and seeded from the browser locale. A selector in
+  the sidebar footer; the shell navigation is translated, with `en`/`es` JSON
+  catalogues to extend the rest of the UI incrementally.
+- **List card designer (Large card):** per-field layout — anchor a field to any
+  of 9 zones (3×3 matrix), stack it above the title with auto-scaled typography,
+  or keep it in the body; hide the "Field:" label; and render DATE fields as
+  month-only / month+year / year (e.g. show just "May" when grouping by year).
+  Each field gets its own layout button in the Fields popover.
+- **Obsidian → list import:** turn a vault `.zip` into list items — YAML
+  frontmatter keys become custom fields (types inferred), `tags` + folders
+  become list tags, images upload to assets, and the new fields show on cards.
+  A pre-import panel (dry-run analyze) lets you rename/retype/exclude each
+  detected field, with warnings when a chosen type doesn't fit the values.
+- **Brand icon set:** gradient "O" monogram — SVG favicon, PWA (192/512, with
+  separate `any` + `maskable`) and apple-touch icons, replacing the missing ones.
+- **Calendar day-add affordance:** hovering a day tints the cell and shows a "+".
+- **Finance Wishlist & Savings mini-dashboard:** wishlist value, saved-in-goals
+  and left-to-save stat cards; the Wishlist & Savings tab now comes first.
+- **Calendar event tags + filter:** events carry tags and the calendar shows a
+  tag filter bar; plus a visible hint that clicking a day adds an event.
+- **Finance tabs + currency switcher:** Expenses & Budgets and Wishlist &
+  Savings are now tabs; the dead board switcher is replaced by a display-currency
+  selector (USD/EUR/CLP/…).
+- **Lists power-features:** pick which custom fields show on cards and reorder
+  them (Fields popover); group by a DATE field at Year or Month granularity;
+  and configurable one-click **action buttons** on cards that set a Select field
+  to a value (e.g. a games backlog → Completed).
+- **Notes & TO-DO polish (design handoff):** notes list shows a total count,
+  a Pinned section above All, and pages the All list horizontally (‹ x/y ›)
+  instead of scrolling — pinned capped at 5 (server-enforced). Kanban columns
+  now flex to fill the board width with softer, rounded borders.
+- **Sidebar favorites:** pin any list or note to a Favorites section in the
+  sidebar (★ on a list, 🔖 in the note editor), backed by a generic `Favorite`
+  model that resolves each target's live label + icon and drops stale entries.
+- **Shell redesign (design handoff):** sidebar with gradient logo, a ⌘K
+  search/command pill, iconned nav with an active accent bar, and a footer of
+  Notifications · Settings · Admin + a profile pill with sign-out; a more
+  prominent top-bar search and roomier breadcrumb padding; and bigger tap
+  targets for note + kanban icon buttons.
+- **Recurring transactions:** finance templates (subscriptions, salary, rent…)
+  with daily/weekly/monthly/yearly cadence, materialized into real transactions
+  by an hourly scheduler (with bounded catch-up), pause without deleting, and a
+  management section + dialog in the finance dashboard.
+- **UI design pass:** responsive app shell with a breadcrumb top bar (⌘K + bell)
+  and a mobile off-canvas sidebar; richer finance dashboard (month-over-month
+  balance delta, savings rate, clickable category breakdown, transaction filters,
+  CSV export); responsive dashboard/notes/finance and wrapping page headers;
+  dialogs no longer squeeze their content.
+- **Dogfooding fixes (Block 1.5):** note switching/autosave + list markers,
+  list image-input URL default + dialog sizing, sidebar avatar, editable budgets,
+  dashboard task detail, note fonts + image controls, kanban column reorder,
+  habit goal periods + completion mini-calendar.
+- **Public multi-user (Block 2):** first-user admin, account suspension, login
+  lockout, soft-delete account + restore + uploads purge, per-user upload quota,
+  Cloudflare Turnstile captcha + Terms/no-data-selling acceptance, admin panel
+  (`/admin/*` + `/app/admin`), audit log, and optional TOTP two-factor auth.
+- **Complete notifications (Block 3):** attach reminders to all 8 entities,
+  timezone-aware contextual triggers (todo due, habit time-of-day, planned
+  date), do-not-disturb preferences, and the reusable attach panel in dialogs.
+- **Finance organizer (Block 4):** wishlist, planned purchases and savings
+  goals UI over the existing backend.
+- **Data export/import (Block 5/5b):** full `.zip` export (data.json + per-note
+  Markdown + uploads), per-note Markdown download, and import of an OmniDesk
+  export with merge or replace modes.
+- **Obsidian import (Block 6):** vault `.zip` import — folders→tags, wikilinks,
+  embeds, frontmatter, dedupe — with a result report.
+- **Global search (Block 7):** full-text notes (GIN index) + events/lists/todos,
+  surfaced in the Ctrl+K command palette.
+- **Polish (Block 8):** dashboard N+1 fix and hot-path DB indices.
+- **Follow-ups:** calendar reminders via the generic attach panel, savings-goal
+  milestone notifications (50/80/100%), push device list/revoke, and a larger
+  nginx body limit on the import route.
+- **Deployment infrastructure (Block 1):** multi-stage `backend/Dockerfile` and
+  `frontend/Dockerfile` (pnpm workspace, built from the repo root context),
+  `docker-compose.yml` (postgres + backend + frontend + nginx, healthchecks,
+  named volumes), `docker-compose.dev.yml` (Postgres-only for local hot reload),
+  edge `infra/nginx.conf` reverse proxy + in-container `infra/frontend-nginx.conf`,
+  container `entrypoint.sh` (migrate deploy → seed → smoke test → serve),
+  `scripts/backup.sh` / `scripts/restore.sh`, exhaustive root `.env.example`,
+  and `docs/operations/` runbooks.
+- **D-011 stage 1:** `@omnidesk/shared` package with entity types generated from
+  the Prisma schema; frontend consumes them to remove frontend↔backend drift.
+- Block 0 sanitation: multi-tenant e2e suite, mismatch fixes (#1, #2, #5, #7, #8),
+  `User.timezone` / `User.deletedAt` / `Note.plainText` / `TodoColumn.isCompletionColumn`,
+  soft-delete purge cron, env validation, offset pagination, smoke test.
+
+### Fixed
+- **Themed borders no longer render white:** the design tokens (`border-soft`,
+  `surface-2`, `text-faint`, `primary-ghost`…) are now registered as Tailwind
+  colors, so `border-border-soft` etc. follow the active theme instead of
+  falling back to Tailwind's default light grey (TO-DO, calendar, finance).
+- **Custom theme no longer bleeds past logout:** the active theme's inline CSS
+  variables are reset on sign-out, so the login screen and the next account
+  start from the default palette.
+- **Kanban columns:** dropped the stray white top border (an invalid
+  `border-top` when a column had no colour); softened the header divider.
+- **Dialogs no longer double-play** their open animation on first interaction
+  (switched from async to eager animation providers).
+
+### Changed
+- **Habits** can only be checked for today and yesterday; older days lock with a
+  clear visual indicator.
+- Full UI + backend message migration to **English**.
+- `prisma` and `tsx` moved to backend production dependencies (needed by the
+  container entrypoint to run migrations and the idempotent seed).
+
+[Unreleased]: https://github.com/jsk11L/OmniDesk/commits/main

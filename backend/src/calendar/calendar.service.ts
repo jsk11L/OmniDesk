@@ -74,6 +74,7 @@ export class CalendarService {
         allDay: dto.allDay ?? false,
         color: dto.color ?? '#6366f1',
         location: dto.location ?? null,
+        tags: dto.tags ?? [],
       },
     });
   }
@@ -97,6 +98,7 @@ export class CalendarService {
         allDay: dto.allDay ?? event.allDay,
         color: dto.color ?? event.color,
         location: dto.location ?? event.location,
+        tags: dto.tags ?? event.tags,
       },
     });
   }
@@ -189,7 +191,7 @@ export class CalendarService {
 
     const { error, value } = createEvents(attrs);
     if (error || !value) {
-      throw new BadRequestException('No se pudo generar el archivo .ics');
+      throw new BadRequestException('Could not generate the .ics file');
     }
     return value;
   }

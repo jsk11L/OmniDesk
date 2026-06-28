@@ -8,6 +8,12 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
+import { Subject, debounceTime, distinctUntilChanged, of, switchMap } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+
+import { environment } from '../../../../environments/environment';
+import type { ApiResponse } from '../../../core/models/api-response.model';
 
 interface Command {
   id: string;
@@ -16,6 +22,21 @@ interface Command {
   shortcut?: string;
   action: () => void;
 }
+
+interface SearchResult {
+  type: 'note' | 'event' | 'list-item' | 'todo';
+  id: string;
+  title: string;
+  snippet: string;
+  link: string;
+}
+
+const TYPE_LABEL: Record<SearchResult['type'], string> = {
+  note: 'Note',
+  event: 'Event',
+  'list-item': 'List item',
+  todo: 'Task',
+};
 
 @Component({
   selector: 'app-command-palette',
@@ -39,7 +60,7 @@ interface Command {
               [(ngModel)]="query"
               (ngModelChange)="onQueryChange()"
               (keydown)="onKey($event)"
-              placeholder="Escribe un comando o búsqueda…"
+              placeholder="Type a command or search…"
               class="relative z-10 w-full px-4 py-3 bg-transparent text-text placeholder:text-text-muted outline-none"
               autofocus
             />
@@ -47,7 +68,7 @@ interface Command {
 
           <ul class="max-h-[50vh] overflow-y-auto py-2">
             @if (filtered().length === 0) {
-              <li class="px-4 py-3 text-sm text-text-muted text-center">Sin resultados</li>
+              <li class="px-4 py-3 text-sm text-text-muted text-center">No results</li>
             } @else {
               @for (cmd of filtered(); track cmd.id; let i = $index) {
                 <li
@@ -70,9 +91,26 @@ interface Command {
             }
           </ul>
 
+          @if (results().length) {
+            <div class="border-t border-border">
+              <p class="px-4 pt-2 pb-1 text-xs text-text-muted uppercase tracking-wide">Search results</p>
+              <ul class="max-h-[35vh] overflow-y-auto pb-2">
+                @for (r of results(); track r.type + r.id) {
+                  <li (click)="selectResult(r)" class="px-4 py-2 flex items-center gap-2 cursor-pointer text-sm hover:bg-surface-hover">
+                    <span class="text-xs px-1.5 py-0.5 rounded bg-background border border-border text-text-muted shrink-0">{{ typeLabel(r.type) }}</span>
+                    <span class="flex flex-col min-w-0">
+                      <span class="truncate">{{ r.title }}</span>
+                      @if (r.snippet) { <span class="text-xs text-text-muted truncate">{{ r.snippet }}</span> }
+                    </span>
+                  </li>
+                }
+              </ul>
+            </div>
+          }
+
           <div class="border-t border-border px-4 py-2 text-xs text-text-muted flex justify-between">
-            <span>↑↓ navegar · ↵ ejecutar · Tab aceptar · Esc cerrar</span>
-            <span>{{ filtered().length }} de {{ allCommands.length }}</span>
+            <span>↑↓ navigate · ↵ run · Tab accept · Esc close</span>
+            <span>{{ filtered().length }} of {{ allCommands.length }}</span>
           </div>
         </div>
       </div>
@@ -95,29 +133,58 @@ interface Command {
 })
 export class CommandPaletteComponent {
   private readonly router = inject(Router);
+  private readonly http = inject(HttpClient);
 
   protected readonly open = signal(false);
   protected query = '';
   protected readonly selectedIndex = signal(0);
   protected readonly queryReactive = signal('');
+  protected readonly results = signal<SearchResult[]>([]);
+  private readonly search$ = new Subject<string>();
+
+  constructor() {
+    this.search$
+      .pipe(
+        debounceTime(200),
+        distinctUntilChanged(),
+        switchMap((q) =>
+          q.trim().length >= 2
+            ? this.http.get<ApiResponse<SearchResult[]>>(
+                `${environment.apiUrl}/search?q=${encodeURIComponent(q.trim())}`,
+              )
+            : of({ data: [] as SearchResult[] }),
+        ),
+        takeUntilDestroyed(),
+      )
+      .subscribe((r) => this.results.set(r.data));
+  }
+
+  protected typeLabel(t: SearchResult['type']): string {
+    return TYPE_LABEL[t];
+  }
+
+  protected selectResult(r: SearchResult): void {
+    void this.router.navigateByUrl(r.link);
+    this.close();
+  }
 
   protected readonly allCommands: Command[] = [
-    { id: 'nav-dashboard', label: 'Ir a Dashboard', category: 'Navegación', shortcut: 'G D', action: () => this.go('/app') },
-    { id: 'nav-calendar', label: 'Ir a Calendario', category: 'Navegación', shortcut: 'G C', action: () => this.go('/app/calendar') },
-    { id: 'nav-lists', label: 'Ir a Listas', category: 'Navegación', shortcut: 'G L', action: () => this.go('/app/lists') },
-    { id: 'nav-notes', label: 'Ir a Notas', category: 'Navegación', shortcut: 'G N', action: () => this.go('/app/notes') },
-    { id: 'nav-todos', label: 'Ir a TO-DO', category: 'Navegación', shortcut: 'G T', action: () => this.go('/app/todos') },
-    { id: 'nav-habits', label: 'Ir a Hábitos', category: 'Navegación', shortcut: 'G H', action: () => this.go('/app/habits') },
-    { id: 'nav-finance', label: 'Ir a Finanzas', category: 'Navegación', shortcut: 'G F', action: () => this.go('/app/finance') },
-    { id: 'nav-notifications', label: 'Ir a Notificaciones', category: 'Navegación', action: () => this.go('/app/notifications') },
-    { id: 'nav-settings', label: 'Ir a Ajustes', category: 'Navegación', shortcut: 'G S', action: () => this.go('/app/settings') },
-    { id: 'create-event', label: 'Nuevo Evento', category: 'Crear', action: () => this.go('/app/calendar') },
-    { id: 'create-note', label: 'Nueva Nota', category: 'Crear', action: () => this.go('/app/notes') },
-    { id: 'create-list', label: 'Nueva Lista', category: 'Crear', action: () => this.go('/app/lists') },
-    { id: 'create-todo', label: 'Nueva Tarea', category: 'Crear', action: () => this.go('/app/todos') },
-    { id: 'create-habit', label: 'Nuevo Hábito', category: 'Crear', action: () => this.go('/app/habits') },
-    { id: 'create-wishlist', label: 'Nuevo Deseo (Wishlist)', category: 'Crear', action: () => this.go('/app/finance') },
-    { id: 'create-saving', label: 'Nueva Meta de Ahorro', category: 'Crear', action: () => this.go('/app/finance') },
+    { id: 'nav-dashboard', label: 'Go to Dashboard', category: 'Navigation', shortcut: 'G D', action: () => this.go('/app') },
+    { id: 'nav-calendar', label: 'Go to Calendar', category: 'Navigation', shortcut: 'G C', action: () => this.go('/app/calendar') },
+    { id: 'nav-lists', label: 'Go to Lists', category: 'Navigation', shortcut: 'G L', action: () => this.go('/app/lists') },
+    { id: 'nav-notes', label: 'Go to Notes', category: 'Navigation', shortcut: 'G N', action: () => this.go('/app/notes') },
+    { id: 'nav-todos', label: 'Go to TO-DO', category: 'Navigation', shortcut: 'G T', action: () => this.go('/app/todos') },
+    { id: 'nav-habits', label: 'Go to Habits', category: 'Navigation', shortcut: 'G H', action: () => this.go('/app/habits') },
+    { id: 'nav-finance', label: 'Go to Finance', category: 'Navigation', shortcut: 'G F', action: () => this.go('/app/finance') },
+    { id: 'nav-notifications', label: 'Go to Notifications', category: 'Navigation', action: () => this.go('/app/notifications') },
+    { id: 'nav-settings', label: 'Go to Settings', category: 'Navigation', shortcut: 'G S', action: () => this.go('/app/settings') },
+    { id: 'create-event', label: 'New Event', category: 'Create', action: () => this.go('/app/calendar') },
+    { id: 'create-note', label: 'New Note', category: 'Create', action: () => this.go('/app/notes') },
+    { id: 'create-list', label: 'New List', category: 'Create', action: () => this.go('/app/lists') },
+    { id: 'create-todo', label: 'New Task', category: 'Create', action: () => this.go('/app/todos') },
+    { id: 'create-habit', label: 'New Habit', category: 'Create', action: () => this.go('/app/habits') },
+    { id: 'create-wishlist', label: 'New Wish (Wishlist)', category: 'Create', action: () => this.go('/app/finance') },
+    { id: 'create-saving', label: 'New Savings Goal', category: 'Create', action: () => this.go('/app/finance') },
   ];
 
   protected readonly filtered = computed<Command[]>(() => {
@@ -203,6 +270,7 @@ export class CommandPaletteComponent {
   protected onQueryChange(): void {
     this.queryReactive.set(this.query);
     this.selectedIndex.set(0);
+    this.search$.next(this.query);
   }
 
   protected setIndex(i: number): void {
@@ -227,5 +295,6 @@ export class CommandPaletteComponent {
     this.query = '';
     this.queryReactive.set('');
     this.selectedIndex.set(0);
+    this.results.set([]);
   }
 }

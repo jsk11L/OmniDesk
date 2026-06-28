@@ -14,11 +14,11 @@ type Status = 'pending' | 'success' | 'error';
   template: `
     <div class="min-h-screen flex items-center justify-center bg-background px-4">
       <div class="w-full max-w-md bg-surface border border-border rounded p-8 shadow-2xl text-center">
-        <h1 class="text-2xl font-semibold mb-4">Verificación de cuenta</h1>
+        <h1 class="text-2xl font-semibold mb-4">Account verification</h1>
 
         @switch (status()) {
           @case ('pending') {
-            <p class="text-text-muted">Verificando tu cuenta…</p>
+            <p class="text-text-muted">Verifying your account…</p>
           }
           @case ('success') {
             <p class="text-success mb-4">{{ message() }}</p>
@@ -26,13 +26,13 @@ type Status = 'pending' | 'success' | 'error';
               routerLink="/auth/login"
               class="inline-block px-4 py-2 rounded bg-primary text-white font-medium hover:opacity-90"
             >
-              Iniciar sesión
+              Sign in
             </a>
           }
           @case ('error') {
             <p class="text-danger mb-4">{{ message() }}</p>
             <a routerLink="/auth/register" class="text-primary hover:underline text-sm">
-              Volver a registro
+              Back to sign up
             </a>
           }
         }
@@ -51,7 +51,7 @@ export class VerifyEmailComponent implements OnInit {
     const token = this.route.snapshot.queryParamMap.get('token');
     if (!token) {
       this.status.set('error');
-      this.message.set('Falta el token de verificación en la URL');
+      this.message.set('The verification token is missing from the URL');
       return;
     }
 
@@ -66,7 +66,7 @@ export class VerifyEmailComponent implements OnInit {
         const msg = body?.error?.message;
         if (Array.isArray(msg)) this.message.set(msg.join('. '));
         else if (typeof msg === 'string') this.message.set(msg);
-        else this.message.set('No se pudo verificar la cuenta');
+        else this.message.set('Could not verify the account');
       },
     });
   }

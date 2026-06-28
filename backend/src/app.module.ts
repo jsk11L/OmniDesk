@@ -9,6 +9,7 @@ import { join, isAbsolute } from 'path';
 import { AppController } from './app.controller';
 import { validateEnv } from './config/env.validation';
 import { PrismaModule } from './prisma/prisma.module';
+import { AuditModule } from './audit/audit.module';
 import { MailModule } from './mail/mail.module';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
@@ -22,6 +23,11 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { UploadsModule } from './uploads/uploads.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { HabitsModule } from './habits/habits.module';
+import { FavoritesModule } from './favorites/favorites.module';
+import { AdminModule } from './admin/admin.module';
+import { ExporterModule } from './exporter/exporter.module';
+import { ImporterModule } from './importer/importer.module';
+import { SearchModule } from './search/search.module';
 
 @Module({
   imports: [
@@ -49,6 +55,7 @@ import { HabitsModule } from './habits/habits.module';
     ]),
     ScheduleModule.forRoot(),
     PrismaModule,
+    AuditModule,
     MailModule,
     UsersModule,
     AuthModule,
@@ -62,6 +69,11 @@ import { HabitsModule } from './habits/habits.module';
     UploadsModule,
     DashboardModule,
     HabitsModule,
+    FavoritesModule,
+    AdminModule,
+    ExporterModule,
+    ImporterModule,
+    SearchModule,
   ],
   controllers: [AppController],
   providers: [

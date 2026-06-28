@@ -1,4 +1,6 @@
 import {
+  ArrayMaxSize,
+  IsArray,
   IsBoolean,
   IsHexColor,
   IsISO8601,
@@ -40,4 +42,11 @@ export class UpdateEventDto {
   @IsString()
   @MaxLength(200)
   location?: string;
+
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(20)
+  @IsString({ each: true })
+  @MaxLength(40, { each: true })
+  tags?: string[];
 }

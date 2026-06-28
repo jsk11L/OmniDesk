@@ -22,6 +22,8 @@ import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { CreateBudgetDto } from './dto/create-budget.dto';
 import { UpdateBudgetDto } from './dto/update-budget.dto';
+import { CreateRecurringTransactionDto } from './dto/create-recurring-transaction.dto';
+import { UpdateRecurringTransactionDto } from './dto/update-recurring-transaction.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('finance')
@@ -168,6 +170,44 @@ export class FinanceController {
     @Param('budId', ParseUUIDPipe) budId: string,
   ) {
     return this.finance.deleteBudget(user.id, boardId, budId);
+  }
+
+  // ─── Recurring transactions ──────────────────────────────
+
+  @Get('boards/:id/recurring')
+  listRecurring(
+    @CurrentUser() user: AuthUser,
+    @Param('id', ParseUUIDPipe) boardId: string,
+  ) {
+    return this.finance.listRecurring(user.id, boardId);
+  }
+
+  @Post('boards/:id/recurring')
+  createRecurring(
+    @CurrentUser() user: AuthUser,
+    @Param('id', ParseUUIDPipe) boardId: string,
+    @Body() dto: CreateRecurringTransactionDto,
+  ) {
+    return this.finance.createRecurring(user.id, boardId, dto);
+  }
+
+  @Patch('boards/:id/recurring/:recId')
+  updateRecurring(
+    @CurrentUser() user: AuthUser,
+    @Param('id', ParseUUIDPipe) boardId: string,
+    @Param('recId', ParseUUIDPipe) recId: string,
+    @Body() dto: UpdateRecurringTransactionDto,
+  ) {
+    return this.finance.updateRecurring(user.id, boardId, recId, dto);
+  }
+
+  @Delete('boards/:id/recurring/:recId')
+  deleteRecurring(
+    @CurrentUser() user: AuthUser,
+    @Param('id', ParseUUIDPipe) boardId: string,
+    @Param('recId', ParseUUIDPipe) recId: string,
+  ) {
+    return this.finance.deleteRecurring(user.id, boardId, recId);
   }
 
   // ─── Summary ─────────────────────────────────────────────

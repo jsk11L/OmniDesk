@@ -1,0 +1,32 @@
+{
+  "nav": {
+    "dashboard": "Inicio",
+    "calendar": "Calendario",
+    "lists": "Listas",
+    "notes": "Notas",
+    "todos": "Tareas",
+    "habits": "Hábitos",
+    "finance": "Finanzas",
+    "notifications": "Notificaciones",
+    "settings": "Ajustes",
+    "admin": "Administración"
+  },
+  "sidebar": {
+    "workspace": "Espacio",
+    "favorites": "Favoritos",
+    "search": "Buscar o ejecutar…",
+    "signOut": "Cerrar sesión",
+    "profile": "Perfil y ajustes",
+    "language": "Idioma"
+  },
+  "common": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "create": "Crear",
+    "edit": "Editar",
+    "close": "Cerrar",
+    "loading": "Cargando…",
+    "search": "Buscar…"
+  }
+}

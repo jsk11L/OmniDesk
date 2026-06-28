@@ -10,6 +10,12 @@ export interface UploadedImage {
   thumbUrl: string;
 }
 
+export interface UploadUsage {
+  used: number;
+  quota: number;
+  percent: number;
+}
+
 @Injectable({ providedIn: 'root' })
 export class UploadsService {
   private readonly http = inject(HttpClient);
@@ -20,6 +26,12 @@ export class UploadsService {
     formData.append('file', file);
     return this.http
       .post<ApiResponse<UploadedImage>>(this.endpoint, formData)
+      .pipe(map((res) => res.data));
+  }
+
+  usage(): Observable<UploadUsage> {
+    return this.http
+      .get<ApiResponse<UploadUsage>>(`${this.endpoint}/usage`)
       .pipe(map((res) => res.data));
   }
 

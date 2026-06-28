@@ -11,7 +11,11 @@ import {
   CreateListDialogComponent,
   type CreateListDialogResult,
 } from '../create-list-dialog/create-list-dialog.component';
-import type { List } from '../lists.types';
+import {
+  ObsidianImportDialogComponent,
+  type ObsidianImportDialogData,
+} from '../obsidian-import-dialog/obsidian-import-dialog.component';
+import type { List, ObsidianImportConfig } from '../lists.types';
 
 @Component({
   selector: 'app-list-home',
@@ -20,45 +24,55 @@ import type { List } from '../lists.types';
   imports: [FormsModule, RouterLink, ImageCellComponent, MatDialogModule],
   template: `
     <div class="h-full flex flex-col">
-      <header class="px-6 py-4 border-b border-border flex items-center justify-between gap-4">
+      <header class="px-4 sm:px-6 py-4 border-b border-border flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 class="text-2xl font-semibold">Listas</h1>
+          <h1 class="text-2xl font-semibold">Lists</h1>
           <p class="text-sm text-text-muted">
-            Bibliotecas personalizadas con campos e imágenes por ítem
+            Custom libraries with fields and images per item
           </p>
         </div>
         <div class="flex items-center gap-3">
           <input
             type="search"
             [(ngModel)]="search"
-            placeholder="Buscar lista…"
+            placeholder="Search lists…"
             class="px-3 py-2 bg-surface border border-border rounded text-sm outline-none focus:border-primary w-64"
           />
+          <input #vaultInput type="file" accept=".zip" class="hidden" (change)="onVaultPicked($event)" />
+          <button
+            type="button"
+            (click)="vaultInput.click()"
+            [disabled]="importing()"
+            title="Create a list from an Obsidian vault (.zip) — frontmatter becomes custom fields"
+            class="px-3 py-2 rounded border border-border text-sm hover:bg-surface-hover disabled:opacity-50"
+          >
+            {{ importing() ? 'Importing…' : '⬇ Obsidian' }}
+          </button>
           <button
             type="button"
             (click)="openCreate()"
             class="px-4 py-2 rounded bg-primary text-white text-sm font-medium hover:opacity-90"
           >
-            + Nueva lista
+            + New list
           </button>
         </div>
       </header>
 
       <div class="flex-1 overflow-auto p-6">
         @if (loading()) {
-          <p class="text-text-muted">Cargando…</p>
+          <p class="text-text-muted">Loading…</p>
         } @else if (filtered().length === 0) {
           <div class="text-center py-16 text-text-muted">
             @if (search) {
-              <p>No se encontró ninguna lista que coincida con "{{ search }}".</p>
+              <p>No list matches "{{ search }}".</p>
             } @else {
-              <p class="mb-4">Aún no tienes listas. Crea la primera para comenzar.</p>
+              <p class="mb-4">You don't have any lists yet. Create your first to get started.</p>
               <button
                 type="button"
                 (click)="openCreate()"
                 class="px-4 py-2 rounded bg-primary text-white text-sm font-medium hover:opacity-90"
               >
-                + Crear lista
+                + Create list
               </button>
             }
           </div>
@@ -101,6 +115,7 @@ export class ListHomeComponent implements OnInit {
 
   protected readonly loading = signal(true);
   protected readonly lists = signal<List[]>([]);
+  protected readonly importing = signal(false);
   protected search = '';
 
   protected readonly filtered = computed(() => {
@@ -128,6 +143,58 @@ export class ListHomeComponent implements OnInit {
     });
   }
 
+  protected onVaultPicked(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+
+    // Step 1 — analyze (dry run) so the user can reconfigure fields first.
+    this.importing.set(true);
+    this.service.analyzeObsidian(file).subscribe({
+      next: (analysis) => {
+        this.importing.set(false);
+        const ref = this.dialog.open<
+          ObsidianImportDialogComponent,
+          ObsidianImportDialogData,
+          ObsidianImportConfig | undefined
+        >(ObsidianImportDialogComponent, {
+          data: { fileName: file.name, analysis },
+          width: 'min(760px, 96vw)',
+          maxWidth: '96vw',
+        });
+        ref.afterClosed().subscribe((config) => {
+          if (config) this.runImport(file, config);
+        });
+      },
+      error: (err: HttpErrorResponse) => {
+        this.importing.set(false);
+        this.toastr.error(this.errMsg(err));
+      },
+    });
+  }
+
+  // Step 2 — import with the confirmed field config.
+  private runImport(file: File, config: ObsidianImportConfig): void {
+    this.importing.set(true);
+    this.service.importObsidian(file, config).subscribe({
+      next: (report) => {
+        this.importing.set(false);
+        this.toastr.success(
+          `Imported ${report.itemsCreated} items · ${report.fieldsCreated} fields · ${report.tagsCreated} tags`,
+        );
+        if (report.errors.length) {
+          this.toastr.warning(`${report.errors.length} notes had issues and were skipped`);
+        }
+        void this.router.navigate(['/app/lists', report.listId]);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.importing.set(false);
+        this.toastr.error(this.errMsg(err));
+      },
+    });
+  }
+
   protected openCreate(): void {
     const ref = this.dialog.open<CreateListDialogComponent, void, CreateListDialogResult>(
       CreateListDialogComponent,
@@ -144,6 +211,6 @@ export class ListHomeComponent implements OnInit {
     const msg = body?.error?.message;
     if (Array.isArray(msg)) return msg.join('. ');
     if (typeof msg === 'string') return msg;
-    return 'Error inesperado';
+    return 'Unexpected error';
   }
 }

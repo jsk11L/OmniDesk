@@ -66,7 +66,7 @@ export class TodosService {
   async deleteBoard(userId: string, id: string): Promise<{ id: string }> {
     const board = await this.assertBoardOwner(userId, id);
     if (board.isSystem) {
-      throw new BadRequestException('El Tablero Personal no se puede eliminar');
+      throw new BadRequestException('The Personal Board cannot be deleted');
     }
     await this.prisma.todoBoard.delete({ where: { id } });
     return { id };

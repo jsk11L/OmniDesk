@@ -39,7 +39,7 @@ import { EMOJI_CATEGORIES, EmojiCategory } from './emoji-data';
             type="text"
             [value]="query()"
             (input)="onSearch($event)"
-            placeholder="Buscar…"
+            placeholder="Search…"
             class="search-input"
             autofocus
           />

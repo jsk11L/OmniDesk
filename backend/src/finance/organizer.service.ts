@@ -7,6 +7,9 @@ import type {
 } from '@prisma/client';
 
 import { PrismaService } from '../prisma/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
+
+const SAVINGS_THRESHOLDS = [50, 80, 100];
 
 export interface WishlistInput {
   title: string;
@@ -45,7 +48,10 @@ export interface ContributionInput {
 
 @Injectable()
 export class OrganizerService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notifications: NotificationsService,
+  ) {}
 
   private async assertBoardOwner(userId: string, boardId: string): Promise<void> {
     const board = await this.prisma.financeBoard.findFirst({ where: { id: boardId, userId } });
@@ -272,7 +278,32 @@ export class OrganizerService {
       },
     });
 
+    await this.fireThresholdReminders(goalId, goal.currentAmount, newAmount, goal.targetAmount);
     return contribution;
+  }
+
+  /** Fire notifications attached to a goal when a contribution crosses 50/80/100%. */
+  private async fireThresholdReminders(
+    goalId: string,
+    oldAmount: number,
+    newAmount: number,
+    target: number,
+  ): Promise<void> {
+    if (target <= 0) return;
+    const oldPct = (oldAmount / target) * 100;
+    const newPct = (newAmount / target) * 100;
+    const crossed = SAVINGS_THRESHOLDS.some((t) => oldPct < t && newPct >= t);
+    if (!crossed) return;
+
+    const links = await this.prisma.savingsGoalNotification.findMany({
+      where: { savingsGoalId: goalId },
+      include: { notification: true },
+    });
+    for (const link of links) {
+      if (link.notification.isActive) {
+        await this.notifications.deliver(link.notification).catch(() => undefined);
+      }
+    }
   }
 
   async deleteContribution(userId: string, id: string): Promise<{ id: string }> {

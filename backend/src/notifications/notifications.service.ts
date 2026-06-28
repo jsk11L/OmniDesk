@@ -10,12 +10,14 @@ import * as webpush from 'web-push';
 import type {
   InAppNotification,
   NotificationConfig,
+  Prisma,
   PushSubscription,
 } from '@prisma/client';
 
 import { PrismaService } from '../prisma/prisma.service';
 import { MailService } from '../mail/mail.service';
 import { UsersService } from '../users/users.service';
+import { isPushSuppressed } from './dnd.util';
 import { CreateNotificationDto } from './dto/create-notification.dto';
 import { UpdateNotificationDto } from './dto/update-notification.dto';
 import {
@@ -172,25 +174,71 @@ export class NotificationsService implements OnModuleInit {
 
     // External, best-effort side effects. They run after the fired marker is
     // committed so a transient push/email failure can never trigger a re-fire.
-    if (config.channels.includes('PUSH') && this.pushEnabled) {
-      result.pushSent = await this.sendPushToUser(config);
-    }
+    const needsUser = config.channels.includes('PUSH') || config.channels.includes('EMAIL');
+    const user = needsUser ? await this.users.findById(config.userId) : null;
 
-    if (config.channels.includes('EMAIL')) {
-      const user = await this.users.findById(config.userId);
-      if (user) {
-        await this.mail.sendNotificationEmail(
-          user.email,
-          config.title,
-          config.message,
-          config.iconUrl,
-          config.accentColor,
-        );
-        result.emailsSent = 1;
+    if (config.channels.includes('PUSH') && this.pushEnabled && user) {
+      // Do-not-disturb only suppresses push; the in-app entry above still queues.
+      const suppressed = isPushSuppressed(
+        {
+          timezone: user.timezone,
+          dndStart: user.dndStart,
+          dndEnd: user.dndEnd,
+          quietDays: user.quietDays,
+        },
+        new Date(),
+      );
+      if (!suppressed) {
+        result.pushSent = await this.sendPushToUser(config);
       }
     }
 
+    if (config.channels.includes('EMAIL') && user) {
+      await this.mail.sendNotificationEmail(
+        user.email,
+        config.title,
+        config.message,
+        config.iconUrl,
+        config.accentColor,
+      );
+      result.emailsSent = 1;
+    }
+
     return result;
+  }
+
+  // ─── Preferences (DND + timezone) ────────────────────────
+
+  private readonly PREF_SELECT = {
+    timezone: true,
+    dndStart: true,
+    dndEnd: true,
+    quietDays: true,
+  } as const;
+
+  async getPreferences(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: this.PREF_SELECT,
+    });
+    return user ?? { timezone: null, dndStart: null, dndEnd: null, quietDays: [] };
+  }
+
+  async updatePreferences(
+    userId: string,
+    dto: {
+      timezone?: string;
+      dndStart?: string | null;
+      dndEnd?: string | null;
+      quietDays?: number[];
+    },
+  ) {
+    const data: Prisma.UserUpdateInput = {};
+    if (dto.timezone !== undefined) data.timezone = dto.timezone || null;
+    if (dto.dndStart !== undefined) data.dndStart = dto.dndStart;
+    if (dto.dndEnd !== undefined) data.dndEnd = dto.dndEnd;
+    if (dto.quietDays !== undefined) data.quietDays = dto.quietDays;
+    return this.prisma.user.update({ where: { id: userId }, data, select: this.PREF_SELECT });
   }
 
   // ─── Inbox ───────────────────────────────────────────────
@@ -225,7 +273,12 @@ export class NotificationsService implements OnModuleInit {
 
   // ─── Push subscriptions ──────────────────────────────────
 
-  async subscribePush(userId: string, dto: PushSubscriptionDto): Promise<PushSubscription> {
+  async subscribePush(
+    userId: string,
+    dto: PushSubscriptionDto,
+    userAgent?: string | null,
+  ): Promise<PushSubscription> {
+    const platform = detectPlatform(userAgent);
     return this.prisma.pushSubscription.upsert({
       where: { endpoint: dto.endpoint },
       create: {
@@ -233,13 +286,33 @@ export class NotificationsService implements OnModuleInit {
         endpoint: dto.endpoint,
         p256dh: dto.keys.p256dh,
         auth: dto.keys.auth,
+        userAgent: userAgent ?? null,
+        deviceLabel: dto.deviceLabel ?? null,
+        platform,
+        lastUsedAt: new Date(),
       },
       update: {
         userId,
         p256dh: dto.keys.p256dh,
         auth: dto.keys.auth,
+        userAgent: userAgent ?? undefined,
+        deviceLabel: dto.deviceLabel ?? undefined,
+        platform,
       },
     });
+  }
+
+  listDevices(userId: string) {
+    return this.prisma.pushSubscription.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+      select: { id: true, deviceLabel: true, platform: true, userAgent: true, lastUsedAt: true, createdAt: true },
+    });
+  }
+
+  async removeDevice(userId: string, id: string): Promise<{ id: string }> {
+    await this.prisma.pushSubscription.deleteMany({ where: { id, userId } });
+    return { id };
   }
 
   async unsubscribePush(
@@ -318,4 +391,11 @@ export class NotificationsService implements OnModuleInit {
 
     return sent;
   }
+}
+
+function detectPlatform(ua?: string | null): string {
+  if (!ua) return 'unknown';
+  if (/tablet|ipad/i.test(ua)) return 'tablet';
+  if (/mobi|android|iphone/i.test(ua)) return 'mobile';
+  return 'desktop';
 }

@@ -27,7 +27,13 @@ export async function createVerifiedUser(
 
   await request(server)
     .post('/auth/register')
-    .send({ email, password: DEFAULT_PASSWORD, displayName: label })
+    .send({
+      email,
+      password: DEFAULT_PASSWORD,
+      displayName: label,
+      acceptedTerms: true,
+      acceptedNoDataSelling: true,
+    })
     .expect(201);
 
   const created = await ctx.prisma.user.findUnique({ where: { email } });

@@ -25,19 +25,34 @@ export interface DashboardTodoWidget {
   column: { id: string; name: string; boardId: string };
 }
 
-export interface DashboardTodosBucket {
-  completed: DashboardTodoWidget[];
-  pending: DashboardTodoWidget[];
-  extraNoDate: DashboardTodoWidget | null;
-}
-
-export interface DashboardFinanceGoalWidget {
-  type: 'budget' | 'savings';
+export interface DashboardHabitWidget {
   id: string;
   name: string;
-  current: number;
-  target: number;
+  icon: string | null;
+  streak: number;
+  doneToday: boolean;
+}
+
+export interface DashboardSavingsPotWidget {
+  id: string;
+  name: string;
+  icon: string | null;
+  color: string;
+  saved: number;
+  goal: number;
   percent: number;
+}
+
+export interface DashboardStats {
+  balance: number;
+  balanceDelta: number | null;
+  currency: string;
+  todoToday: number;
+  todoHigh: number;
+  eventsThisWeek: number;
+  nextEventLabel: string | null;
+  bestStreak: number;
+  bestStreakHabit: string | null;
 }
 
 export interface DashboardRandomItemWidget {
@@ -46,9 +61,12 @@ export interface DashboardRandomItemWidget {
 }
 
 export interface DashboardData {
-  nextEvent: DashboardEventWidget | null;
-  todayTodos: DashboardTodosBucket;
-  latestNote: DashboardNoteWidget | null;
-  nextFinanceGoal: DashboardFinanceGoalWidget | null;
+  stats: DashboardStats;
+  upcomingEvents: DashboardEventWidget[];
+  monthEvents: { day: number; color: string }[];
+  todosInProgress: DashboardTodoWidget[];
+  savingsPots: DashboardSavingsPotWidget[];
+  habitsToday: DashboardHabitWidget[];
+  recentNotes: DashboardNoteWidget[];
   randomItem: DashboardRandomItemWidget | null;
 }

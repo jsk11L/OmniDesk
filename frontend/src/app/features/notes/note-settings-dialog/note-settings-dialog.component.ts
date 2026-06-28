@@ -5,6 +5,7 @@ import { ToastrService } from 'ngx-toastr';
 
 import { NotesService } from '../services/notes.service';
 import { ImageInputComponent } from '../../../shared/components/image-input/image-input.component';
+import { NotificationAttachPanelComponent } from '../../../shared/components/notification-attach-panel/notification-attach-panel.component';
 import type { Note } from '../notes.types';
 
 export interface NoteSettingsDialogData {
@@ -17,14 +18,14 @@ export type NoteSettingsDialogResult = Note | undefined;
   selector: 'app-note-settings-dialog',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, MatDialogModule, ImageInputComponent],
+  imports: [FormsModule, MatDialogModule, ImageInputComponent, NotificationAttachPanelComponent],
   template: `
     <div class="bg-surface text-text p-6 w-[min(520px,95vw)]">
-      <h2 class="text-lg font-semibold mb-4">Configuración de la nota</h2>
+      <h2 class="text-lg font-semibold mb-4">Note settings</h2>
 
       <div class="space-y-4">
         <div>
-          <span class="block text-xs text-text-muted mb-1">Imagen de portada</span>
+          <span class="block text-xs text-text-muted mb-1">Cover image</span>
           <app-image-input
             [initialValue]="coverImageUrl()"
             (valueChange)="setCover($event)"
@@ -52,13 +53,17 @@ export type NoteSettingsDialogResult = Note | undefined;
 
         <label class="flex items-center gap-2 cursor-pointer">
           <input type="checkbox" [(ngModel)]="pinned" class="accent-primary" />
-          <span class="text-sm">Fijar nota en la parte superior</span>
+          <span class="text-sm">Pin note to the top</span>
         </label>
+
+        <div class="border-t border-border pt-3">
+          <app-notification-attach-panel entityType="note" [entityId]="data.note.id" />
+        </div>
       </div>
 
       <div class="flex justify-end gap-2 pt-4">
         <button type="button" (click)="ref.close()" class="px-4 py-2 text-sm rounded hover:bg-surface-hover">
-          Cancelar
+          Cancel
         </button>
         <button
           type="button"
@@ -66,7 +71,7 @@ export type NoteSettingsDialogResult = Note | undefined;
           [disabled]="saving()"
           class="px-4 py-2 text-sm rounded bg-primary text-white hover:opacity-90 disabled:opacity-50"
         >
-          {{ saving() ? 'Guardando…' : 'Guardar' }}
+          {{ saving() ? 'Saving…' : 'Save' }}
         </button>
       </div>
     </div>
@@ -121,12 +126,12 @@ export class NoteSettingsDialogComponent {
       })
       .subscribe({
         next: (note) => {
-          this.toastr.success('Configuración guardada');
+          this.toastr.success('Settings saved');
           this.ref.close(note);
         },
         error: () => {
           this.saving.set(false);
-          this.toastr.error('No se pudo guardar');
+          this.toastr.error('Could not save');
         },
       });
   }

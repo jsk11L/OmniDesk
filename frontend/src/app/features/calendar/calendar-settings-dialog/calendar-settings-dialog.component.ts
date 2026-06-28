@@ -24,40 +24,40 @@ export type CalendarSettingsDialogResult = CalendarSettings | undefined;
   imports: [ReactiveFormsModule, MatDialogModule],
   template: `
     <div class="bg-surface text-text p-6 w-[min(440px,95vw)]">
-      <h2 class="text-lg font-semibold mb-4">Configuración del calendario</h2>
+      <h2 class="text-lg font-semibold mb-4">Calendar settings</h2>
 
       <form [formGroup]="form" class="space-y-4">
         <label class="block">
-          <span class="block text-xs text-text-muted mb-1">Tamaño</span>
+          <span class="block text-xs text-text-muted mb-1">Size</span>
           <select formControlName="size" class="w-full px-3 py-2 bg-background border border-border rounded outline-none focus:border-primary">
-            <option value="COMPACT">Compacto</option>
+            <option value="COMPACT">Compact</option>
             <option value="NORMAL">Normal</option>
-            <option value="COMFORTABLE">Cómodo</option>
+            <option value="COMFORTABLE">Comfortable</option>
           </select>
         </label>
 
         <label class="block">
-          <span class="block text-xs text-text-muted mb-1">Estilo de bordes</span>
+          <span class="block text-xs text-text-muted mb-1">Border style</span>
           <select formControlName="borderStyle" class="w-full px-3 py-2 bg-background border border-border rounded outline-none focus:border-primary">
-            <option value="ROUNDED">Redondeados</option>
-            <option value="SQUARE">Cuadrados</option>
+            <option value="ROUNDED">Rounded</option>
+            <option value="SQUARE">Square</option>
           </select>
         </label>
 
         <label class="block">
-          <span class="block text-xs text-text-muted mb-1">Primer día de la semana</span>
+          <span class="block text-xs text-text-muted mb-1">First day of the week</span>
           <select formControlName="firstDay" class="w-full px-3 py-2 bg-background border border-border rounded outline-none focus:border-primary">
-            <option [ngValue]="1">Lunes</option>
-            <option [ngValue]="0">Domingo</option>
+            <option [ngValue]="1">Monday</option>
+            <option [ngValue]="0">Sunday</option>
           </select>
         </label>
 
         <label class="block">
-          <span class="block text-xs text-text-muted mb-1">Vista por defecto</span>
+          <span class="block text-xs text-text-muted mb-1">Default view</span>
           <select formControlName="defaultView" class="w-full px-3 py-2 bg-background border border-border rounded outline-none focus:border-primary">
-            <option value="dayGridMonth">Mes</option>
-            <option value="timeGridWeek">Semana</option>
-            <option value="timeGridDay">Día</option>
+            <option value="dayGridMonth">Month</option>
+            <option value="timeGridWeek">Week</option>
+            <option value="timeGridDay">Day</option>
             <option value="listWeek">Agenda</option>
           </select>
         </label>
@@ -72,13 +72,13 @@ export type CalendarSettingsDialogResult = CalendarSettings | undefined;
           [disabled]="exporting()"
           class="w-full py-2 rounded border border-border hover:bg-surface-hover text-sm"
         >
-          {{ exporting() ? 'Exportando…' : 'Exportar a .ics (Google Calendar, Outlook…)' }}
+          {{ exporting() ? 'Exporting…' : 'Export to .ics (Google Calendar, Outlook…)' }}
         </button>
       </div>
 
       <div class="flex justify-end gap-2 pt-4">
         <button type="button" (click)="ref.close()" class="px-4 py-2 text-sm rounded hover:bg-surface-hover">
-          Cancelar
+          Cancel
         </button>
         <button
           type="button"
@@ -86,7 +86,7 @@ export type CalendarSettingsDialogResult = CalendarSettings | undefined;
           [disabled]="saving()"
           class="px-4 py-2 text-sm rounded bg-primary text-white hover:opacity-90 disabled:opacity-50"
         >
-          {{ saving() ? 'Guardando…' : 'Guardar' }}
+          {{ saving() ? 'Saving…' : 'Save' }}
         </button>
       </div>
     </div>
@@ -120,12 +120,12 @@ export class CalendarSettingsDialogComponent {
     const dto = this.form.getRawValue() as UpdateCalendarSettingsDto;
     this.service.updateSettings(dto).subscribe({
       next: (settings) => {
-        this.toastr.success('Configuración guardada');
+        this.toastr.success('Settings saved');
         this.ref.close(settings);
       },
       error: () => {
         this.saving.set(false);
-        this.toastr.error('No se pudo guardar');
+        this.toastr.error('Could not save');
       },
     });
   }
@@ -145,11 +145,11 @@ export class CalendarSettingsDialogComponent {
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        this.toastr.success('Archivo descargado');
+        this.toastr.success('File downloaded');
       },
       error: () => {
         this.exporting.set(false);
-        this.toastr.error('No se pudo exportar');
+        this.toastr.error('Could not export');
       },
     });
   }

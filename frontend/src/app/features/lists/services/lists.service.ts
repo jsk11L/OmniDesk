@@ -9,11 +9,14 @@ import type {
   CreateListFieldDto,
   CreateListItemDto,
   CreateListTagDto,
+  ImportAnalysis,
+  ImportListReport,
   List,
   ListField,
   ListItem,
   ListTag,
   MoveListItemDto,
+  ObsidianImportConfig,
   UpdateListDto,
   UpdateListFieldDto,
   UpdateListItemDto,
@@ -34,6 +37,28 @@ export class ListsService {
 
   create(dto: CreateListDto): Observable<List> {
     return this.http.post<ApiResponse<List>>(this.base, dto).pipe(map((r) => r.data));
+  }
+
+  /** Dry-run: detect fields/types/stats in a vault without importing. */
+  analyzeObsidian(file: File): Observable<ImportAnalysis> {
+    const fd = new FormData();
+    fd.append('file', file);
+    return this.http
+      .post<ApiResponse<ImportAnalysis>>(`${environment.apiUrl}/import/obsidian-list/analyze`, fd)
+      .pipe(map((r) => r.data));
+  }
+
+  /**
+   * Import an Obsidian vault zip as list items, applying the user-confirmed
+   * field config (rename / retype / exclude) from the analyze step.
+   */
+  importObsidian(file: File, config: ObsidianImportConfig): Observable<ImportListReport> {
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('config', JSON.stringify(config));
+    return this.http
+      .post<ApiResponse<ImportListReport>>(`${environment.apiUrl}/import/obsidian-list`, fd)
+      .pipe(map((r) => r.data));
   }
 
   update(id: string, dto: UpdateListDto): Observable<List> {

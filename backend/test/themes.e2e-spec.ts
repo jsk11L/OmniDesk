@@ -14,7 +14,13 @@ describe('Themes CRUD (e2e)', () => {
 
     await request(ctx.app.getHttpServer())
       .post('/auth/register')
-      .send({ email, password, displayName: 'E2E Themes' })
+      .send({
+        email,
+        password,
+        displayName: 'E2E Themes',
+        acceptedTerms: true,
+        acceptedNoDataSelling: true,
+      })
       .expect(201);
 
     const user = await ctx.prisma.user.findUnique({ where: { email } });

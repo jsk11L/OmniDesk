@@ -16,7 +16,7 @@ import { ChangeDetectionStrategy, Component, input, output } from '@angular/core
           type="button"
           (click)="remove.emit()"
           class="text-current opacity-60 hover:opacity-100 ml-1"
-          aria-label="Eliminar tag"
+          aria-label="Remove tag"
         >
           ×
         </button>

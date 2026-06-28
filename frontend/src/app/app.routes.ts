@@ -1,6 +1,6 @@
 import type { Routes } from '@angular/router';
 
-import { authGuard, publicOnlyGuard } from './core/guards/auth.guard';
+import { adminGuard, authGuard, publicOnlyGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   {
@@ -13,6 +13,22 @@ export const routes: Routes = [
     path: 'auth',
     canActivate: [publicOnlyGuard],
     loadChildren: () => import('./features/auth/auth.routes').then((m) => m.AUTH_ROUTES),
+  },
+  {
+    path: 'legal',
+    children: [
+      { path: '', pathMatch: 'full', redirectTo: 'terms' },
+      {
+        path: 'terms',
+        data: { doc: 'terms' },
+        loadComponent: () => import('./features/legal/legal.component').then((m) => m.LegalComponent),
+      },
+      {
+        path: 'privacy',
+        data: { doc: 'privacy' },
+        loadComponent: () => import('./features/legal/legal.component').then((m) => m.LegalComponent),
+      },
+    ],
   },
   {
     path: 'app',
@@ -46,6 +62,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'notes/import',
+        loadComponent: () =>
+          import('./features/notes/obsidian-import/obsidian-import.component').then(
+            (m) => m.ObsidianImportComponent,
+          ),
+      },
+      {
         path: 'todos',
         loadComponent: () =>
           import('./features/todos/kanban-board/kanban-board.component').then(
@@ -67,6 +90,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'finance/organizer',
+        loadComponent: () =>
+          import('./features/finance/organizer/finance-organizer.component').then(
+            (m) => m.FinanceOrganizerComponent,
+          ),
+      },
+      {
         path: 'notifications',
         loadComponent: () =>
           import(
@@ -79,6 +109,12 @@ export const routes: Routes = [
           import('./features/settings/settings-home/settings-home.component').then(
             (m) => m.SettingsHomeComponent,
           ),
+      },
+      {
+        path: 'admin',
+        canActivate: [adminGuard],
+        loadComponent: () =>
+          import('./features/admin/admin.component').then((m) => m.AdminComponent),
       },
     ],
   },

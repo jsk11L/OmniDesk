@@ -17,12 +17,16 @@ import { Editor } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
 import Link from '@tiptap/extension-link';
+import TextStyle from '@tiptap/extension-text-style';
+import FontFamily from '@tiptap/extension-font-family';
 import { Subject, debounceTime, takeUntil } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 import { HttpErrorResponse } from '@angular/common/http';
 
 import { NotesService } from '../services/notes.service';
 import { DialogService } from '../../../shared/services/dialog.service';
+import { DataExportService } from '../../../core/services/data-export.service';
+import { FavoritesStore } from '../../../shared/services/favorites.store';
 import { EmojiPickerComponent } from '../../../shared/components/emoji-picker/emoji-picker.component';
 import {
   NoteSettingsDialogComponent,
@@ -32,6 +36,24 @@ import {
 import type { Note, UpdateNoteDto } from '../notes.types';
 
 type SaveStatus = 'saved' | 'saving' | 'dirty' | 'error';
+
+/**
+ * Image extension augmented with a `width` attribute (rendered as an inline
+ * style) so embedded images can be resized from the editor (DF-10).
+ */
+const ResizableImage = Image.extend({
+  addAttributes() {
+    return {
+      ...this.parent?.(),
+      width: {
+        default: null,
+        parseHTML: (el: HTMLElement) => el.style.width || null,
+        renderHTML: (attrs: Record<string, unknown>) =>
+          attrs['width'] ? { style: `width: ${attrs['width'] as string}` } : {},
+      },
+    };
+  },
+});
 
 @Component({
   selector: 'app-note-editor',
@@ -44,26 +66,48 @@ type SaveStatus = 'saved' | 'saving' | 'dirty' | 'error';
         <div class="flex items-center justify-between mb-3 text-xs text-text-muted">
           <span>
             @switch (status()) {
-              @case ('saving') { Guardando… }
-              @case ('saved') { ✓ Guardado }
-              @case ('dirty') { Cambios sin guardar }
-              @case ('error') { ✗ Error al guardar }
+              @case ('saving') { Saving… }
+              @case ('saved') { ✓ Saved }
+              @case ('dirty') { Unsaved changes }
+              @case ('error') { ✗ Save error }
             }
           </span>
-          <div class="flex items-center gap-3">
+          <div class="flex items-center gap-1.5">
+            <button
+              type="button"
+              (click)="toggleFavorite()"
+              [title]="isFavorite() ? 'Remove from sidebar favorites' : 'Add to sidebar favorites'"
+              [class]="
+                'w-9 h-9 grid place-items-center rounded-lg text-base transition-all ' +
+                (isFavorite() ? 'bg-primary/20' : 'opacity-50 hover:opacity-100 hover:bg-surface-hover')
+              "
+            >
+              🔖
+            </button>
             <button
               type="button"
               (click)="togglePin()"
-              [title]="pinned() ? 'Desfijar' : 'Fijar'"
-              class="hover:text-text"
+              [title]="pinned() ? 'Unpin' : 'Pin'"
+              [class]="
+                'w-9 h-9 grid place-items-center rounded-lg text-base transition-colors ' +
+                (pinned() ? 'text-accent hover:bg-surface-hover' : 'text-text-muted hover:bg-surface-hover hover:text-text')
+              "
             >
               {{ pinned() ? '★' : '☆' }}
             </button>
             <button
               type="button"
+              (click)="downloadMarkdown()"
+              class="w-9 h-9 grid place-items-center rounded-lg text-base text-text-muted hover:bg-surface-hover hover:text-text transition-colors"
+              title="Download as Markdown"
+            >
+              ⬇
+            </button>
+            <button
+              type="button"
               (click)="deleteSelected()"
-              class="hover:text-danger"
-              title="Eliminar nota"
+              class="w-9 h-9 grid place-items-center rounded-lg text-base text-text-muted hover:bg-surface-hover hover:text-danger transition-colors"
+              title="Delete note"
             >
               🗑
             </button>
@@ -81,14 +125,14 @@ type SaveStatus = 'saved' | 'saving' | 'dirty' | 'error';
             [(ngModel)]="title"
             (ngModelChange)="onMetaChange()"
             maxlength="200"
-            placeholder="Sin título"
+            placeholder="Untitled"
             class="flex-1 text-2xl font-semibold bg-transparent outline-none placeholder:text-text-muted"
           />
           <button
             type="button"
             (click)="openSettings()"
-            class="px-2 py-1 rounded hover:bg-surface-hover text-sm"
-            title="Configuración de la nota"
+            class="w-9 h-9 grid place-items-center rounded-lg hover:bg-surface-hover text-base text-text-muted hover:text-text transition-colors shrink-0"
+            title="Note settings"
           >⚙</button>
         </div>
 
@@ -97,7 +141,7 @@ type SaveStatus = 'saved' | 'saving' | 'dirty' | 'error';
           [(ngModel)]="description"
           (ngModelChange)="onMetaChange()"
           maxlength="280"
-          placeholder="Descripción breve…"
+          placeholder="Short description…"
           class="w-full px-2 py-1 text-sm bg-transparent text-text-muted outline-none focus:text-text mb-1"
         />
 
@@ -111,7 +155,7 @@ type SaveStatus = 'saved' | 'saving' | 'dirty' | 'error';
                 type="button"
                 (click)="removeTag(i)"
                 class="opacity-60 hover:opacity-100"
-                aria-label="Eliminar tag"
+                aria-label="Remove tag"
               >
                 ×
               </button>
@@ -128,13 +172,13 @@ type SaveStatus = 'saved' | 'saving' | 'dirty' | 'error';
       </header>
 
       <div class="border-b border-border px-6 py-2 flex items-center gap-1 flex-wrap">
-        <button type="button" (click)="cmd('toggleBold')" class="px-2 py-1 rounded hover:bg-surface-hover text-sm" title="Negrita">
+        <button type="button" (click)="cmd('toggleBold')" class="px-2 py-1 rounded hover:bg-surface-hover text-sm" title="Bold">
           <strong>B</strong>
         </button>
-        <button type="button" (click)="cmd('toggleItalic')" class="px-2 py-1 rounded hover:bg-surface-hover text-sm italic" title="Cursiva">
+        <button type="button" (click)="cmd('toggleItalic')" class="px-2 py-1 rounded hover:bg-surface-hover text-sm italic" title="Italic">
           I
         </button>
-        <button type="button" (click)="cmd('toggleStrike')" class="px-2 py-1 rounded hover:bg-surface-hover text-sm line-through" title="Tachado">
+        <button type="button" (click)="cmd('toggleStrike')" class="px-2 py-1 rounded hover:bg-surface-hover text-sm line-through" title="Strikethrough">
           S
         </button>
         <span class="w-px h-5 bg-border mx-1"></span>
@@ -142,15 +186,39 @@ type SaveStatus = 'saved' | 'saving' | 'dirty' | 'error';
         <button type="button" (click)="setHeading(2)" class="px-2 py-1 rounded hover:bg-surface-hover text-sm" title="Heading 2">H2</button>
         <button type="button" (click)="setHeading(3)" class="px-2 py-1 rounded hover:bg-surface-hover text-sm" title="Heading 3">H3</button>
         <span class="w-px h-5 bg-border mx-1"></span>
-        <button type="button" (click)="cmd('toggleBulletList')" class="px-2 py-1 rounded hover:bg-surface-hover text-sm w-8" title="Lista con viñetas">•</button>
-        <button type="button" (click)="cmd('toggleOrderedList')" class="px-2 py-1 rounded hover:bg-surface-hover text-sm w-8" title="Lista numerada">1.</button>
-        <button type="button" (click)="cmd('toggleBlockquote')" class="px-2 py-1 rounded hover:bg-surface-hover text-sm" title="Cita">"</button>
-        <button type="button" (click)="cmd('toggleCodeBlock')" class="px-2 py-1 rounded hover:bg-surface-hover text-sm font-mono" title="Código">{{ '<>' }}</button>
+        <button type="button" (click)="cmd('toggleBulletList')" class="px-2 py-1 rounded hover:bg-surface-hover text-sm w-8" title="Bullet list">•</button>
+        <button type="button" (click)="cmd('toggleOrderedList')" class="px-2 py-1 rounded hover:bg-surface-hover text-sm w-8" title="Numbered list">1.</button>
+        <button type="button" (click)="cmd('toggleBlockquote')" class="px-2 py-1 rounded hover:bg-surface-hover text-sm" title="Quote">"</button>
+        <button type="button" (click)="cmd('toggleCodeBlock')" class="px-2 py-1 rounded hover:bg-surface-hover text-sm font-mono" title="Code">{{ '<>' }}</button>
         <span class="w-px h-5 bg-border mx-1"></span>
         <button type="button" (click)="insertLink()" class="px-2 py-1 rounded hover:bg-surface-hover text-sm" title="Link">🔗</button>
-        <button type="button" (click)="insertImage()" class="px-2 py-1 rounded hover:bg-surface-hover text-sm" title="Imagen">🖼</button>
-        <button type="button" (click)="cmd('setHorizontalRule')" class="px-2 py-1 rounded hover:bg-surface-hover text-sm" title="Divisor">―</button>
+        <button type="button" (click)="insertImage()" class="px-2 py-1 rounded hover:bg-surface-hover text-sm" title="Image">🖼</button>
+        <button type="button" (click)="cmd('setHorizontalRule')" class="px-2 py-1 rounded hover:bg-surface-hover text-sm" title="Divider">―</button>
+        <span class="w-px h-5 bg-border mx-1"></span>
+        <select
+          (change)="setFont($event)"
+          title="Font"
+          class="px-2 py-1 rounded bg-transparent hover:bg-surface-hover text-sm outline-none border border-border focus:border-primary"
+        >
+          @for (f of fonts; track f.value) {
+            <option [value]="f.value">{{ f.label }}</option>
+          }
+        </select>
       </div>
+
+      @if (imageSelected()) {
+        <div
+          class="border-b border-border px-6 py-2 flex items-center gap-1.5 flex-wrap bg-surface-hover text-sm"
+        >
+          <span class="text-xs text-text-muted mr-1">Selected image:</span>
+          <button type="button" (click)="setImageWidth('25%')" class="px-2 py-1 rounded hover:bg-surface text-xs" title="Small">25%</button>
+          <button type="button" (click)="setImageWidth('50%')" class="px-2 py-1 rounded hover:bg-surface text-xs" title="Medium">50%</button>
+          <button type="button" (click)="setImageWidth('75%')" class="px-2 py-1 rounded hover:bg-surface text-xs" title="Large">75%</button>
+          <button type="button" (click)="setImageWidth(null)" class="px-2 py-1 rounded hover:bg-surface text-xs" title="Full width">Full</button>
+          <span class="w-px h-5 bg-border mx-1"></span>
+          <button type="button" (click)="deleteImage()" class="px-2 py-1 rounded hover:bg-surface text-xs text-danger" title="Remove image">🗑 Remove</button>
+        </div>
+      }
 
       <div
         #editorEl
@@ -169,7 +237,7 @@ type SaveStatus = 'saved' | 'saving' | 'dirty' | 'error';
         cursor: text;
       }
       :host ::ng-deep .ProseMirror p.is-editor-empty:first-child::before {
-        content: 'Empieza a escribir…';
+        content: 'Start writing…';
         color: var(--color-text-muted);
         float: left;
         height: 0;
@@ -199,6 +267,19 @@ type SaveStatus = 'saved' | 'saving' | 'dirty' | 'error';
         padding-left: 1.5rem;
         margin: 0.5rem 0;
       }
+      /* Tailwind preflight resets list-style to none; restore the markers. */
+      :host ::ng-deep .ProseMirror ul {
+        list-style: disc outside;
+      }
+      :host ::ng-deep .ProseMirror ol {
+        list-style: decimal outside;
+      }
+      :host ::ng-deep .ProseMirror li {
+        margin: 0.125rem 0;
+      }
+      :host ::ng-deep .ProseMirror li p {
+        margin: 0;
+      }
       :host ::ng-deep .ProseMirror blockquote {
         border-left: 3px solid var(--color-border);
         padding-left: 1rem;
@@ -225,6 +306,11 @@ type SaveStatus = 'saved' | 'saving' | 'dirty' | 'error';
       :host ::ng-deep .ProseMirror img {
         max-width: 100%;
         border-radius: 0.375rem;
+        cursor: pointer;
+      }
+      :host ::ng-deep .ProseMirror img.ProseMirror-selectednode {
+        outline: 2px solid var(--color-primary);
+        outline-offset: 2px;
       }
       :host ::ng-deep .ProseMirror hr {
         border: 0;
@@ -239,6 +325,16 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
   private readonly toastr = inject(ToastrService);
   private readonly dialog = inject(MatDialog);
   private readonly dialogs = inject(DialogService);
+  private readonly exportService = inject(DataExportService);
+  private readonly favoritesStore = inject(FavoritesStore);
+
+  protected isFavorite(): boolean {
+    return this.favoritesStore.isFavorite('NOTE', this.note().id);
+  }
+
+  protected toggleFavorite(): void {
+    this.favoritesStore.toggle('NOTE', this.note().id);
+  }
 
   readonly note = input.required<Note>();
   readonly noteDeleted = output<string>();
@@ -248,6 +344,7 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
 
   protected readonly status = signal<SaveStatus>('saved');
   protected readonly pinned = signal(false);
+  protected readonly imageSelected = signal(false);
   protected readonly tags = signal<string[]>([]);
   protected title = '';
   protected icon: string | null = '';
@@ -257,24 +354,35 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
 
   private editor: Editor | null = null;
   private currentNoteId: string | null = null;
-  private readonly save$ = new Subject<UpdateNoteDto>();
+  private readonly save$ = new Subject<{ id: string; payload: UpdateNoteDto }>();
   private readonly destroy$ = new Subject<void>();
 
   constructor() {
-    effect(() => {
-      const n = this.note();
-      this.title = n.title;
-      this.icon = n.icon ?? '';
-      this.coverImageUrl = n.coverImageUrl ?? '';
-      this.description = n.description ?? '';
-      this.pinned.set(n.isPinned);
-      this.tags.set([...n.tags]);
-      this.status.set('saved');
-      this.applyNoteToEditor(n);
-    });
+    // Sync the selected note into the editor + local state whenever the input
+    // changes. allowSignalWrites is REQUIRED (Angular <=18): writing signals in
+    // an effect throws NG0600 by default, which would abort the effect before
+    // applyNoteToEditor() runs and leave the editor showing the previous note.
+    effect(
+      () => {
+        const n = this.note();
+        // Reset the editor content FIRST so a stale signal write can never
+        // strand the editor on the previous note's content.
+        this.applyNoteToEditor(n);
+        this.title = n.title;
+        this.icon = n.icon ?? '';
+        this.coverImageUrl = n.coverImageUrl ?? '';
+        this.description = n.description ?? '';
+        this.pinned.set(n.isPinned);
+        this.tags.set([...n.tags]);
+        this.status.set('saved');
+      },
+      { allowSignalWrites: true },
+    );
 
-    this.save$.pipe(debounceTime(2000), takeUntil(this.destroy$)).subscribe((payload) => {
-      this.flush(payload);
+    // The note id is captured at enqueue time (not at flush time) so a debounced
+    // autosave from note A can never be written onto note B after switching.
+    this.save$.pipe(debounceTime(2000), takeUntil(this.destroy$)).subscribe(({ id, payload }) => {
+      this.flush(payload, id);
     });
   }
 
@@ -283,14 +391,19 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
       element: this.editorEl.nativeElement,
       extensions: [
         StarterKit,
-        Image.configure({ inline: false }),
+        TextStyle,
+        FontFamily,
+        ResizableImage.configure({ inline: false }),
         Link.configure({ openOnClick: false, autolink: true }),
       ],
       content: '<p></p>',
       onUpdate: ({ editor }) => {
         this.status.set('dirty');
         const json = editor.getJSON();
-        this.save$.next({ content: JSON.stringify(json) });
+        this.save$.next({ id: this.note().id, payload: { content: JSON.stringify(json) } });
+      },
+      onSelectionUpdate: ({ editor }) => {
+        this.imageSelected.set(editor.isActive('image'));
       },
     });
     this.applyNoteToEditor(this.note());
@@ -304,6 +417,13 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
 
   protected focusEditor(): void {
     this.editor?.commands.focus();
+  }
+
+  protected downloadMarkdown(): void {
+    this.exportService.noteMarkdown(this.note().id).subscribe({
+      next: (res) => this.exportService.save(res, 'note.md'),
+      error: () => this.toastr.error('Could not download the note'),
+    });
   }
 
   private applyNoteToEditor(note: Note): void {
@@ -337,13 +457,38 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
     this.editor?.chain().focus().toggleHeading({ level }).run();
   }
 
+  protected readonly fonts: { value: string; label: string }[] = [
+    { value: '', label: 'Default font' },
+    { value: 'Inter, sans-serif', label: 'Sans' },
+    { value: 'Georgia, serif', label: 'Serif' },
+    { value: "'JetBrains Mono', monospace", label: 'Mono' },
+    { value: 'Arial, sans-serif', label: 'Arial' },
+    { value: "'Times New Roman', serif", label: 'Times' },
+  ];
+
+  protected setFont(event: Event): void {
+    const value = (event.target as HTMLSelectElement).value;
+    const chain = this.editor?.chain().focus();
+    if (!chain) return;
+    if (value) chain.setFontFamily(value).run();
+    else chain.unsetFontFamily().run();
+  }
+
+  protected setImageWidth(width: string | null): void {
+    this.editor?.chain().focus().updateAttributes('image', { width }).run();
+  }
+
+  protected deleteImage(): void {
+    this.editor?.chain().focus().deleteSelection().run();
+  }
+
   protected async insertLink(): Promise<void> {
     const url = await this.dialogs.prompt({
-      title: 'Insertar link',
-      label: 'URL del link',
+      title: 'Insert link',
+      label: 'Link URL',
       inputType: 'url',
       placeholder: 'https://…',
-      confirmLabel: 'Insertar',
+      confirmLabel: 'Insert',
     });
     if (!url) return;
     this.editor?.chain().focus().setLink({ href: url }).run();
@@ -351,11 +496,11 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
 
   protected async insertImage(): Promise<void> {
     const url = await this.dialogs.prompt({
-      title: 'Insertar imagen',
-      label: 'URL de la imagen',
+      title: 'Insert image',
+      label: 'Image URL',
       inputType: 'url',
       placeholder: 'https://…',
-      confirmLabel: 'Insertar',
+      confirmLabel: 'Insert',
     });
     if (!url) return;
     this.editor?.chain().focus().setImage({ src: url }).run();
@@ -364,17 +509,20 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
   protected onMetaChange(): void {
     this.status.set('dirty');
     this.save$.next({
-      title: this.title.trim() || 'Sin título',
-      icon: this.icon?.trim() || undefined,
-      description: this.description.trim() || undefined,
-      coverImageUrl: this.coverImageUrl.trim() || undefined,
+      id: this.note().id,
+      payload: {
+        title: this.title.trim() || 'Untitled',
+        icon: this.icon?.trim() || undefined,
+        description: this.description.trim() || undefined,
+        coverImageUrl: this.coverImageUrl.trim() || undefined,
+      },
     });
   }
 
   protected onIconChange(value: string | null): void {
     this.icon = value;
     this.status.set('dirty');
-    this.save$.next({ icon: value ?? undefined });
+    this.save$.next({ id: this.note().id, payload: { icon: value ?? undefined } });
   }
 
   protected openSettings(): void {
@@ -397,7 +545,17 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
     const next = !this.pinned();
     this.pinned.set(next);
     this.status.set('saving');
-    this.flush({ isPinned: next });
+    this.service.update(this.note().id, { isPinned: next }).subscribe({
+      next: (updated) => {
+        this.status.set('saved');
+        this.noteUpdated.emit(updated);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.pinned.set(!next); // revert optimistic flip (e.g. pinned-notes cap)
+        this.status.set('saved');
+        this.toastr.error(this.errMsg(err));
+      },
+    });
   }
 
   protected addTag(): void {
@@ -424,24 +582,24 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
   protected async deleteSelected(): Promise<void> {
     const n = this.note();
     const ok = await this.dialogs.confirm({
-      title: 'Eliminar nota',
-      message: `¿Eliminar la nota "${n.title}"? Esta acción no se puede deshacer.`,
-      confirmLabel: 'Eliminar',
+      title: 'Delete note',
+      message: `Delete the note "${n.title}"? This action cannot be undone.`,
+      confirmLabel: 'Delete',
       destructive: true,
     });
     if (!ok) return;
     this.service.delete(n.id).subscribe({
       next: () => {
-        this.toastr.success('Nota eliminada');
+        this.toastr.success('Note deleted');
         this.noteDeleted.emit(n.id);
       },
       error: (err: HttpErrorResponse) => this.toastr.error(this.errMsg(err)),
     });
   }
 
-  private flush(payload: UpdateNoteDto): void {
+  private flush(payload: UpdateNoteDto, id: string = this.note().id): void {
     this.status.set('saving');
-    this.service.update(this.note().id, payload).subscribe({
+    this.service.update(id, payload).subscribe({
       next: (updated) => {
         this.status.set('saved');
         this.noteUpdated.emit(updated);
@@ -455,6 +613,6 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
     const msg = body?.error?.message;
     if (Array.isArray(msg)) return msg.join('. ');
     if (typeof msg === 'string') return msg;
-    return 'Error inesperado';
+    return 'Unexpected error';
   }
 }

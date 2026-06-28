@@ -105,6 +105,114 @@ body {
   box-shadow: inset 0 -1px 0 var(--color-border-soft);
 }
 
+/* ─── Design-system primitives (mirror design bundle: panel / btn / chip) ─── */
+.panel {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-soft);
+  border-radius: var(--radius-lg);
+}
+.panel-header {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--color-border-soft);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.panel-title {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+}
+.panel-sub {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+.panel-pad {
+  padding: 18px 20px;
+}
+.panel-row {
+  border-top: 1px solid var(--color-border-soft);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 13px;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: all 100ms;
+  white-space: nowrap;
+  text-decoration: none;
+}
+.btn:hover {
+  background: var(--color-surface-hover);
+  border-color: var(--color-text-faint);
+}
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.btn-primary {
+  background: var(--color-primary);
+  color: #fff;
+  border-color: transparent;
+  font-weight: 500;
+}
+.btn-primary:hover {
+  background: var(--color-primary-soft);
+  border-color: transparent;
+}
+.btn-ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--color-text-muted);
+}
+.btn-ghost:hover {
+  background: var(--color-surface-hover);
+  color: var(--color-text);
+}
+.btn-sm {
+  padding: 4px 8px;
+  font-size: 12px;
+}
+.btn-icon {
+  padding: 6px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 500;
+  background: var(--color-surface-2);
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border-soft);
+}
+
+.stat-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-soft);
+  border-radius: var(--radius-lg);
+  padding: 16px 18px;
+  box-shadow: var(--shadow-sm);
+  transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
+}
+.stat-card:hover {
+  border-color: color-mix(in srgb, var(--color-primary) 45%, var(--color-border));
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
 /* ─── Scrollbar styling (subtle, theme-aware) ─── */
 ::-webkit-scrollbar {
   width: 10px;

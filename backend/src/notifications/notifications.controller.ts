@@ -9,14 +9,19 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  Req,
   UseGuards,
 } from '@nestjs/common';
+import type { Request } from 'express';
 
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser, AuthUser } from '../common/decorators/current-user.decorator';
 import { NotificationsService } from './notifications.service';
+import { AttachmentService, type AttachEntityType } from './attachment.service';
 import { CreateNotificationDto } from './dto/create-notification.dto';
 import { UpdateNotificationDto } from './dto/update-notification.dto';
+import { AttachNotificationDto } from './dto/attach-notification.dto';
+import { UpdatePreferencesDto } from './dto/update-preferences.dto';
 import {
   PushSubscriptionDto,
   UnsubscribePushDto,
@@ -25,7 +30,10 @@ import {
 @UseGuards(JwtAuthGuard)
 @Controller('notifications')
 export class NotificationsController {
-  constructor(private readonly notifications: NotificationsService) {}
+  constructor(
+    private readonly notifications: NotificationsService,
+    private readonly attachments: AttachmentService,
+  ) {}
 
   // ─── Configs ─────────────────────────────────────────────
 
@@ -59,14 +67,77 @@ export class NotificationsController {
   }
 
   @Post('push/subscribe')
-  subscribePush(@CurrentUser() user: AuthUser, @Body() dto: PushSubscriptionDto) {
-    return this.notifications.subscribePush(user.id, dto);
+  subscribePush(
+    @CurrentUser() user: AuthUser,
+    @Body() dto: PushSubscriptionDto,
+    @Req() req: Request,
+  ) {
+    return this.notifications.subscribePush(user.id, dto, req.headers['user-agent'] ?? null);
   }
 
   @Delete('push/unsubscribe')
   @HttpCode(HttpStatus.OK)
   unsubscribePush(@CurrentUser() user: AuthUser, @Body() dto: UnsubscribePushDto) {
     return this.notifications.unsubscribePush(user.id, dto);
+  }
+
+  @Get('push/devices')
+  listDevices(@CurrentUser() user: AuthUser) {
+    return this.notifications.listDevices(user.id);
+  }
+
+  @Delete('push/devices/:id')
+  @HttpCode(HttpStatus.OK)
+  removeDevice(@CurrentUser() user: AuthUser, @Param('id', ParseUUIDPipe) id: string) {
+    return this.notifications.removeDevice(user.id, id);
+  }
+
+  // ─── Preferences (Block 3) ───────────────────────────────
+
+  @Get('preferences')
+  getPreferences(@CurrentUser() user: AuthUser) {
+    return this.notifications.getPreferences(user.id);
+  }
+
+  @Patch('preferences')
+  updatePreferences(@CurrentUser() user: AuthUser, @Body() dto: UpdatePreferencesDto) {
+    return this.notifications.updatePreferences(user.id, dto);
+  }
+
+  // ─── Attach to entities (Block 3) ────────────────────────
+
+  @Get('targets/:type/:entityId')
+  listTargets(
+    @CurrentUser() user: AuthUser,
+    @Param('type') type: AttachEntityType,
+    @Param('entityId', ParseUUIDPipe) entityId: string,
+  ) {
+    return this.attachments.list(type, entityId, user.id);
+  }
+
+  @Post('targets/:type/:entityId')
+  attach(
+    @CurrentUser() user: AuthUser,
+    @Param('type') type: AttachEntityType,
+    @Param('entityId', ParseUUIDPipe) entityId: string,
+    @Body() dto: AttachNotificationDto,
+  ) {
+    return this.attachments.attach(type, entityId, dto.notificationId, user.id, {
+      minutesBefore: dto.minutesBefore,
+      timeOfDay: dto.timeOfDay,
+      daysBefore: dto.daysBefore,
+    });
+  }
+
+  @Delete('targets/:type/:entityId/:notificationId')
+  @HttpCode(HttpStatus.OK)
+  detach(
+    @CurrentUser() user: AuthUser,
+    @Param('type') type: AttachEntityType,
+    @Param('entityId', ParseUUIDPipe) entityId: string,
+    @Param('notificationId', ParseUUIDPipe) notificationId: string,
+  ) {
+    return this.attachments.detach(type, entityId, notificationId, user.id);
   }
 
   @Get(':id')

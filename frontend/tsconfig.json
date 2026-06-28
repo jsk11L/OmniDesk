@@ -22,7 +22,9 @@
       "@core/*": ["./src/app/core/*"],
       "@shared/*": ["./src/app/shared/*"],
       "@features/*": ["./src/app/features/*"],
-      "@env/*": ["./src/environments/*"]
+      "@env/*": ["./src/environments/*"],
+      "@omnidesk/shared": ["../shared/src/index.ts"],
+      "@omnidesk/shared/*": ["../shared/src/*"]
     }
   },
   "angularCompilerOptions": {

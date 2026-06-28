@@ -171,13 +171,14 @@ Thumbs.db
 memory/
 
 # =========================
-# Documentación local (no se publica)
+# Local documentation (not published)
 # =========================
-# Solo README.md es público. Toda otra documentación markdown del root
-# es para uso interno/local (instrucciones para IAs, spec de construcción,
-# guías de despliegue, planillas de placeholders, instrucciones de dev local).
+# Only README.md and CHANGELOG.md are public. Any other root markdown doc is
+# internal/local (AI instructions, build spec, deployment notes, placeholder
+# sheets, local dev instructions). Published ops docs live under docs/.
 /*.md
 !/README.md
+!/CHANGELOG.md
 
 # =========================
 # Carpetas de referencia/diseño (no se publican)

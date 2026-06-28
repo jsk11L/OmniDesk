@@ -34,7 +34,7 @@ export class CreateNoteDto {
 
   @IsOptional()
   @IsString()
-  @Matches(URL_OR_UPLOAD, { message: 'coverImageUrl debe ser una URL o ruta /uploads/...' })
+  @Matches(URL_OR_UPLOAD, { message: 'coverImageUrl must be a URL or an /uploads/ path' })
   coverImageUrl?: string;
 
   @IsOptional()

@@ -1,2 +1,10 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Force LF for files executed inside Linux containers — CRLF would break them
+# (e.g. "/bin/sh^M: bad interpreter").
+*.sh        text eol=lf
+Dockerfile  text eol=lf
+*.yml       text eol=lf
+*.yaml      text eol=lf
+

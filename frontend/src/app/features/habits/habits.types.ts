@@ -1,29 +1,7 @@
-export type HabitEntryStatus = 'DONE' | 'MISSED' | 'RECOVERED' | 'REST';
+// Entity shapes from the Prisma-generated source (D-011).
+export type { Habit, HabitEntry, HabitEntryStatus, GoalPeriod } from '@omnidesk/shared';
 
-export interface Habit {
-  id: string;
-  userId: string;
-  name: string;
-  description: string | null;
-  icon: string | null;
-  color: string;
-  activeDays: number[];
-  weeklyGoal: number | null;
-  currentStreak: number;
-  longestStreak: number;
-  perfectWeeks: number;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface HabitEntry {
-  id: string;
-  habitId: string;
-  date: string;
-  status: HabitEntryStatus;
-  notes: string | null;
-  createdAt: string;
-}
+import type { HabitEntryStatus, GoalPeriod } from '@omnidesk/shared';
 
 export interface HabitStats {
   currentStreak: number;
@@ -33,6 +11,11 @@ export interface HabitStats {
   heatmap: Array<{ date: string; status: HabitEntryStatus | null }>;
 }
 
+export interface HabitWeek {
+  habitId: string;
+  days: Array<{ date: string; status: HabitEntryStatus | null }>;
+}
+
 export interface CreateHabitDto {
   name: string;
   description?: string;
@@ -40,6 +23,8 @@ export interface CreateHabitDto {
   color?: string;
   activeDays: number[];
   weeklyGoal?: number;
+  goalPeriod?: GoalPeriod;
+  goalTarget?: number;
 }
 
 export type UpdateHabitDto = Partial<CreateHabitDto>;

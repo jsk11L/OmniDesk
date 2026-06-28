@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterLink, RouterLinkActive } from '@angular/router';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { BaseChartDirective } from 'ng2-charts';
 import { ToastrService } from 'ngx-toastr';
@@ -13,10 +14,23 @@ import {
   type TransactionDialogData,
   type TransactionDialogResult,
 } from '../transaction-dialog/transaction-dialog.component';
+import {
+  BudgetDialogComponent,
+  type BudgetDialogData,
+  type BudgetDialogResult,
+} from '../budget-dialog/budget-dialog.component';
+import {
+  RecurringDialogComponent,
+  type RecurringDialogData,
+  type RecurringDialogResult,
+} from '../recurring-dialog/recurring-dialog.component';
 import type {
   Budget,
+  BudgetPeriod,
   FinanceBoard,
   FinanceSummary,
+  RecurringFrequency,
+  RecurringTransaction,
   Transaction,
 } from '../finance.types';
 
@@ -24,23 +38,23 @@ import type {
   selector: 'app-finance-dashboard',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, MatDialogModule, BaseChartDirective],
+  imports: [FormsModule, RouterLink, RouterLinkActive, MatDialogModule, BaseChartDirective],
   template: `
     <div class="h-full flex flex-col overflow-hidden">
-      <header class="px-6 py-4 border-b border-border flex items-center justify-between gap-4">
-        <div class="flex items-center gap-3">
-          <h1 class="text-2xl font-semibold">Finanzas</h1>
-          @if (boards().length > 0) {
-            <select
-              [(ngModel)]="selectedBoardId"
-              (ngModelChange)="onBoardChange($event)"
-              class="px-3 py-2 bg-surface border border-border rounded text-sm outline-none focus:border-primary"
-            >
-              @for (b of boards(); track b.id) {
-                <option [value]="b.id">{{ b.name }} ({{ b.currency }})</option>
-              }
-            </select>
-          }
+      <header class="px-4 sm:px-6 pt-4 flex flex-wrap items-center justify-between gap-3">
+        <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+          <h1 class="text-xl sm:text-2xl font-semibold">Finance</h1>
+          <select
+            [ngModel]="board()?.currency ?? 'USD'"
+            (ngModelChange)="setCurrency($event)"
+            [disabled]="!board()"
+            title="Display currency"
+            class="px-3 py-2 bg-surface border border-border rounded text-sm outline-none focus:border-primary disabled:opacity-50"
+          >
+            @for (c of currencies; track c) {
+              <option [value]="c">{{ c }}</option>
+            }
+          </select>
           <input
             type="month"
             [(ngModel)]="selectedMonth"
@@ -51,10 +65,11 @@ import type {
         <div class="flex gap-2">
           <button
             type="button"
-            (click)="createBoard()"
-            class="px-3 py-2 rounded text-sm hover:bg-surface-hover"
+            (click)="addRecurring()"
+            [disabled]="!board()"
+            class="px-3 py-2 rounded text-sm hover:bg-surface-hover disabled:opacity-50"
           >
-            + Tablero
+            + Recurring
           </button>
           <button
             type="button"
@@ -62,90 +77,137 @@ import type {
             [disabled]="!board()"
             class="px-4 py-2 rounded bg-primary text-white text-sm font-medium hover:opacity-90 disabled:opacity-50"
           >
-            + Transacción
+            + Transaction
           </button>
         </div>
       </header>
 
-      <div class="flex-1 overflow-auto p-6 space-y-6">
+      <nav class="px-4 sm:px-6 flex gap-1 border-b border-border">
+        <a routerLink="/app/finance/organizer" routerLinkActive="!border-primary !text-text font-medium"
+          class="px-3 py-2.5 -mb-px text-sm border-b-2 border-transparent text-text-muted hover:text-text">
+          Wishlist &amp; Savings
+        </a>
+        <a routerLink="/app/finance" routerLinkActive="!border-primary !text-text font-medium"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="px-3 py-2.5 -mb-px text-sm border-b-2 border-transparent text-text-muted hover:text-text">
+          Expenses &amp; Budgets
+        </a>
+      </nav>
+
+      <div class="flex-1 overflow-auto p-4 sm:p-6 space-y-6">
         @if (loading()) {
-          <p class="text-text-muted">Cargando…</p>
+          <p class="text-text-muted">Loading…</p>
         } @else if (!board()) {
-          <p class="text-text-muted text-center py-16">Crea un tablero para empezar.</p>
+          <p class="text-text-muted text-center py-16">Create a board to get started.</p>
         } @else if (summary()) {
           @let s = summary()!;
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div class="bg-surface border border-border rounded p-4">
-              <p class="text-xs text-text-muted mb-1">Ingresos</p>
-              <p class="text-2xl font-semibold text-success">
-                {{ formatCurrency(s.income) }}
-              </p>
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            <div class="bg-surface border border-border-soft rounded-lg p-4 shadow-sm">
+              <p class="text-xs text-text-muted mb-1">Income</p>
+              <p class="text-xl sm:text-2xl font-semibold text-success">{{ formatCurrency(s.income) }}</p>
             </div>
-            <div class="bg-surface border border-border rounded p-4">
-              <p class="text-xs text-text-muted mb-1">Gastos</p>
-              <p class="text-2xl font-semibold text-danger">
-                {{ formatCurrency(s.expense) }}
-              </p>
+            <div class="bg-surface border border-border-soft rounded-lg p-4 shadow-sm">
+              <p class="text-xs text-text-muted mb-1">Expenses</p>
+              <p class="text-xl sm:text-2xl font-semibold text-danger">{{ formatCurrency(s.expense) }}</p>
             </div>
-            <div class="bg-surface border border-border rounded p-4">
+            <div class="bg-surface border border-border-soft rounded-lg p-4 shadow-sm">
               <p class="text-xs text-text-muted mb-1">Balance</p>
               <p
-                class="text-2xl font-semibold"
+                class="text-xl sm:text-2xl font-semibold"
                 [class.text-success]="s.balance >= 0"
                 [class.text-danger]="s.balance < 0"
               >
                 {{ formatCurrency(s.balance) }}
               </p>
+              @if (balanceDelta(); as d) {
+                <p class="text-xs mt-0.5" [class.text-success]="d >= 0" [class.text-danger]="d < 0">
+                  {{ formatDelta(d) }} vs last month
+                </p>
+              }
+            </div>
+            <div class="bg-surface border border-border-soft rounded-lg p-4 shadow-sm">
+              <p class="text-xs text-text-muted mb-1">Savings rate</p>
+              <p class="text-xl sm:text-2xl font-semibold" [class.text-success]="(savingsRate() ?? 0) >= 0">
+                {{ savingsRate() !== null ? savingsRate() + '%' : '—' }}
+              </p>
+              <p class="text-xs text-text-faint mt-0.5">of income kept</p>
             </div>
           </div>
 
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <div class="bg-surface border border-border rounded p-4">
-              <h2 class="text-sm font-medium mb-3">Ingresos vs Gastos por día</h2>
+            <div class="bg-surface border border-border-soft rounded-lg p-4 shadow-sm">
+              <h2 class="text-sm font-medium mb-3">Income vs Expenses per day</h2>
               <div class="h-64">
-                <canvas
-                  baseChart
-                  [data]="lineData()"
-                  [options]="lineOptions"
-                  [type]="'line'"
-                ></canvas>
+                <canvas baseChart [data]="lineData()" [options]="lineOptions" [type]="'line'"></canvas>
               </div>
             </div>
-            <div class="bg-surface border border-border rounded p-4">
-              <h2 class="text-sm font-medium mb-3">Gastos por categoría</h2>
-              <div class="h-64">
-                @if (s.byCategory.length > 0) {
-                  <canvas
-                    baseChart
-                    [data]="donutData()"
-                    [options]="donutOptions"
-                    [type]="'doughnut'"
-                  ></canvas>
-                } @else {
-                  <p class="text-text-muted text-sm text-center py-12">
-                    Sin gastos en el período seleccionado
-                  </p>
-                }
-              </div>
+            <div class="bg-surface border border-border-soft rounded-lg p-4 shadow-sm">
+              <h2 class="text-sm font-medium mb-3">Expenses by category</h2>
+              @if (s.byCategory.length > 0) {
+                <div class="flex flex-col sm:flex-row items-center gap-4">
+                  <div class="h-48 w-48 shrink-0">
+                    <canvas baseChart [data]="donutData()" [options]="donutOptions" [type]="'doughnut'"></canvas>
+                  </div>
+                  <ul class="flex-1 w-full space-y-1 self-start">
+                    @for (c of s.byCategory; track c.categoryId) {
+                      <li>
+                        <button
+                          type="button"
+                          (click)="filterByCategory(c.categoryId ?? '')"
+                          [class]="
+                            'w-full flex items-center justify-between gap-2 text-sm px-2 py-1 rounded hover:bg-surface-hover ' +
+                            (categoryFilter() === c.categoryId ? 'bg-surface-hover' : '')
+                          "
+                        >
+                          <span class="flex items-center gap-2 min-w-0">
+                            <span class="w-2.5 h-2.5 rounded-full shrink-0" [style.background]="c.categoryColor"></span>
+                            <span class="truncate">{{ c.categoryName }}</span>
+                          </span>
+                          <span class="text-text-muted shrink-0">
+                            {{ formatCurrency(c.total) }} · {{ pctOfExpense(c.total) }}%
+                          </span>
+                        </button>
+                      </li>
+                    }
+                  </ul>
+                </div>
+              } @else {
+                <p class="text-text-muted text-sm text-center py-12">No expenses in the selected period</p>
+              }
             </div>
           </div>
 
           <section>
-            <h2 class="text-sm font-medium mb-3">Presupuestos</h2>
+            <h2 class="text-sm font-medium mb-3">Budgets</h2>
             @if ((board()!.budgets ?? []).length === 0) {
               <p class="text-text-muted text-sm">
-                Aún no tienes presupuestos.
+                You don't have any budgets yet.
                 <button (click)="addBudget()" class="text-primary hover:underline">
-                  + Crear el primero
+                  + Create the first one
                 </button>
               </p>
             } @else {
               <div class="space-y-2">
                 @for (b of board()!.budgets!; track b.id) {
-                  <div class="bg-surface border border-border rounded p-3">
+                  <button
+                    type="button"
+                    (click)="editBudget(b)"
+                    class="w-full text-left bg-surface border border-border rounded p-3 hover:border-primary transition-colors"
+                  >
                     <div class="flex items-center justify-between text-sm mb-1">
-                      <span class="font-medium">{{ b.name }}</span>
-                      <span class="text-xs text-text-muted">
+                      <span class="font-medium flex items-center gap-2">
+                        {{ b.name }}
+                        <span class="text-xs font-normal px-1.5 py-0.5 rounded bg-background text-text-muted">
+                          {{ periodLabel(b.period) }}
+                        </span>
+                        @if (categoryName(b); as cat) {
+                          <span class="text-xs font-normal text-text-faint">· {{ cat }}</span>
+                        }
+                      </span>
+                      <span
+                        class="text-xs"
+                        [class]="percent(b) > 100 ? 'text-danger font-medium' : 'text-text-muted'"
+                      >
                         {{ formatCurrency(budgetSpent(b)) }} / {{ formatCurrency(b.amount) }}
                         ({{ percent(b) }}%)
                       </span>
@@ -157,36 +219,127 @@ import type {
                         [style.background]="percent(b) > 100 ? 'var(--color-danger)' : 'var(--color-primary)'"
                       ></div>
                     </div>
-                  </div>
+                    <p class="text-xs text-text-faint mt-1">
+                      @if (remaining(b) >= 0) {
+                        {{ formatCurrency(remaining(b)) }} left
+                      } @else {
+                        {{ formatCurrency(-remaining(b)) }} over budget
+                      }
+                    </p>
+                  </button>
                 }
                 <button
                   type="button"
                   (click)="addBudget()"
                   class="text-xs text-primary hover:underline"
                 >
-                  + Añadir presupuesto
+                  + Add budget
                 </button>
               </div>
             }
           </section>
 
           <section>
-            <h2 class="text-sm font-medium mb-3">Transacciones recientes</h2>
-            @if (transactions().length === 0) {
-              <p class="text-text-muted text-sm py-8 text-center">Sin transacciones</p>
+            <div class="flex items-center justify-between gap-2 mb-3">
+              <h2 class="text-sm font-medium">Recurring &amp; subscriptions</h2>
+              @if (recurring().length > 0) {
+                <button type="button" (click)="addRecurring()" class="text-xs text-primary hover:underline">
+                  + Add
+                </button>
+              }
+            </div>
+            @if (recurring().length === 0) {
+              <p class="text-text-muted text-sm">
+                No recurring entries yet.
+                <button (click)="addRecurring()" class="text-primary hover:underline">
+                  + Add a subscription, salary or bill
+                </button>
+              </p>
             } @else {
-              <div class="border border-border rounded overflow-hidden">
-                <table class="w-full text-sm">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                @for (r of recurring(); track r.id) {
+                  <button
+                    type="button"
+                    (click)="editRecurring(r)"
+                    [class]="
+                      'text-left bg-surface border rounded p-3 hover:border-primary transition-colors ' +
+                      (r.isActive ? 'border-border' : 'border-border opacity-60')
+                    "
+                  >
+                    <div class="flex items-center justify-between gap-2 mb-0.5">
+                      <span class="font-medium text-sm flex items-center gap-2 min-w-0">
+                        <span class="truncate">{{ r.title }}</span>
+                        @if (!r.isActive) {
+                          <span class="text-xs font-normal px-1.5 py-0.5 rounded bg-background text-text-muted shrink-0">
+                            Paused
+                          </span>
+                        }
+                      </span>
+                      <span
+                        class="text-sm font-medium shrink-0"
+                        [class.text-success]="r.type === 'INCOME'"
+                        [class.text-danger]="r.type === 'EXPENSE'"
+                      >
+                        {{ r.type === 'INCOME' ? '+' : '-' }}{{ formatCurrency(r.amount) }}
+                      </span>
+                    </div>
+                    <p class="text-xs text-text-muted">
+                      {{ frequencyLabel(r.frequency) }} · next {{ formatDate(r.nextRun) }}
+                      @if (r.category) {
+                        · {{ r.category.name }}
+                      }
+                    </p>
+                  </button>
+                }
+              </div>
+            }
+          </section>
+
+          <section>
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+              <h2 class="text-sm font-medium">Transactions</h2>
+              <div class="flex flex-wrap items-center gap-2">
+                <input
+                  type="search"
+                  [ngModel]="txSearch()"
+                  (ngModelChange)="txSearch.set($event)"
+                  placeholder="Search…"
+                  class="px-2.5 py-1.5 bg-surface border border-border rounded text-sm outline-none focus:border-primary w-36"
+                />
+                <select
+                  [ngModel]="txType()"
+                  (ngModelChange)="txType.set($event)"
+                  class="px-2.5 py-1.5 bg-surface border border-border rounded text-sm outline-none focus:border-primary"
+                >
+                  <option value="all">All</option>
+                  <option value="INCOME">Income</option>
+                  <option value="EXPENSE">Expenses</option>
+                </select>
+                @if (hasFilters()) {
+                  <button type="button" (click)="clearFilters()" class="text-xs text-text-muted hover:text-text">Clear</button>
+                }
+                <button type="button" (click)="exportCsv()" class="px-2.5 py-1.5 text-sm rounded border border-border hover:bg-surface-hover">
+                  Export CSV
+                </button>
+              </div>
+            </div>
+            @if (filteredTransactions().length === 0) {
+              <p class="text-text-muted text-sm py-8 text-center">
+                {{ transactions().length === 0 ? 'No transactions' : 'No transactions match the filters' }}
+              </p>
+            } @else {
+              <div class="border border-border-soft rounded-lg overflow-x-auto shadow-sm">
+                <table class="w-full text-sm min-w-[480px]">
                   <thead class="bg-surface text-text-muted text-xs uppercase">
                     <tr>
-                      <th class="px-3 py-2 text-left">Fecha</th>
-                      <th class="px-3 py-2 text-left">Título</th>
-                      <th class="px-3 py-2 text-left">Categoría</th>
-                      <th class="px-3 py-2 text-right">Monto</th>
+                      <th class="px-3 py-2 text-left">Date</th>
+                      <th class="px-3 py-2 text-left">Title</th>
+                      <th class="px-3 py-2 text-left">Category</th>
+                      <th class="px-3 py-2 text-right">Amount</th>
                     </tr>
                   </thead>
                   <tbody>
-                    @for (t of transactions(); track t.id) {
+                    @for (t of filteredTransactions(); track t.id) {
                       <tr
                         (click)="editTransaction(t)"
                         class="border-t border-border hover:bg-surface-hover cursor-pointer"
@@ -238,9 +391,61 @@ export class FinanceDashboardComponent implements OnInit {
   protected readonly boards = signal<FinanceBoard[]>([]);
   protected readonly board = signal<FinanceBoard | null>(null);
   protected readonly transactions = signal<Transaction[]>([]);
+  protected readonly recurring = signal<RecurringTransaction[]>([]);
   protected readonly summary = signal<FinanceSummary | null>(null);
+  protected readonly prevSummary = signal<FinanceSummary | null>(null);
   protected selectedBoardId = '';
   protected selectedMonth = this.currentMonth();
+  protected readonly currencies = ['USD', 'EUR', 'CLP', 'GBP', 'MXN', 'ARS', 'BRL', 'JPY', 'CAD', 'AUD'];
+
+  /** Changes the active board's display currency (no amount conversion). */
+  protected setCurrency(currency: string): void {
+    const b = this.board();
+    if (!b || b.currency === currency) return;
+    this.service.updateBoard(b.id, { currency }).subscribe({
+      next: (updated) => {
+        this.board.set({ ...b, currency: updated.currency });
+        this.boards.update((arr) =>
+          arr.map((x) => (x.id === b.id ? { ...x, currency: updated.currency } : x)),
+        );
+      },
+      error: () => this.toastr.error('Could not change currency'),
+    });
+  }
+
+  // Transaction filters
+  protected readonly txSearch = signal('');
+  protected readonly txType = signal<'all' | 'INCOME' | 'EXPENSE'>('all');
+  protected readonly categoryFilter = signal<string | null>(null);
+
+  protected readonly filteredTransactions = computed(() => {
+    const q = this.txSearch().trim().toLowerCase();
+    const type = this.txType();
+    const cat = this.categoryFilter();
+    return this.transactions().filter(
+      (t) =>
+        (type === 'all' || t.type === type) &&
+        (!cat || t.categoryId === cat) &&
+        (!q || t.title.toLowerCase().includes(q)),
+    );
+  });
+
+  protected readonly savingsRate = computed(() => {
+    const s = this.summary();
+    if (!s || s.income <= 0) return null;
+    return Math.round(((s.income - s.expense) / s.income) * 100);
+  });
+
+  protected readonly balanceDelta = computed(() => {
+    const s = this.summary();
+    const p = this.prevSummary();
+    if (!s || !p) return null;
+    return s.balance - p.balance;
+  });
+
+  protected readonly hasFilters = computed(
+    () => !!this.txSearch().trim() || this.txType() !== 'all' || this.categoryFilter() !== null,
+  );
 
   protected readonly donutData = computed<ChartData<'doughnut'>>(() => {
     const s = this.summary();
@@ -273,7 +478,7 @@ export class FinanceDashboardComponent implements OnInit {
       labels: sortedDays.map((d) => d.slice(5)),
       datasets: [
         {
-          label: 'Ingresos',
+          label: 'Income',
           data: sortedDays.map((d) => byDay.get(d)?.income ?? 0),
           borderColor: '#22c55e',
           backgroundColor: 'rgba(34, 197, 94, 0.2)',
@@ -281,7 +486,7 @@ export class FinanceDashboardComponent implements OnInit {
           fill: true,
         },
         {
-          label: 'Gastos',
+          label: 'Expenses',
           data: sortedDays.map((d) => byDay.get(d)?.expense ?? 0),
           borderColor: '#ef4444',
           backgroundColor: 'rgba(239, 68, 68, 0.2)',
@@ -305,10 +510,14 @@ export class FinanceDashboardComponent implements OnInit {
   protected readonly donutOptions: ChartConfiguration<'doughnut'>['options'] = {
     responsive: true,
     maintainAspectRatio: false,
-    plugins: {
-      legend: { position: 'right', labels: { color: '#a1a1aa', boxWidth: 12 } },
-    },
+    plugins: { legend: { display: false } },
   };
+
+  protected pctOfExpense(total: number): number {
+    const s = this.summary();
+    if (!s || s.expense <= 0) return 0;
+    return Math.round((total / s.expense) * 100);
+  }
 
   ngOnInit(): void {
     this.service.listBoards().subscribe({
@@ -340,9 +549,9 @@ export class FinanceDashboardComponent implements OnInit {
 
   protected async createBoard(): Promise<void> {
     const name = await this.dialogs.prompt({
-      title: 'Nuevo tablero',
-      label: 'Nombre del tablero',
-      confirmLabel: 'Crear',
+      title: 'New board',
+      label: 'Board name',
+      confirmLabel: 'Create',
     });
     if (!name?.trim()) return;
     this.service.createBoard({ name: name.trim() }).subscribe({
@@ -350,7 +559,7 @@ export class FinanceDashboardComponent implements OnInit {
         this.boards.update((arr) => [...arr, board]);
         this.selectedBoardId = board.id;
         this.loadBoard(board.id);
-        this.toastr.success('Tablero creado');
+        this.toastr.success('Board created');
       },
       error: (err: HttpErrorResponse) => this.toastr.error(this.errMsg(err)),
     });
@@ -382,33 +591,73 @@ export class FinanceDashboardComponent implements OnInit {
     });
   }
 
-  protected async addBudget(): Promise<void> {
+  protected addRecurring(): void {
     const board = this.board();
     if (!board) return;
-    const name = await this.dialogs.prompt({
-      title: 'Nuevo presupuesto',
-      label: 'Nombre del presupuesto',
-      placeholder: 'ej: Alimentación',
-      confirmLabel: 'Continuar',
+    const ref = this.dialog.open<
+      RecurringDialogComponent,
+      RecurringDialogData,
+      RecurringDialogResult
+    >(RecurringDialogComponent, { data: { board } });
+    ref.afterClosed().subscribe((result) => {
+      if (result) this.loadRecurring(board.id);
     });
-    if (!name?.trim()) return;
-    const amountStr = await this.dialogs.prompt({
-      title: 'Nuevo presupuesto',
-      label: 'Monto',
-      inputType: 'number',
-      confirmLabel: 'Crear',
+  }
+
+  protected editRecurring(recurring: RecurringTransaction): void {
+    const board = this.board();
+    if (!board) return;
+    const ref = this.dialog.open<
+      RecurringDialogComponent,
+      RecurringDialogData,
+      RecurringDialogResult
+    >(RecurringDialogComponent, { data: { board, recurring } });
+    ref.afterClosed().subscribe((result) => {
+      if (result) this.loadRecurring(board.id);
     });
-    const amount = amountStr ? Number(amountStr) : NaN;
-    if (!Number.isFinite(amount) || amount <= 0) {
-      this.toastr.error('Monto inválido');
-      return;
+  }
+
+  protected frequencyLabel(frequency: RecurringFrequency): string {
+    switch (frequency) {
+      case 'DAILY':
+        return 'Daily';
+      case 'WEEKLY':
+        return 'Weekly';
+      case 'YEARLY':
+        return 'Yearly';
+      default:
+        return 'Monthly';
     }
-    this.service.createBudget(board.id, { name: name.trim(), amount }).subscribe({
-      next: () => {
-        this.toastr.success('Presupuesto creado');
-        this.loadBoard(board.id);
-      },
-      error: (err: HttpErrorResponse) => this.toastr.error(this.errMsg(err)),
+  }
+
+  private loadRecurring(id: string): void {
+    this.service.listRecurring(id).subscribe({
+      next: (recurring) => this.recurring.set(recurring),
+      error: () => this.recurring.set([]),
+    });
+  }
+
+  protected addBudget(): void {
+    const board = this.board();
+    if (!board) return;
+    const ref = this.dialog.open<BudgetDialogComponent, BudgetDialogData, BudgetDialogResult>(
+      BudgetDialogComponent,
+      { data: { boardId: board.id, categories: board.categories ?? [] } },
+    );
+    ref.afterClosed().subscribe((result) => {
+      if (result === 'changed') this.loadBoard(board.id);
+    });
+  }
+
+  protected editBudget(budget: Budget): void {
+    const board = this.board();
+    if (!board) return;
+    const ref = this.dialog.open<BudgetDialogComponent, BudgetDialogData, BudgetDialogResult>(
+      BudgetDialogComponent,
+      { data: { boardId: board.id, categories: board.categories ?? [], budget } },
+    );
+    ref.afterClosed().subscribe((result) => {
+      if (result === 'changed') this.loadBoard(board.id);
     });
   }
 
@@ -423,17 +672,30 @@ export class FinanceDashboardComponent implements OnInit {
     return Math.round((this.budgetSpent(budget) / budget.amount) * 100);
   }
 
+  protected remaining(budget: Budget): number {
+    return budget.amount - this.budgetSpent(budget);
+  }
+
+  protected periodLabel(period: BudgetPeriod): string {
+    return period === 'WEEKLY' ? 'Weekly' : period === 'ANNUAL' ? 'Annual' : 'Monthly';
+  }
+
+  protected categoryName(budget: Budget): string | null {
+    if (!budget.categoryId) return null;
+    return this.board()?.categories?.find((c) => c.id === budget.categoryId)?.name ?? null;
+  }
+
   protected formatCurrency(value: number): string {
     const currency = this.board()?.currency ?? 'USD';
     try {
-      return new Intl.NumberFormat('es-CL', { style: 'currency', currency }).format(value);
+      return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(value);
     } catch {
       return `${currency} ${value.toFixed(2)}`;
     }
   }
 
   protected formatDate(iso: string): string {
-    return new Date(iso).toLocaleDateString('es-CL', {
+    return new Date(iso).toLocaleDateString('en-US', {
       day: '2-digit',
       month: 'short',
       year: '2-digit',
@@ -452,8 +714,57 @@ export class FinanceDashboardComponent implements OnInit {
     return { start, end };
   }
 
+  private prevMonthRange(): { start: string; end: string } {
+    const [year, month] = this.selectedMonth.split('-').map(Number);
+    const start = new Date(year, month - 2, 1).toISOString();
+    const end = new Date(year, month - 1, 0, 23, 59, 59).toISOString();
+    return { start, end };
+  }
+
+  protected filterByCategory(categoryId: string): void {
+    this.categoryFilter.set(this.categoryFilter() === categoryId ? null : categoryId);
+  }
+
+  protected clearFilters(): void {
+    this.txSearch.set('');
+    this.txType.set('all');
+    this.categoryFilter.set(null);
+  }
+
+  protected formatDelta(value: number): string {
+    return (value >= 0 ? '+' : '') + this.formatCurrency(value);
+  }
+
+  protected exportCsv(): void {
+    const rows = this.filteredTransactions();
+    if (rows.length === 0) {
+      this.toastr.info('Nothing to export');
+      return;
+    }
+    const esc = (v: string) => `"${v.replace(/"/g, '""')}"`;
+    const header = ['Date', 'Title', 'Category', 'Type', 'Amount'];
+    const lines = rows.map((t) =>
+      [
+        t.date.slice(0, 10),
+        esc(t.title),
+        esc(t.category?.name ?? ''),
+        t.type,
+        (t.type === 'INCOME' ? '' : '-') + t.amount,
+      ].join(','),
+    );
+    const csv = [header.join(','), ...lines].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `transactions-${this.selectedMonth}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   private loadBoard(id: string): void {
     this.loading.set(true);
+    this.loadRecurring(id);
     this.service.findBoard(id).subscribe({
       next: (board) => {
         this.board.set(board);
@@ -468,6 +779,11 @@ export class FinanceDashboardComponent implements OnInit {
 
   private loadData(id: string): void {
     const range = this.monthRange();
+    // Previous month's balance for the month-over-month delta (independent).
+    this.service.summary(id, this.prevMonthRange()).subscribe({
+      next: (s) => this.prevSummary.set(s),
+      error: () => this.prevSummary.set(null),
+    });
     this.loading.set(true);
     this.service.listTransactions(id, range).subscribe({
       next: (txs) => {
@@ -495,6 +811,6 @@ export class FinanceDashboardComponent implements OnInit {
     const msg = body?.error?.message;
     if (Array.isArray(msg)) return msg.join('. ');
     if (typeof msg === 'string') return msg;
-    return 'Error inesperado';
+    return 'Unexpected error';
   }
 }

@@ -36,17 +36,17 @@ const COLOR_KEYS: (keyof Theme)[] = [
 ];
 
 const COLOR_LABELS: Record<string, string> = {
-  colorPrimary: 'Primario',
-  colorSecondary: 'Secundario',
-  colorBackground: 'Fondo',
-  colorSurface: 'Superficie',
-  colorSurfaceHover: 'Superficie hover',
-  colorBorder: 'Borde',
-  colorText: 'Texto',
-  colorTextMuted: 'Texto atenuado',
-  colorAccent: 'Acento',
-  colorDanger: 'Peligro',
-  colorSuccess: 'Éxito',
+  colorPrimary: 'Primary',
+  colorSecondary: 'Secondary',
+  colorBackground: 'Background',
+  colorSurface: 'Surface',
+  colorSurfaceHover: 'Surface hover',
+  colorBorder: 'Border',
+  colorText: 'Text',
+  colorTextMuted: 'Muted text',
+  colorAccent: 'Accent',
+  colorDanger: 'Danger',
+  colorSuccess: 'Success',
 };
 
 @Component({
@@ -57,7 +57,7 @@ const COLOR_LABELS: Record<string, string> = {
   template: `
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <aside class="lg:col-span-1">
-        <h2 class="text-sm font-medium mb-3">Mis temas</h2>
+        <h2 class="text-sm font-medium mb-3">My themes</h2>
         <ul class="space-y-1">
           @for (t of themes(); track t.id) {
             <li>
@@ -79,7 +79,7 @@ const COLOR_LABELS: Record<string, string> = {
                   {{ t.name }}
                 </span>
                 @if (t.isDefault) {
-                  <span class="text-xs text-text-muted">sistema</span>
+                  <span class="text-xs text-text-muted">system</span>
                 }
                 @if (activeThemeId() === t.id) {
                   <span class="text-xs text-accent">★</span>
@@ -106,7 +106,7 @@ const COLOR_LABELS: Record<string, string> = {
                   (click)="activate(t)"
                   class="px-3 py-1.5 text-sm rounded bg-primary text-white hover:opacity-90"
                 >
-                  Activar
+                  Activate
                 </button>
               }
               @if (!t.isDefault) {
@@ -116,14 +116,14 @@ const COLOR_LABELS: Record<string, string> = {
                   [disabled]="saving()"
                   class="px-3 py-1.5 text-sm rounded hover:bg-surface-hover"
                 >
-                  {{ saving() ? 'Guardando…' : 'Guardar cambios' }}
+                  {{ saving() ? 'Saving…' : 'Save changes' }}
                 </button>
                 <button
                   type="button"
                   (click)="deleteCurrent()"
                   class="px-3 py-1.5 text-sm rounded text-danger hover:bg-danger/10"
                 >
-                  Eliminar
+                  Delete
                 </button>
               }
               <button
@@ -132,7 +132,7 @@ const COLOR_LABELS: Record<string, string> = {
                 [disabled]="saving()"
                 class="px-3 py-1.5 text-sm rounded bg-surface-hover hover:opacity-90"
               >
-                Guardar como nuevo
+                Save as new
               </button>
             </div>
           </div>
@@ -161,7 +161,7 @@ const COLOR_LABELS: Record<string, string> = {
 
           <div class="grid grid-cols-2 gap-3 mb-6">
             <label class="block">
-              <span class="block text-xs text-text-muted mb-1">Familia tipográfica</span>
+              <span class="block text-xs text-text-muted mb-1">Font family</span>
               <select
                 [ngModel]="editValues()['fontFamily']"
                 (ngModelChange)="updateValue('fontFamily', $event)"
@@ -191,7 +191,7 @@ const COLOR_LABELS: Record<string, string> = {
                 (ngModelChange)="updateValue('isDark', $event)"
                 class="accent-primary"
               />
-              <span>Modo oscuro</span>
+              <span>Dark mode</span>
             </label>
           </div>
 
@@ -199,10 +199,10 @@ const COLOR_LABELS: Record<string, string> = {
             <h3 class="text-sm font-medium mb-3">Preview</h3>
             <div class="space-y-2">
               <button type="button" class="px-4 py-2 rounded bg-primary text-white text-sm">
-                Botón primario
+                Primary button
               </button>
               <button type="button" class="px-4 py-2 rounded bg-surface-hover text-sm border border-border">
-                Botón secundario
+                Secondary button
               </button>
               <p class="text-sm">
                 Texto normal y
@@ -264,7 +264,7 @@ export class ThemeEditorComponent implements OnInit {
 
   protected activate(theme: Theme): void {
     this.themeService.activate(theme.id).subscribe({
-      next: () => this.toastr.success(`Tema "${theme.name}" activado`),
+      next: () => this.toastr.success(`Theme "${theme.name}" activated`),
       error: (err: HttpErrorResponse) => this.toastr.error(this.errMsg(err)),
     });
   }
@@ -277,7 +277,7 @@ export class ThemeEditorComponent implements OnInit {
     this.settings.updateTheme(t.id, payload).subscribe({
       next: () => {
         this.saving.set(false);
-        this.toastr.success('Tema actualizado');
+        this.toastr.success('Theme updated');
         this.themeService.loadThemes().subscribe();
       },
       error: (err: HttpErrorResponse) => {
@@ -290,13 +290,13 @@ export class ThemeEditorComponent implements OnInit {
   protected saveAsNew(): void {
     const t = this.current();
     if (!t) return;
-    const baseName = this.editName.trim() || `${t.name} copia`;
-    const name = t.isDefault ? `${baseName} (mi versión)` : baseName;
+    const baseName = this.editName.trim() || `${t.name} copy`;
+    const name = t.isDefault ? `${baseName} (my version)` : baseName;
     this.saving.set(true);
     this.settings.createTheme({ ...this.buildPayload(), name }).subscribe({
       next: (created) => {
         this.saving.set(false);
-        this.toastr.success(`Tema "${created.name}" creado`);
+        this.toastr.success(`Theme "${created.name}" created`);
         this.themeService.loadThemes().subscribe({
           next: (themes) => {
             const fresh = themes.find((t) => t.id === created.id);
@@ -315,15 +315,15 @@ export class ThemeEditorComponent implements OnInit {
     const t = this.current();
     if (!t || t.isDefault) return;
     const ok = await this.dialogs.confirm({
-      title: 'Eliminar tema',
-      message: `¿Eliminar el tema "${t.name}"?`,
-      confirmLabel: 'Eliminar',
+      title: 'Delete theme',
+      message: `Delete the theme "${t.name}"?`,
+      confirmLabel: 'Delete',
       destructive: true,
     });
     if (!ok) return;
     this.settings.deleteTheme(t.id).subscribe({
       next: () => {
-        this.toastr.success('Tema eliminado');
+        this.toastr.success('Theme deleted');
         this.themeService.loadThemes().subscribe({
           next: (themes) => {
             const fallback = themes.find((x) => x.isDefault) ?? themes[0];
@@ -361,6 +361,6 @@ export class ThemeEditorComponent implements OnInit {
     const msg = body?.error?.message;
     if (Array.isArray(msg)) return msg.join('. ');
     if (typeof msg === 'string') return msg;
-    return 'Error inesperado';
+    return 'Unexpected error';
   }
 }

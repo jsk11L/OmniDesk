@@ -6,11 +6,24 @@ import { catchError, map, Observable, of, switchMap, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import type { ApiResponse } from '../models/api-response.model';
 import type { TokenPair, User } from '../models/user.model';
+import { ThemeService } from './theme.service';
 
 interface RegisterDto {
   email: string;
   password: string;
   displayName?: string;
+  acceptedTerms: boolean;
+  acceptedNoDataSelling: boolean;
+  captchaToken?: string;
+  timezone?: string;
+}
+
+export type LoginResult = { user: User } | { requires2FA: true; tempToken: string };
+
+export interface TwoFactorSetup {
+  secret: string;
+  otpauthUrl: string;
+  qrDataUrl: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -20,6 +33,7 @@ export class AuthService {
 
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
+  private readonly theme = inject(ThemeService);
 
   private readonly _user = signal<User | null>(null);
   readonly user = this._user.asReadonly();
@@ -55,9 +69,28 @@ export class AuthService {
       .pipe(map((r) => r.data));
   }
 
-  login(email: string, password: string): Observable<User> {
+  login(email: string, password: string): Observable<LoginResult> {
     return this.http
-      .post<ApiResponse<TokenPair>>(`${environment.apiUrl}/auth/login`, { email, password })
+      .post<ApiResponse<TokenPair | { requires2FA: true; tempToken: string }>>(
+        `${environment.apiUrl}/auth/login`,
+        { email, password },
+      )
+      .pipe(
+        switchMap((r) => {
+          const data = r.data;
+          if ('requires2FA' in data) {
+            return of<LoginResult>({ requires2FA: true, tempToken: data.tempToken });
+          }
+          this.setTokens(data);
+          return this.fetchMe().pipe(map((user) => ({ user }) as LoginResult));
+        }),
+      );
+  }
+
+  /** Completes a login that required a second factor. */
+  verifyTwoFactor(tempToken: string, code: string): Observable<User> {
+    return this.http
+      .post<ApiResponse<TokenPair>>(`${environment.apiUrl}/auth/2fa/verify`, { tempToken, code })
       .pipe(
         map((r) => r.data),
         tap((tokens) => this.setTokens(tokens)),
@@ -65,10 +98,60 @@ export class AuthService {
       );
   }
 
-  forgotPassword(email: string): Observable<{ message: string }> {
+  twoFactorStatus(): Observable<{ enabled: boolean }> {
+    return this.http
+      .get<ApiResponse<{ enabled: boolean }>>(`${environment.apiUrl}/auth/2fa/status`)
+      .pipe(map((r) => r.data));
+  }
+
+  twoFactorSetup(): Observable<TwoFactorSetup> {
+    return this.http
+      .post<ApiResponse<TwoFactorSetup>>(`${environment.apiUrl}/auth/2fa/setup`, {})
+      .pipe(map((r) => r.data));
+  }
+
+  twoFactorEnable(code: string): Observable<{ backupCodes: string[] }> {
+    return this.http
+      .post<ApiResponse<{ backupCodes: string[] }>>(`${environment.apiUrl}/auth/2fa/enable`, { code })
+      .pipe(map((r) => r.data));
+  }
+
+  twoFactorDisable(code: string): Observable<{ message: string }> {
+    return this.http
+      .post<ApiResponse<{ message: string }>>(`${environment.apiUrl}/auth/2fa/disable`, { code })
+      .pipe(map((r) => r.data));
+  }
+
+  twoFactorRegenerate(code: string): Observable<{ backupCodes: string[] }> {
+    return this.http
+      .post<ApiResponse<{ backupCodes: string[] }>>(
+        `${environment.apiUrl}/auth/2fa/regenerate-backup-codes`,
+        { code },
+      )
+      .pipe(map((r) => r.data));
+  }
+
+  deleteAccount(password: string): Observable<{ message: string }> {
+    return this.http
+      .request<ApiResponse<{ message: string }>>(
+        'DELETE',
+        `${environment.apiUrl}/auth/account`,
+        { body: { password } },
+      )
+      .pipe(map((r) => r.data));
+  }
+
+  restoreAccount(token: string): Observable<{ message: string }> {
+    return this.http
+      .post<ApiResponse<{ message: string }>>(`${environment.apiUrl}/auth/restore-account`, { token })
+      .pipe(map((r) => r.data));
+  }
+
+  forgotPassword(email: string, captchaToken?: string): Observable<{ message: string }> {
     return this.http
       .post<ApiResponse<{ message: string }>>(`${environment.apiUrl}/auth/forgot-password`, {
         email,
+        captchaToken,
       })
       .pipe(map((r) => r.data));
   }
@@ -111,6 +194,7 @@ export class AuthService {
   logout(): void {
     this.clearTokens();
     this._user.set(null);
+    this.theme.reset();
     void this.router.navigate(['/auth/login']);
   }
 

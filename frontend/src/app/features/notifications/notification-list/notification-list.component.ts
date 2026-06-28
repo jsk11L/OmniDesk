@@ -10,20 +10,21 @@ import {
   type NotificationEditorData,
   type NotificationEditorResult,
 } from '../notification-editor/notification-editor.component';
+import { NotificationPreferencesComponent } from '../notification-preferences/notification-preferences.component';
 import type { InAppNotification, NotificationConfig } from '../notifications.types';
 
 @Component({
   selector: 'app-notification-list',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MatDialogModule],
+  imports: [MatDialogModule, NotificationPreferencesComponent],
   template: `
     <div class="h-full flex flex-col">
       <header class="px-6 py-4 border-b border-border flex items-center justify-between gap-4">
         <div>
-          <h1 class="text-2xl font-semibold">Notificaciones</h1>
+          <h1 class="text-2xl font-semibold">Notifications</h1>
           <p class="text-sm text-text-muted">
-            Configura recordatorios y suscríbete al push del navegador
+            Set up reminders and subscribe to browser push
           </p>
         </div>
         <div class="flex items-center gap-2">
@@ -32,28 +33,28 @@ import type { InAppNotification, NotificationConfig } from '../notifications.typ
             (click)="subscribePush()"
             [disabled]="pushBusy()"
             class="px-3 py-2 rounded text-sm hover:bg-surface-hover"
-            title="Activar notificaciones push del navegador"
+            title="Enable browser push notifications"
           >
-            🔔 Push: activar
+            🔔 Push: enable
           </button>
           <button
             type="button"
             (click)="createConfig()"
             class="px-4 py-2 rounded bg-primary text-white text-sm font-medium hover:opacity-90"
           >
-            + Nueva
+            + New
           </button>
         </div>
       </header>
 
       <div class="flex-1 overflow-auto p-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
         <section>
-          <h2 class="text-sm font-medium mb-3">Configuraciones</h2>
+          <h2 class="text-sm font-medium mb-3">Configurations</h2>
           @if (loading()) {
-            <p class="text-text-muted text-sm">Cargando…</p>
+            <p class="text-text-muted text-sm">Loading…</p>
           } @else if (configs().length === 0) {
             <p class="text-text-muted text-sm">
-              No tienes configuraciones aún.
+              You don't have any configurations yet.
             </p>
           } @else {
             <ul class="space-y-2">
@@ -74,7 +75,7 @@ import type { InAppNotification, NotificationConfig } from '../notifications.typ
                           <h3 class="font-medium truncate">{{ c.title }}</h3>
                           @if (!c.isActive) {
                             <span class="text-xs px-1.5 py-0.5 bg-surface-hover rounded text-text-muted">
-                              Inactiva
+                              Inactive
                             </span>
                           }
                         </div>
@@ -85,7 +86,7 @@ import type { InAppNotification, NotificationConfig } from '../notifications.typ
                           <span>{{ c.channels.join(' / ') }}</span>
                           @if (c.lastFiredAt) {
                             <span>·</span>
-                            <span>Último: {{ formatDate(c.lastFiredAt) }}</span>
+                            <span>Last: {{ formatDate(c.lastFiredAt) }}</span>
                           }
                         </div>
                       </div>
@@ -106,13 +107,13 @@ import type { InAppNotification, NotificationConfig } from '../notifications.typ
                 (click)="clearInbox()"
                 class="text-xs text-text-muted hover:text-text"
               >
-                Limpiar leídas
+                Clear read
               </button>
             }
           </div>
           @if (inbox().length === 0) {
             <p class="text-text-muted text-sm">
-              No tienes notificaciones in-app sin leer.
+              You have no unread in-app notifications.
             </p>
           } @else {
             <ul class="space-y-2">
@@ -134,12 +135,17 @@ import type { InAppNotification, NotificationConfig } from '../notifications.typ
                     (click)="markAsRead(item.id)"
                     class="text-xs text-primary hover:underline shrink-0"
                   >
-                    Marcar leída
+                    Mark read
                   </button>
                 </li>
               }
             </ul>
           }
+        </section>
+
+        <section class="lg:col-span-2">
+          <h2 class="text-sm font-medium mb-3">Preferences</h2>
+          <app-notification-preferences />
         </section>
       </div>
     </div>
@@ -204,9 +210,9 @@ export class NotificationListComponent implements OnInit {
     this.pushBusy.set(true);
     try {
       await this.push.subscribe();
-      this.toastr.success('Push activado');
+      this.toastr.success('Push enabled');
     } catch (err) {
-      this.toastr.error(err instanceof Error ? err.message : 'No se pudo activar');
+      this.toastr.error(err instanceof Error ? err.message : 'Could not enable');
     } finally {
       this.pushBusy.set(false);
     }
@@ -222,7 +228,7 @@ export class NotificationListComponent implements OnInit {
   protected clearInbox(): void {
     this.service.clearInbox().subscribe({
       next: () => {
-        this.toastr.success('Inbox limpiado');
+        this.toastr.success('Inbox cleared');
         this.reload();
       },
       error: (err: HttpErrorResponse) => this.toastr.error(this.errMsg(err)),
@@ -235,15 +241,15 @@ export class NotificationListComponent implements OnInit {
         return 'Manual';
       case 'SCHEDULED':
         return c.scheduledAt
-          ? `Programada · ${this.formatDate(c.scheduledAt)}`
-          : 'Programada';
+          ? `Scheduled · ${this.formatDate(c.scheduledAt)}`
+          : 'Scheduled';
       case 'RECURRING':
-        return c.recurringRule ? `Recurrente · ${c.recurringRule}` : 'Recurrente';
+        return c.recurringRule ? `Recurring · ${c.recurringRule}` : 'Recurring';
     }
   }
 
   protected formatDate(iso: string): string {
-    return new Date(iso).toLocaleString('es-CL', {
+    return new Date(iso).toLocaleString('en-US', {
       day: '2-digit',
       month: 'short',
       hour: '2-digit',
@@ -256,6 +262,6 @@ export class NotificationListComponent implements OnInit {
     const msg = body?.error?.message;
     if (Array.isArray(msg)) return msg.join('. ');
     if (typeof msg === 'string') return msg;
-    return 'Error inesperado';
+    return 'Unexpected error';
   }
 }

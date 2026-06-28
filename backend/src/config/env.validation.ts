@@ -43,11 +43,31 @@ export const envSchema = z
     VAPID_SUBJECT: z.string().optional(),
 
     SOFT_DELETE_DAYS: z.coerce.number().int().nonnegative().default(30),
+    UPLOADS_QUOTA_PER_USER_BYTES: z.coerce.number().int().positive().default(524_288_000),
+
+    // Captcha (Block 2). 'none' disables verification (dev/self-host default).
+    CAPTCHA_PROVIDER: z.enum(['none', 'turnstile']).default('none'),
+    CAPTCHA_SECRET: z.string().optional(),
+
+    // Terms of service version the running instance expects users to accept.
+    TERMS_VERSION: z.string().default('2026-06'),
+    REGISTRATION_OPEN: z
+      .enum(['true', 'false'])
+      .default('true')
+      .transform((v) => v === 'true'),
   })
   .passthrough()
   .superRefine((env, ctx) => {
     // Stricter guarantees once we are running for real users.
     if (env.NODE_ENV !== 'production') return;
+
+    if (env.CAPTCHA_PROVIDER !== 'none' && !env.CAPTCHA_SECRET) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['CAPTCHA_SECRET'],
+        message: `CAPTCHA_SECRET is required when CAPTCHA_PROVIDER is "${env.CAPTCHA_PROVIDER}"`,
+      });
+    }
 
     for (const key of ['JWT_SECRET', 'JWT_REFRESH_SECRET'] as const) {
       if (PLACEHOLDER.test(env[key])) {

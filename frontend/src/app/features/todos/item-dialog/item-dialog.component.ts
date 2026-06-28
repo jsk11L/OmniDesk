@@ -6,6 +6,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 
 import { TodosService } from '../services/todos.service';
 import { DialogService } from '../../../shared/services/dialog.service';
+import { NotificationAttachPanelComponent } from '../../../shared/components/notification-attach-panel/notification-attach-panel.component';
 import type { TodoBoard, TodoItem, TodoPriority } from '../todos.types';
 
 export interface TodoItemDialogData {
@@ -20,16 +21,16 @@ export type TodoItemDialogResult = TodoItem | { deleted: string } | undefined;
   selector: 'app-todo-item-dialog',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, MatDialogModule],
+  imports: [ReactiveFormsModule, MatDialogModule, NotificationAttachPanelComponent],
   template: `
     <div class="bg-surface text-text p-6 w-[min(520px,95vw)]">
       <h2 class="text-lg font-semibold mb-4">
-        {{ data.item ? 'Editar tarea' : 'Nueva tarea' }}
+        {{ data.item ? 'Edit task' : 'New task' }}
       </h2>
 
       <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-4">
         <label class="block">
-          <span class="block text-xs text-text-muted mb-1">Título *</span>
+          <span class="block text-xs text-text-muted mb-1">Title *</span>
           <input
             type="text"
             formControlName="title"
@@ -40,7 +41,7 @@ export type TodoItemDialogResult = TodoItem | { deleted: string } | undefined;
         </label>
 
         <label class="block">
-          <span class="block text-xs text-text-muted mb-1">Descripción</span>
+          <span class="block text-xs text-text-muted mb-1">Description</span>
           <textarea
             formControlName="description"
             rows="3"
@@ -51,7 +52,7 @@ export type TodoItemDialogResult = TodoItem | { deleted: string } | undefined;
         <div class="space-y-3 border border-border rounded-lg p-3">
           <label class="flex items-center gap-2 cursor-pointer">
             <input type="checkbox" formControlName="hasDueDate" class="accent-primary" />
-            <span class="text-sm">Establecer fecha límite</span>
+            <span class="text-sm">Set due date</span>
           </label>
           @if (form.value.hasDueDate) {
             <input
@@ -63,23 +64,23 @@ export type TodoItemDialogResult = TodoItem | { deleted: string } | undefined;
 
           <label class="flex items-center gap-2 cursor-pointer pt-1 border-t border-border">
             <input type="checkbox" formControlName="hasPriority" class="accent-primary" />
-            <span class="text-sm">Establecer prioridad</span>
+            <span class="text-sm">Set priority</span>
           </label>
           @if (form.value.hasPriority) {
             <select
               formControlName="priority"
               class="w-full px-3 py-2 bg-background border border-border rounded outline-none focus:border-primary"
             >
-              <option value="LOW">Baja</option>
-              <option value="MEDIUM">Media</option>
-              <option value="HIGH">Alta</option>
-              <option value="URGENT">Urgente</option>
+              <option value="LOW">Low</option>
+              <option value="MEDIUM">Medium</option>
+              <option value="HIGH">High</option>
+              <option value="URGENT">Urgent</option>
             </select>
           }
         </div>
 
         <label class="block">
-          <span class="block text-xs text-text-muted mb-1">Columna</span>
+          <span class="block text-xs text-text-muted mb-1">Column</span>
           <select
             formControlName="columnId"
             class="w-full px-3 py-2 bg-background border border-border rounded outline-none focus:border-primary"
@@ -91,7 +92,7 @@ export type TodoItemDialogResult = TodoItem | { deleted: string } | undefined;
         </label>
 
         <label class="block">
-          <span class="block text-xs text-text-muted mb-1">Tags (separados por coma)</span>
+          <span class="block text-xs text-text-muted mb-1">Tags (comma-separated)</span>
           <input
             type="text"
             formControlName="tags"
@@ -99,6 +100,12 @@ export type TodoItemDialogResult = TodoItem | { deleted: string } | undefined;
             placeholder="work, urgent"
           />
         </label>
+
+        @if (data.item) {
+          <div class="border-t border-border pt-3">
+            <app-notification-attach-panel entityType="todo-item" [entityId]="data.item.id" />
+          </div>
+        }
 
         @if (error()) {
           <p class="text-sm text-danger">{{ error() }}</p>
@@ -112,7 +119,7 @@ export type TodoItemDialogResult = TodoItem | { deleted: string } | undefined;
               [disabled]="loading()"
               class="text-sm text-danger hover:underline"
             >
-              Eliminar
+              Delete
             </button>
           } @else {
             <span></span>
@@ -123,14 +130,14 @@ export type TodoItemDialogResult = TodoItem | { deleted: string } | undefined;
               (click)="ref.close()"
               class="px-4 py-2 text-sm rounded hover:bg-surface-hover"
             >
-              Cancelar
+              Cancel
             </button>
             <button
               type="submit"
               [disabled]="form.invalid || loading()"
               class="px-4 py-2 text-sm rounded bg-primary text-white hover:opacity-90 disabled:opacity-50"
             >
-              {{ loading() ? 'Guardando…' : 'Guardar' }}
+              {{ loading() ? 'Saving…' : 'Save' }}
             </button>
           </div>
         </div>
@@ -197,7 +204,7 @@ export class TodoItemDialogComponent {
 
     request$.subscribe({
       next: (item) => {
-        this.toastr.success(this.data.item ? 'Tarea actualizada' : 'Tarea creada');
+        this.toastr.success(this.data.item ? 'Task updated' : 'Task created');
         this.ref.close(item);
       },
       error: (err: HttpErrorResponse) => {
@@ -210,16 +217,16 @@ export class TodoItemDialogComponent {
   async remove(): Promise<void> {
     if (!this.data.item || this.loading()) return;
     const ok = await this.dialogs.confirm({
-      title: 'Eliminar tarea',
-      message: '¿Eliminar esta tarea?',
-      confirmLabel: 'Eliminar',
+      title: 'Delete task',
+      message: 'Delete this task?',
+      confirmLabel: 'Delete',
       destructive: true,
     });
     if (!ok) return;
     this.loading.set(true);
     this.service.deleteItem(this.data.item.id).subscribe({
       next: ({ id }) => {
-        this.toastr.success('Tarea eliminada');
+        this.toastr.success('Task deleted');
         this.ref.close({ deleted: id });
       },
       error: (err: HttpErrorResponse) => {
@@ -239,6 +246,6 @@ export class TodoItemDialogComponent {
     const msg = body?.error?.message;
     if (Array.isArray(msg)) return msg.join('. ');
     if (typeof msg === 'string') return msg;
-    return 'Error inesperado';
+    return 'Unexpected error';
   }
 }

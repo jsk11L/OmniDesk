@@ -7,6 +7,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { ListsService } from '../services/lists.service';
 import { DialogService } from '../../../shared/services/dialog.service';
 import { ImageInputComponent } from '../../../shared/components/image-input/image-input.component';
+import { NotificationAttachPanelComponent } from '../../../shared/components/notification-attach-panel/notification-attach-panel.component';
 import type { List, ListField, ListItem } from '../lists.types';
 
 export interface ListItemDialogData {
@@ -20,16 +21,16 @@ export type ListItemDialogResult = ListItem | undefined;
   selector: 'app-list-item-dialog',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, FormsModule, MatDialogModule, ImageInputComponent],
+  imports: [ReactiveFormsModule, FormsModule, MatDialogModule, ImageInputComponent, NotificationAttachPanelComponent],
   template: `
     <div class="bg-surface text-text p-6 w-[min(600px,95vw)] max-h-[90vh] overflow-y-auto">
       <h2 class="text-lg font-semibold mb-4">
-        {{ data.item ? 'Editar ítem' : 'Nuevo ítem' }}
+        {{ data.item ? 'Edit item' : 'New item' }}
       </h2>
 
       <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-4">
         <label class="block">
-          <span class="block text-xs text-text-muted mb-1">Título *</span>
+          <span class="block text-xs text-text-muted mb-1">Title *</span>
           <input
             type="text"
             formControlName="title"
@@ -41,7 +42,7 @@ export type ListItemDialogResult = ListItem | undefined;
 
         @if (fields.length > 0) {
           <div class="border-t border-border pt-4 space-y-3">
-            <p class="text-xs font-medium text-text-muted">Campos personalizados</p>
+            <p class="text-xs font-medium text-text-muted">Custom fields</p>
             @for (field of fields; track field.id) {
               <div>
                 <span class="block text-xs text-text-muted mb-1">
@@ -76,7 +77,7 @@ export type ListItemDialogResult = ListItem | undefined;
                   @case ('BOOLEAN') {
                     <label class="flex items-center gap-2 cursor-pointer">
                       <input type="checkbox" [formControl]="customControl(field.id)" class="accent-primary" />
-                      <span class="text-sm">Sí</span>
+                      <span class="text-sm">Yes</span>
                     </label>
                   }
                   @case ('RATING') {
@@ -93,7 +94,7 @@ export type ListItemDialogResult = ListItem | undefined;
                     </select>
                   }
                   @case ('MULTI_SELECT') {
-                    <input type="text" [formControl]="customControl(field.id)" placeholder="Valores separados por coma"
+                    <input type="text" [formControl]="customControl(field.id)" placeholder="Comma-separated values"
                       class="w-full px-3 py-2 bg-background border border-border rounded outline-none focus:border-primary" />
                   }
                 }
@@ -124,6 +125,12 @@ export type ListItemDialogResult = ListItem | undefined;
           </div>
         }
 
+        @if (data.item) {
+          <div class="border-t border-border pt-4">
+            <app-notification-attach-panel entityType="list-item" [entityId]="data.item.id" />
+          </div>
+        }
+
         @if (error()) {
           <p class="text-sm text-danger">{{ error() }}</p>
         }
@@ -132,11 +139,11 @@ export type ListItemDialogResult = ListItem | undefined;
           @if (data.item) {
             <div class="flex gap-3 items-center">
               <button type="button" (click)="remove()" [disabled]="loading()" class="text-sm text-danger hover:underline">
-                Eliminar
+                Delete
               </button>
               <button type="button" (click)="movePanelOpen.set(!movePanelOpen())" [disabled]="loading()"
                 class="text-sm text-text-muted hover:text-text">
-                {{ movePanelOpen() ? '✕ Cancelar mover' : 'Mover a…' }}
+                {{ movePanelOpen() ? '✕ Cancel move' : 'Move to…' }}
               </button>
             </div>
           } @else {
@@ -144,11 +151,11 @@ export type ListItemDialogResult = ListItem | undefined;
           }
           <div class="flex gap-2">
             <button type="button" (click)="ref.close()" class="px-4 py-2 text-sm rounded hover:bg-surface-hover">
-              Cancelar
+              Cancel
             </button>
             <button type="submit" [disabled]="form.invalid || loading()"
               class="px-4 py-2 text-sm rounded bg-primary text-white hover:opacity-90 disabled:opacity-50">
-              {{ loading() ? 'Guardando…' : 'Guardar' }}
+              {{ loading() ? 'Saving…' : 'Save' }}
             </button>
           </div>
         </div>
@@ -156,15 +163,15 @@ export type ListItemDialogResult = ListItem | undefined;
 
       @if (data.item && movePanelOpen()) {
         <div class="mt-4 border-t border-border pt-4">
-          <p class="text-xs font-medium text-text-muted mb-2">Mover a otra lista</p>
+          <p class="text-xs font-medium text-text-muted mb-2">Move to another list</p>
           <p class="text-xs text-text-faint mb-3">
-            Los campos cuyo nombre coincida se traspasan automáticamente.
-            Podés sobrescribir abajo (por ejemplo, marcar Mes/Año de completación).
+            Fields whose name matches are transferred automatically.
+            You can override below (for example, set completion Month/Year).
           </p>
 
           <select [(ngModel)]="targetListId" (ngModelChange)="onTargetChange($event)"
             class="w-full px-3 py-2 bg-background border border-border rounded text-sm outline-none focus:border-primary mb-3">
-            <option value="">Seleccionar lista destino…</option>
+            <option value="">Select target list…</option>
             @for (l of otherLists(); track l.id) {
               <option [value]="l.id">{{ l.icon ?? '📚' }} {{ l.name }}</option>
             }
@@ -207,7 +214,7 @@ export type ListItemDialogResult = ListItem | undefined;
               <div class="flex gap-2 pt-2">
                 <button type="button" (click)="autofillCompletion()"
                   class="text-xs text-primary hover:underline">
-                  Autorrellenar (mes/año actuales · índice)
+                  Autofill (current month/year · index)
                 </button>
               </div>
             </div>
@@ -216,7 +223,7 @@ export type ListItemDialogResult = ListItem | undefined;
           <div class="flex justify-end gap-2 mt-4">
             <button type="button" (click)="executeMove()" [disabled]="!targetListId || loading()"
               class="px-4 py-2 text-sm rounded bg-primary text-white hover:opacity-90 disabled:opacity-50">
-              {{ loading() ? 'Moviendo…' : 'Confirmar mover →' }}
+              {{ loading() ? 'Moving…' : 'Confirm move →' }}
             </button>
           </div>
         </div>
@@ -310,13 +317,13 @@ export class ListItemDialogComponent implements OnInit {
         }
         this.autoMapped.set(auto);
       },
-      error: () => this.toastr.error('No se pudo cargar la lista destino'),
+      error: () => this.toastr.error('Could not load the target list'),
     });
   }
 
   placeholderFor(field: ListField): string {
     if (this.autoMapped().has(field.name.trim().toLowerCase())) {
-      return 'Se rellena automáticamente desde el ítem';
+      return 'Auto-filled from the item';
     }
     return field.defaultValue ?? '';
   }
@@ -330,7 +337,7 @@ export class ListItemDialogComponent implements OnInit {
     const target = this.targetList();
     if (!target) return;
     const now = new Date();
-    const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
     const monthLabel = months[now.getMonth()];
     const year = now.getFullYear();
 
@@ -350,7 +357,7 @@ export class ListItemDialogComponent implements OnInit {
         // Trigger change detection by replacing the object reference
         this.moveOverrides = { ...this.moveOverrides };
       },
-      error: () => this.toastr.error('No se pudieron contar los ítems destino'),
+      error: () => this.toastr.error('Could not count the target items'),
     });
   }
 
@@ -369,7 +376,7 @@ export class ListItemDialogComponent implements OnInit {
       })
       .subscribe({
         next: (moved) => {
-          this.toastr.success(`Movido a "${this.targetList()?.name}"`);
+          this.toastr.success(`Moved to "${this.targetList()?.name}"`);
           this.ref.close(moved);
         },
         error: (err: HttpErrorResponse) => {
@@ -401,7 +408,7 @@ export class ListItemDialogComponent implements OnInit {
     for (const ctrl of this.customControls.values()) ctrl.markAsTouched();
     const anyInvalid = Array.from(this.customControls.values()).some((c) => c.invalid);
     if (anyInvalid) {
-      this.error.set('Hay campos requeridos sin completar');
+      this.error.set('Some required fields are not filled in');
       return;
     }
     this.error.set(null);
@@ -428,7 +435,7 @@ export class ListItemDialogComponent implements OnInit {
 
     request$.subscribe({
       next: (item) => {
-        this.toastr.success(this.data.item ? 'Ítem actualizado' : 'Ítem creado');
+        this.toastr.success(this.data.item ? 'Item updated' : 'Item created');
         this.ref.close(item);
       },
       error: (err: HttpErrorResponse) => {
@@ -441,16 +448,16 @@ export class ListItemDialogComponent implements OnInit {
   async remove(): Promise<void> {
     if (!this.data.item || this.loading()) return;
     const ok = await this.dialogs.confirm({
-      title: 'Eliminar ítem',
-      message: '¿Eliminar este ítem? Esta acción no se puede deshacer.',
-      confirmLabel: 'Eliminar',
+      title: 'Delete item',
+      message: 'Delete this item? This action cannot be undone.',
+      confirmLabel: 'Delete',
       destructive: true,
     });
     if (!ok) return;
     this.loading.set(true);
     this.service.deleteItem(this.data.list.id, this.data.item.id).subscribe({
       next: () => {
-        this.toastr.success('Ítem eliminado');
+        this.toastr.success('Item deleted');
         this.ref.close(undefined);
       },
       error: (err: HttpErrorResponse) => {
@@ -492,6 +499,6 @@ export class ListItemDialogComponent implements OnInit {
     const msg = body?.error?.message;
     if (Array.isArray(msg)) return msg.join('. ');
     if (typeof msg === 'string') return msg;
-    return 'Error inesperado';
+    return 'Unexpected error';
   }
 }

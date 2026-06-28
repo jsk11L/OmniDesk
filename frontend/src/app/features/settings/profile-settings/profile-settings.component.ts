@@ -27,21 +27,21 @@ import { UploadsService } from '../../../shared/services/uploads.service';
             />
             <p class="text-xs text-text-muted mt-1">
               @if (u.isEmailVerified) {
-                ✓ Verificado
+                ✓ Verified
               } @else {
-                Pendiente de verificación
+                Pending verification
               }
             </p>
           </label>
 
           <label class="block">
-            <span class="block text-xs text-text-muted mb-1">Nombre para mostrar</span>
+            <span class="block text-xs text-text-muted mb-1">Display name</span>
             <input
               type="text"
               formControlName="displayName"
               maxlength="100"
               class="w-full px-3 py-2 bg-background border border-border rounded outline-none focus:border-primary"
-              placeholder="Tu nombre"
+              placeholder="Your name"
             />
           </label>
 
@@ -73,7 +73,7 @@ import { UploadsService } from '../../../shared/services/uploads.service';
             [disabled]="form.invalid || saving()"
             class="px-4 py-2 rounded bg-primary text-white text-sm font-medium hover:opacity-90 disabled:opacity-50"
           >
-            {{ saving() ? 'Guardando…' : 'Guardar cambios' }}
+            {{ saving() ? 'Saving…' : 'Save changes' }}
           </button>
         </form>
       } @else {
@@ -129,7 +129,7 @@ export class ProfileSettingsComponent implements OnInit {
       next: () => {
         this.saving.set(false);
         this.auth.fetchMe().subscribe();
-        this.toastr.success('Perfil actualizado');
+        this.toastr.success('Profile updated');
       },
       error: (err: HttpErrorResponse) => {
         this.saving.set(false);
@@ -137,7 +137,7 @@ export class ProfileSettingsComponent implements OnInit {
         const msg = body?.error?.message;
         if (Array.isArray(msg)) this.error.set(msg.join('. '));
         else if (typeof msg === 'string') this.error.set(msg);
-        else this.error.set('No se pudo actualizar el perfil');
+        else this.error.set('Could not update the profile');
       },
     });
   }

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, OnInit, signal, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal, viewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { FullCalendarComponent, FullCalendarModule } from '@fullcalendar/angular';
 import dayGridPlugin from '@fullcalendar/daygrid';
@@ -43,32 +43,48 @@ interface SlotMenu {
   imports: [FullCalendarModule],
   template: `
     <div class="h-full flex flex-col" [class.rounded]="rounded()">
-      <header class="px-6 py-3 border-b border-border flex items-center justify-between">
+      <header class="px-4 sm:px-6 py-3 border-b border-border-soft flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 class="text-xl font-semibold">Calendario</h1>
-          <p class="text-xs text-text-muted">Click en un slot para crear o ver eventos.</p>
+          <div class="uppercase-tag">Calendar</div>
+          <h1 class="text-xl sm:text-2xl font-semibold mt-0.5">Your schedule</h1>
+          <p class="text-xs text-text-muted mt-0.5 flex items-center gap-1">
+            <span>💡</span> Click any day or drag a time range to add an event
+          </p>
         </div>
         <div class="flex items-center gap-2">
-          <button
-            type="button"
-            (click)="openCreate()"
-            class="px-3 py-1.5 rounded bg-primary text-white text-sm font-medium hover:opacity-90"
-          >
-            + Nuevo
+          <button type="button" (click)="openCreate()" class="btn btn-sm btn-primary">
+            + New event
           </button>
           <button
             type="button"
             (click)="openSettings()"
-            class="px-3 py-1.5 rounded hover:bg-surface-hover text-sm"
-            title="Configuración"
+            class="btn btn-sm btn-icon"
+            title="Settings"
           >
             ⚙
           </button>
         </div>
       </header>
 
-      <div class="flex-1 p-4 overflow-auto" [style.max-height]="containerHeight()">
-        <full-calendar [options]="calendarOptions"></full-calendar>
+      @if (allTags().length) {
+        <div class="px-4 sm:px-6 py-2 border-b border-border-soft flex items-center gap-1.5 flex-wrap">
+          <span class="uppercase-tag mr-1">Filter</span>
+          <button type="button" (click)="setTagFilter(null)" class="chip"
+            [style.background]="tagFilter() === null ? 'var(--color-primary-ghost)' : null"
+            [style.color]="tagFilter() === null ? 'var(--color-primary)' : null">All</button>
+          @for (t of allTags(); track t) {
+            <button type="button" (click)="setTagFilter(t)" class="chip"
+              [style.background]="tagFilter() === t ? 'var(--color-surface-hover)' : null"
+              [style.color]="tagFilter() === t ? 'var(--color-text)' : null">#{{ t }}</button>
+          }
+          <span class="ml-auto mono text-xs text-text-faint">{{ visibleEvents().length }} shown</span>
+        </div>
+      }
+
+      <div class="flex-1 p-3 sm:p-5 overflow-auto">
+        <div class="cal-shell" [style.height]="containerHeight()">
+          <full-calendar [options]="calendarOptions"></full-calendar>
+        </div>
       </div>
 
       @if (slotMenu().visible) {
@@ -78,10 +94,10 @@ interface SlotMenu {
           [style.top.px]="slotMenu().y"
           (click)="$event.stopPropagation()"
         >
-          <button type="button" (click)="createFromSlot()">+ Crear evento</button>
+          <button type="button" (click)="createFromSlot()">+ Create event</button>
           @if (slotMenu().eventsAtSlot.length > 0) {
             <hr />
-            <p class="menu-section">Eventos en este slot</p>
+            <p class="menu-section">Events in this slot</p>
             @for (e of slotMenu().eventsAtSlot; track e.id) {
               <button type="button" (click)="editEvent(e)" class="event-item">
                 <span class="dot" [style.background-color]="e.color"></span>
@@ -133,34 +149,135 @@ interface SlotMenu {
       z-index: 99;
     }
 
+    /* Rounded card that holds the whole grid — softens the boxy default. */
+    .cal-shell {
+      border: 1px solid var(--color-border-soft);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      background: var(--color-surface);
+    }
+
     ::ng-deep .fc {
-      --fc-border-color: var(--color-border);
-      --fc-page-bg-color: var(--color-background);
+      --fc-border-color: var(--color-border-soft);
+      --fc-page-bg-color: transparent;
       --fc-neutral-bg-color: var(--color-surface);
-      --fc-today-bg-color: color-mix(in srgb, var(--color-primary) 12%, transparent);
+      --fc-today-bg-color: color-mix(in srgb, var(--color-primary) 7%, transparent);
       --fc-button-bg-color: var(--color-surface);
       --fc-button-border-color: var(--color-border);
       --fc-button-hover-bg-color: var(--color-surface-hover);
-      --fc-button-hover-border-color: var(--color-border);
-      --fc-button-active-bg-color: var(--color-primary);
-      --fc-button-active-border-color: var(--color-primary);
-      --fc-button-text-color: var(--color-text);
+      --fc-button-hover-border-color: var(--color-text-faint);
+      --fc-button-active-bg-color: var(--color-surface-hover);
+      --fc-button-active-border-color: var(--color-text-faint);
+      --fc-button-text-color: var(--color-text-muted);
       color: var(--color-text);
     }
-    ::ng-deep .fc-toolbar-title { color: var(--color-text); font-size: 1.125rem !important; }
-    ::ng-deep .fc-event { cursor: pointer; }
 
-    :host.rounded ::ng-deep .fc-scrollgrid,
-    :host.rounded ::ng-deep .fc-scrollgrid-section table {
-      border-radius: 10px;
-      overflow: hidden;
+    /* Toolbar */
+    ::ng-deep .fc .fc-toolbar.fc-header-toolbar { margin-bottom: 12px; padding: 12px 14px 0; }
+    ::ng-deep .fc-toolbar-title {
+      color: var(--color-text);
+      font-size: 1.0625rem !important;
+      font-weight: 600;
+      letter-spacing: -0.01em;
     }
-    :host.rounded ::ng-deep .fc-event {
-      border-radius: 6px !important;
+    ::ng-deep .fc .fc-button {
+      border-radius: var(--radius-sm) !important;
+      font-size: 0.78rem;
+      padding: 4px 10px;
+      box-shadow: none !important;
+      text-transform: capitalize;
+      font-weight: 500;
     }
-    :host.rounded ::ng-deep .fc-button {
-      border-radius: 6px !important;
+    ::ng-deep .fc .fc-button-primary:focus { box-shadow: none !important; }
+    ::ng-deep .fc .fc-button-active {
+      color: var(--color-primary) !important;
+      background: var(--color-primary-ghost) !important;
+      border-color: transparent !important;
     }
+
+    /* Column (weekday) headers — mono, uppercase, faint */
+    ::ng-deep .fc .fc-col-header-cell {
+      background: var(--color-surface-2);
+      padding: 9px 8px;
+    }
+    ::ng-deep .fc .fc-col-header-cell-cushion {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--color-text-faint);
+      font-weight: 500;
+      padding: 2px 4px;
+    }
+
+    /* Day cells — more breathing room, faint other-month */
+    ::ng-deep .fc .fc-daygrid-day-frame { padding: 3px; min-height: 104px; }
+    ::ng-deep .fc .fc-daygrid-day-number {
+      font-size: 12px;
+      color: var(--color-text-muted);
+      padding: 4px 6px;
+    }
+    ::ng-deep .fc .fc-day-other .fc-daygrid-day-number { color: var(--color-text-faint); }
+    ::ng-deep .fc .fc-day-other { background: rgba(0, 0, 0, 0.12); }
+
+    /* Click affordance: hovering any day tints the cell and shows a "+" so it
+       reads as "click here to add an event" (the text hint alone wasn't enough) */
+    ::ng-deep .fc .fc-daygrid-day-frame { position: relative; }
+    ::ng-deep .fc .fc-daygrid-day:hover .fc-daygrid-day-frame {
+      background: var(--color-primary-ghost);
+      cursor: pointer;
+    }
+    ::ng-deep .fc .fc-daygrid-day:hover .fc-daygrid-day-frame::after {
+      content: '+';
+      position: absolute;
+      top: 5px;
+      left: 6px;
+      width: 18px;
+      height: 18px;
+      display: grid;
+      place-items: center;
+      border-radius: 6px;
+      background: var(--color-primary);
+      color: #fff;
+      font-size: 13px;
+      line-height: 1;
+      font-weight: 600;
+      pointer-events: none;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+    }
+
+    /* Today: badge the number instead of flooding the cell */
+    ::ng-deep .fc .fc-day-today .fc-daygrid-day-number {
+      background: var(--color-primary);
+      color: #fff;
+      font-weight: 600;
+      border-radius: 6px;
+      min-width: 22px;
+      text-align: center;
+      margin: 2px;
+      padding: 3px 6px;
+    }
+
+    /* Events */
+    ::ng-deep .fc-event {
+      cursor: pointer;
+      border: none;
+      font-size: 11px;
+      box-shadow: none;
+    }
+    ::ng-deep .fc .fc-daygrid-event { margin-top: 2px; }
+    ::ng-deep .fc .fc-daygrid-more-link {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--color-text-faint);
+      padding-left: 6px;
+    }
+    ::ng-deep .fc .fc-event-time { font-family: var(--font-mono); font-size: 9px; opacity: 0.9; }
+
+    /* List view rows */
+    ::ng-deep .fc .fc-list { border-radius: var(--radius-lg); overflow: hidden; }
+    ::ng-deep .fc .fc-list-event:hover td { background: var(--color-surface-hover); }
+    ::ng-deep .fc .fc-list-day-cushion { background: var(--color-surface-2); }
   `],
 })
 export class CalendarComponent implements OnInit {
@@ -171,6 +288,7 @@ export class CalendarComponent implements OnInit {
   private readonly calendarRef = viewChild(FullCalendarComponent);
 
   protected readonly events = signal<CalendarEvent[]>([]);
+  protected readonly tagFilter = signal<string | null>(null);
   protected readonly settings = signal<CalendarSettings | null>(null);
   protected readonly slotMenu = signal<SlotMenu>({
     visible: false,
@@ -201,17 +319,36 @@ export class CalendarComponent implements OnInit {
       right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek',
     },
     height: '100%',
-    locale: 'es',
+    locale: 'en',
     firstDay: 1,
     selectable: true,
     editable: true,
+    dayMaxEvents: 3,
+    eventDisplay: 'block',
     eventTimeFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
     select: (info) => this.onSelect(info),
     eventClick: (info) => this.onEventClick(info),
     eventDrop: (info) => this.onEventDrop(info),
     eventResize: (info) => this.onEventDrop(info as unknown as EventDropArg),
+    eventDidMount: (arg) => this.styleEvent(arg.el, arg.event.backgroundColor, arg.view.type),
     events: [],
   };
+
+  /**
+   * Repaints each event as a soft pill: translucent fill + a solid colored
+   * left bar (mirrors the design handoff). Skipped in list view, whose rows
+   * read better with the default treatment.
+   */
+  private styleEvent(el: HTMLElement, color: string | undefined, viewType: string): void {
+    if (viewType === 'listWeek' || !color) return;
+    const isHex = /^#[0-9a-f]{6}$/i.test(color);
+    el.style.backgroundColor = isHex ? `${color}22` : color;
+    el.style.borderColor = 'transparent';
+    el.style.borderLeft = `2px solid ${color}`;
+    el.style.borderRadius = '4px';
+    el.style.color = 'var(--color-text)';
+    el.style.padding = '1px 4px';
+  }
 
   ngOnInit(): void {
     this.service.getSettings().subscribe({
@@ -228,29 +365,55 @@ export class CalendarComponent implements OnInit {
     this.loadEvents();
   }
 
+  /** Distinct tags across all events, for the filter bar. */
+  protected readonly allTags = computed(() => {
+    const set = new Set<string>();
+    for (const e of this.events()) for (const t of e.tags ?? []) set.add(t);
+    return Array.from(set).sort();
+  });
+
+  protected readonly visibleEvents = computed(() => {
+    const tag = this.tagFilter();
+    if (!tag) return this.events();
+    return this.events().filter((e) => (e.tags ?? []).includes(tag));
+  });
+
+  protected setTagFilter(tag: string | null): void {
+    this.tagFilter.set(tag);
+    this.renderEvents();
+  }
+
   private loadEvents(): void {
     this.service.list().subscribe({
       next: (events) => {
         this.events.set(events);
-        const mapped: EventInput[] = events.map((e) => ({
-          id: e.id,
-          title: e.title,
-          start: e.startDate,
-          end: e.endDate,
-          allDay: e.allDay,
-          backgroundColor: e.color,
-          borderColor: e.color,
-          extendedProps: { source: e },
-        }));
-        this.calendarOptions = { ...this.calendarOptions, events: mapped };
-        const api = this.calendarRef()?.getApi();
-        if (api) {
-          api.removeAllEventSources();
-          api.addEventSource(mapped);
+        // Drop a filter that no longer matches any event.
+        if (this.tagFilter() && !this.allTags().includes(this.tagFilter()!)) {
+          this.tagFilter.set(null);
         }
+        this.renderEvents();
       },
-      error: () => this.toastr.error('No se pudieron cargar los eventos'),
+      error: () => this.toastr.error('Could not load events'),
     });
+  }
+
+  private renderEvents(): void {
+    const mapped: EventInput[] = this.visibleEvents().map((e) => ({
+      id: e.id,
+      title: e.title,
+      start: e.startDate,
+      end: e.endDate,
+      allDay: e.allDay,
+      backgroundColor: e.color,
+      borderColor: e.color,
+      extendedProps: { source: e },
+    }));
+    this.calendarOptions = { ...this.calendarOptions, events: mapped };
+    const api = this.calendarRef()?.getApi();
+    if (api) {
+      api.removeAllEventSources();
+      api.addEventSource(mapped);
+    }
   }
 
   protected openCreate(): void {
@@ -328,10 +491,10 @@ export class CalendarComponent implements OnInit {
     const start = info.event.start.toISOString();
     const end = (info.event.end ?? info.event.start).toISOString();
     this.service.update(source.id, { startDate: start, endDate: end }).subscribe({
-      next: () => this.toastr.success('Evento movido'),
+      next: () => this.toastr.success('Event moved'),
       error: () => {
         info.revert();
-        this.toastr.error('No se pudo mover el evento');
+        this.toastr.error('Could not move the event');
       },
     });
   }

@@ -28,6 +28,17 @@ export class HabitsController {
     return this.habits.list(user.id);
   }
 
+  // Must be declared before ':id' so it isn't captured as a habit id.
+  @Get('today')
+  today(@CurrentUser() user: AuthUser) {
+    return this.habits.today(user.id);
+  }
+
+  @Get('week')
+  week(@CurrentUser() user: AuthUser) {
+    return this.habits.week(user.id);
+  }
+
   @Post()
   create(@CurrentUser() user: AuthUser, @Body() dto: CreateHabitDto) {
     return this.habits.create(user.id, dto);

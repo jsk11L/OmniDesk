@@ -23,24 +23,24 @@ export type CreateListDialogResult = List | undefined;
   ],
   template: `
     <div class="bg-surface text-text p-6 w-[min(480px,95vw)]">
-      <h2 class="text-lg font-semibold mb-4">Nueva lista</h2>
+      <h2 class="text-lg font-semibold mb-4">New list</h2>
 
       <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-4">
         <label class="block">
-          <span class="block text-xs text-text-muted mb-1">Nombre *</span>
+          <span class="block text-xs text-text-muted mb-1">Name *</span>
           <input
             type="text"
             formControlName="name"
             autofocus
             maxlength="100"
             class="w-full px-3 py-2 bg-background border border-border rounded outline-none focus:border-primary"
-            placeholder="Ej: Juegos, Libros, Series"
+            placeholder="e.g. Games, Books, Series"
           />
         </label>
 
         <div class="flex gap-4 items-start">
           <div>
-            <span class="block text-xs text-text-muted mb-1">Icono</span>
+            <span class="block text-xs text-text-muted mb-1">Icon</span>
             <app-emoji-picker
               [initialValue]="icon()"
               placeholder="📚"
@@ -48,7 +48,7 @@ export type CreateListDialogResult = List | undefined;
             />
           </div>
           <div class="flex-1">
-            <span class="block text-xs text-text-muted mb-1">Imagen de portada (opcional)</span>
+            <span class="block text-xs text-text-muted mb-1">Cover image (optional)</span>
             <app-image-input
               [initialValue]="cover()"
               (valueChange)="setCover($event)"
@@ -57,15 +57,15 @@ export type CreateListDialogResult = List | undefined;
         </div>
 
         <label class="block">
-          <span class="block text-xs text-text-muted mb-1">Vista por defecto</span>
+          <span class="block text-xs text-text-muted mb-1">Default view</span>
           <select
             formControlName="defaultView"
             class="w-full px-3 py-2 bg-background border border-border rounded outline-none focus:border-primary"
           >
-            <option value="GRID">Grid (tarjetas)</option>
-            <option value="TABLE">Tabla</option>
-            <option value="GALLERY">Galería</option>
-            <option value="LIST">Lista</option>
+            <option value="GRID">Grid (cards)</option>
+            <option value="TABLE">Table</option>
+            <option value="GALLERY">Gallery</option>
+            <option value="LIST">List</option>
           </select>
         </label>
 
@@ -79,14 +79,14 @@ export type CreateListDialogResult = List | undefined;
             (click)="ref.close()"
             class="px-4 py-2 text-sm rounded hover:bg-surface-hover"
           >
-            Cancelar
+            Cancel
           </button>
           <button
             type="submit"
             [disabled]="form.invalid || loading()"
             class="px-4 py-2 text-sm rounded bg-primary text-white hover:opacity-90 disabled:opacity-50"
           >
-            {{ loading() ? 'Creando…' : 'Crear' }}
+            {{ loading() ? 'Creating…' : 'Create' }}
           </button>
         </div>
       </form>
@@ -135,7 +135,7 @@ export class CreateListDialogComponent {
 
     this.service.create(payload).subscribe({
       next: (list) => {
-        this.toastr.success('Lista creada');
+        this.toastr.success('List created');
         this.ref.close(list);
       },
       error: (err: HttpErrorResponse) => {
@@ -144,7 +144,7 @@ export class CreateListDialogComponent {
         const msg = body?.error?.message;
         if (Array.isArray(msg)) this.error.set(msg.join('. '));
         else if (typeof msg === 'string') this.error.set(msg);
-        else this.error.set('No se pudo crear la lista');
+        else this.error.set('Could not create the list');
       },
     });
   }
