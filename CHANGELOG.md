@@ -5,6 +5,11 @@ All notable changes to OmniDesk. Breaking changes are called out explicitly.
 ## [Unreleased]
 
 ### Added
+- **Edit existing list fields:** the Fields section now lets you rename, change
+  type, toggle required, and edit Select options on fields that already exist —
+  with live warnings about what each change implies (type change keeps values
+  as-is; removing Select options orphans items using them; deleting a field
+  drops its column from every item).
 - **Free-tier deployment (Cloudflare Pages + Render + Neon):** a `render.yaml`
   blueprint for the Docker backend (auto-generated JWT secrets, health check,
   env contract), a build-time `set-env.js` that bakes the API URL into the
@@ -98,6 +103,9 @@ All notable changes to OmniDesk. Breaking changes are called out explicitly.
   soft-delete purge cron, env validation, offset pagination, smoke test.
 
 ### Fixed
+- **Calendar day-add affordance:** the "+" now sits centered in the day cell,
+  the hover tint covers the whole cell, and the action cursor shows only on the
+  button.
 - **Themed borders no longer render white:** the design tokens (`border-soft`,
   `surface-2`, `text-faint`, `primary-ghost`…) are now registered as Tailwind
   colors, so `border-border-soft` etc. follow the active theme instead of
