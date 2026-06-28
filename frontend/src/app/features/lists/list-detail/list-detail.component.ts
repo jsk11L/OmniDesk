@@ -29,10 +29,14 @@ import {
 import {
   resolveGridConfig,
   resolveViewConfig,
+  resolveCardStyle,
   findImageField,
+  levelToCss,
   CARD_MATRIX_SLOTS,
   DEFAULT_FIELD_LAYOUT,
   type GridConfig,
+  type CardStyle,
+  type StyleLevel,
   type List,
   type ListField,
   type ListItem,
@@ -43,6 +47,10 @@ import {
   type FieldCardLayout,
   type DateDisplayFormat,
 } from '../lists.types';
+import {
+  CardStyleDialogComponent,
+  type CardStyleDialogData,
+} from '../card-style-dialog/card-style-dialog.component';
 
 interface ItemGroup {
   key: string;
@@ -80,6 +88,9 @@ interface ItemGroup {
                 "
               >{{ isFavorite(l.id) ? '★' : '☆' }}</button>
             }
+            <button type="button" (click)="openCardStyle()" class="px-3 py-2 rounded text-sm hover:bg-surface-hover" title="Card typography & style">
+              🎨 Style
+            </button>
             <button type="button" (click)="openSettings()" class="px-3 py-2 rounded text-sm hover:bg-surface-hover">
               ⚙ Settings
             </button>
@@ -153,6 +164,14 @@ interface ItemGroup {
                             <input type="checkbox" [checked]="layoutOf(f.id).showLabel" (change)="toggleFieldLabel(f.id)" class="accent-primary" />
                             Show "{{ f.name }}:" label
                           </label>
+                          <select [ngModel]="levelOf(f.id)" (ngModelChange)="setFieldLevel(f.id, $event)"
+                            class="w-full mt-1.5 px-2 py-1 bg-background border border-border rounded text-xs outline-none focus:border-primary"
+                            title="Typographic level (edit fonts/sizes in 🎨 Style)">
+                            <option value="title">Level: Title</option>
+                            <option value="subtitle">Level: Subtitle</option>
+                            <option value="body">Level: Body</option>
+                            <option value="caption">Level: Caption</option>
+                          </select>
                           @if (f.fieldType === 'DATE') {
                             <select [ngModel]="layoutOf(f.id).dateFormat ?? 'full'" (ngModelChange)="setFieldDateFormat(f.id, $event)"
                               class="w-full mt-1.5 px-2 py-1 bg-background border border-border rounded text-xs outline-none focus:border-primary">
@@ -236,27 +255,33 @@ interface ItemGroup {
               @case ('card-large') {
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6">
                   @for (item of group.items; track item.id) {
-                    <div class="bg-surface border border-border rounded-lg overflow-hidden hover:border-primary transition-colors flex flex-col">
+                    <div class="bg-surface border border-border rounded-lg overflow-hidden hover:border-primary transition-colors flex flex-col"
+                      [style.background]="cardBg()" [style.border-color]="cardBorder()">
                       <button type="button" (click)="openEditItem(item)" class="text-left">
                         @if (gridConfig().showImage && resolveImage(item); as src) {
-                          <img [src]="src" alt="" class="w-full h-40 object-cover" />
+                          <div class="relative">
+                            <img [src]="src" alt="" class="w-full h-40 object-cover" />
+                            @if (cardStyle().imageScrim) {
+                              <div class="absolute inset-0 pointer-events-none" [style.background]="'rgba(0,0,0,' + cardStyle().imageScrim / 100 + ')'"></div>
+                            }
+                          </div>
                         }
                         <div class="p-3 relative min-h-[3.25rem]">
-                          <!-- Fields stacked ABOVE the title (Obsidian header, auto-scaled) -->
-                          @for (s of stackEntries(); track s.id) {
-                            @if (fieldById(s.id); as f) {
-                              <div [class]="s.cls + ' truncate leading-tight'">
-                                @if (layoutOf(s.id).showLabel) { <span class="text-text-muted">{{ f.name }}: </span> }{{ formatFieldFor(f, item.customFields[f.id]) }}
+                          <!-- Fields stacked ABOVE the title -->
+                          @for (fieldId of stackFieldsRender(); track fieldId) {
+                            @if (fieldById(fieldId); as f) {
+                              <div class="truncate leading-tight" [style]="fieldStyle(fieldId)">
+                                @if (layoutOf(fieldId).showLabel) { <span class="opacity-70">{{ f.name }}: </span> }{{ formatFieldFor(f, item.customFields[f.id]) }}
                               </div>
                             }
                           }
 
-                          <h3 class="font-semibold text-lg leading-tight truncate">{{ item.title }}</h3>
+                          <h3 class="leading-tight truncate" [style]="titleStyle()">{{ item.title }}</h3>
 
                           <!-- Fields in the default body flow -->
                           @for (fieldId of bodyFields(); track fieldId) {
                             @if (fieldById(fieldId); as f) {
-                              <p class="text-xs text-text-muted mt-0.5 truncate">
+                              <p class="mt-0.5 truncate" [style]="fieldStyle(fieldId)">
                                 @if (layoutOf(fieldId).showLabel) { <strong>{{ f.name }}:</strong> }{{ formatFieldFor(f, item.customFields[f.id]) }}
                               </p>
                             }
@@ -275,7 +300,7 @@ interface ItemGroup {
                           <!-- Fields anchored to one of the 9 matrix zones -->
                           @for (a of anchoredFields(); track a.id) {
                             @if (fieldById(a.id); as f) {
-                              <span [class]="'card-anchor ' + a.cls">
+                              <span [class]="'card-anchor ' + a.cls" [style]="fieldStyle(a.id)">
                                 @if (layoutOf(a.id).showLabel) { <span class="opacity-70">{{ f.name }}: </span> }{{ formatFieldFor(f, item.customFields[f.id]) }}
                               </span>
                             }
@@ -320,6 +345,9 @@ interface ItemGroup {
                     <button type="button" (click)="openEditItem(item)"
                       class="card-cover text-left"
                       [style.background-image]="resolveImage(item) ? 'url(' + resolveImage(item) + ')' : null">
+                      @if (cardStyle().imageScrim) {
+                        <div class="absolute inset-0 z-[1] pointer-events-none" [style.background]="'rgba(0,0,0,' + cardStyle().imageScrim / 100 + ')'"></div>
+                      }
                       <div class="card-cover-content">
                         <div class="card-cover-top">
                           @if (gridConfig().showTags) {
@@ -333,10 +361,10 @@ interface ItemGroup {
                         <div>
                           @for (fieldId of gridConfig().visibleFields; track fieldId) {
                             @if (fieldById(fieldId); as f) {
-                              <div class="card-cover-meta">@if (layoutOf(fieldId).showLabel) { <span>{{ f.name }}: </span> }{{ formatFieldFor(f, item.customFields[f.id]) }}</div>
+                              <div class="card-cover-meta" [style]="fieldStyle(fieldId)">@if (layoutOf(fieldId).showLabel) { <span>{{ f.name }}: </span> }{{ formatFieldFor(f, item.customFields[f.id]) }}</div>
                             }
                           }
-                          <div class="card-cover-title">{{ item.title }}</div>
+                          <div class="card-cover-title" [style]="titleStyle()">{{ item.title }}</div>
                         </div>
                       </div>
                     </button>
@@ -576,6 +604,10 @@ export class ListDetailComponent implements OnInit {
     this.patchFieldLayout(fieldId, { dateFormat: fmt });
   }
 
+  protected setFieldLevel(fieldId: string, level: StyleLevel): void {
+    this.patchFieldLayout(fieldId, { level });
+  }
+
   private patchFieldLayout(fieldId: string, patch: Partial<FieldCardLayout>): void {
     const current = this.gridConfig().cardLayout ?? {};
     const next: Record<string, FieldCardLayout> = {
@@ -585,14 +617,34 @@ export class ListDetailComponent implements OnInit {
     this.patchGridConfig({ cardLayout: next });
   }
 
-  /** Visible 'stack' fields ordered top→bottom, each with its size class. */
-  protected readonly stackEntries = computed<{ id: string; cls: string }[]>(() => {
-    const stack = this.gridConfig().visibleFields.filter(
-      (id) => this.layoutOf(id).slot === 'stack',
-    );
-    // stack[0] sits closest to the title (largest); fields higher up shrink.
-    return stack.map((id, i) => ({ id, cls: this.stackTierClass(i) })).reverse();
-  });
+  // ─── Card typography levels + chrome ─────────────────────
+  protected readonly cardStyle = computed<CardStyle>(() => resolveCardStyle(this.gridConfig()));
+  protected readonly cardBg = computed<string | null>(() => this.cardStyle().background || null);
+  protected readonly cardBorder = computed<string | null>(() => this.cardStyle().border || null);
+
+  /** The level a field renders as: explicit, else a sensible default per slot. */
+  protected levelOf(fieldId: string): StyleLevel {
+    const layout = this.layoutOf(fieldId);
+    if (layout.level) return layout.level;
+    if (layout.slot === 'stack') return 'subtitle';
+    if (layout.slot === 'body') return 'body';
+    return 'caption';
+  }
+
+  protected fieldStyle(fieldId: string): { [k: string]: string } {
+    return levelToCss(this.cardStyle().levels[this.levelOf(fieldId)]);
+  }
+
+  protected titleStyle(): { [k: string]: string } {
+    return levelToCss(this.cardStyle().levels.title);
+  }
+
+  /** Visible 'stack' fields ordered top→bottom for rendering above the title. */
+  protected readonly stackFieldsRender = computed<string[]>(() =>
+    this.gridConfig()
+      .visibleFields.filter((id) => this.layoutOf(id).slot === 'stack')
+      .reverse(),
+  );
 
   protected readonly bodyFields = computed<string[]>(() =>
     this.gridConfig().visibleFields.filter((id) => this.layoutOf(id).slot === 'body'),
@@ -604,12 +656,6 @@ export class ListDetailComponent implements OnInit {
       .visibleFields.filter((id) => matrix.has(this.layoutOf(id).slot))
       .map((id) => ({ id, cls: this.anchorClass(this.layoutOf(id).slot) }));
   });
-
-  private stackTierClass(indexFromTitle: number): string {
-    if (indexFromTitle === 0) return 'text-base font-medium text-text';
-    if (indexFromTitle === 1) return 'text-sm text-text-muted';
-    return 'text-xs text-text-faint';
-  }
 
   private anchorClass(slot: CardSlot): string {
     switch (slot) {
@@ -865,6 +911,18 @@ export class ListDetailComponent implements OnInit {
         void this.router.navigate(['/app/lists']);
       },
     });
+  }
+
+  protected openCardStyle(): void {
+    this.dialog
+      .open<CardStyleDialogComponent, CardStyleDialogData, CardStyle | undefined>(
+        CardStyleDialogComponent,
+        { data: { cardStyle: this.cardStyle() }, width: 'min(720px, 96vw)', maxWidth: '96vw' },
+      )
+      .afterClosed()
+      .subscribe((style) => {
+        if (style) this.patchGridConfig({ cardStyle: style });
+      });
   }
 
   protected openCreateItem(): void {

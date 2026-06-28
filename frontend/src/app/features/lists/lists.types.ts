@@ -65,11 +65,50 @@ export type CardSlot =
 /** How a DATE value is shown on a card (e.g. "May" when you group by year). */
 export type DateDisplayFormat = 'full' | 'month' | 'month-year' | 'year';
 
+/** Named typographic levels a field can be styled as on a card. */
+export type StyleLevel = 'title' | 'subtitle' | 'body' | 'caption';
+
+export interface LevelStyle {
+  /** CSS font-family stack (one of CARD_FONTS values). */
+  font: string;
+  /** Font size in px. */
+  size: number;
+  weight: 400 | 500 | 600 | 700;
+  /** '' = inherit the theme text color; otherwise a hex/CSS color. */
+  color: string;
+  transform: 'none' | 'uppercase';
+  /** Text shadow for legibility over images. */
+  shadow: boolean;
+}
+
+export interface CardStyle {
+  levels: Record<StyleLevel, LevelStyle>;
+  /** '' = default surface; otherwise a card background color. */
+  background: string;
+  /** '' = default border; otherwise a border color. */
+  border: string;
+  /** 0–100 dark overlay over the card image (legibility for light images). */
+  imageScrim: number;
+}
+
+/** Curated font set offered in the card style editor. */
+export const CARD_FONTS: { label: string; value: string }[] = [
+  { label: 'Inter', value: "'Inter', sans-serif" },
+  { label: 'Manrope', value: "'Manrope', sans-serif" },
+  { label: 'Newsreader', value: "'Newsreader', serif" },
+  { label: 'Playfair Display', value: "'Playfair Display', serif" },
+  { label: 'JetBrains Mono', value: "'JetBrains Mono', monospace" },
+  { label: 'Space Grotesk', value: "'Space Grotesk', sans-serif" },
+  { label: 'Bebas Neue', value: "'Bebas Neue', sans-serif" },
+];
+
 export interface FieldCardLayout {
   slot: CardSlot;
   /** Show the "Field name:" prefix. Off → just the raw value. */
   showLabel: boolean;
   dateFormat?: DateDisplayFormat;
+  /** Typographic level; defaults by slot (stack→subtitle, anchor→caption, body→body). */
+  level?: StyleLevel;
 }
 
 export interface GridConfig {
@@ -80,7 +119,21 @@ export interface GridConfig {
   showTags: boolean;
   /** Per-field card layout (Large card only). Keyed by field id. */
   cardLayout?: Record<string, FieldCardLayout>;
+  /** Typographic levels + card chrome (Large/Cover cards). */
+  cardStyle?: CardStyle;
 }
+
+export const DEFAULT_CARD_STYLE: CardStyle = {
+  levels: {
+    title: { font: "'Inter', sans-serif", size: 18, weight: 600, color: '', transform: 'none', shadow: false },
+    subtitle: { font: "'Inter', sans-serif", size: 14, weight: 500, color: '', transform: 'none', shadow: false },
+    body: { font: "'Inter', sans-serif", size: 12, weight: 400, color: '', transform: 'none', shadow: false },
+    caption: { font: "'JetBrains Mono', monospace", size: 11, weight: 400, color: '', transform: 'uppercase', shadow: false },
+  },
+  background: '',
+  border: '',
+  imageScrim: 0,
+};
 
 /** The 3×3 anchor matrix, row-major, for the layout picker UI. */
 export const CARD_MATRIX_SLOTS: CardSlot[] = [
@@ -243,8 +296,39 @@ export interface ObsidianImportConfig {
   fields: FieldOverride[];
 }
 
+/** Inline CSS for a typographic level (shared by the card render + style editor). */
+export function levelToCss(s: LevelStyle): { [k: string]: string } {
+  const css: { [k: string]: string } = {
+    'font-family': s.font,
+    'font-size': `${s.size}px`,
+    'font-weight': String(s.weight),
+    'text-transform': s.transform,
+  };
+  if (s.color) css['color'] = s.color;
+  if (s.shadow) css['text-shadow'] = '0 1px 3px rgba(0, 0, 0, 0.7)';
+  return css;
+}
+
 export function resolveGridConfig(list: List): GridConfig {
   return { ...DEFAULT_GRID_CONFIG, ...(list.gridConfig ?? {}) };
+}
+
+/** Card style merged with defaults (handles older lists without `cardStyle`). */
+export function resolveCardStyle(config: GridConfig): CardStyle {
+  const cs = config.cardStyle;
+  if (!cs) return DEFAULT_CARD_STYLE;
+  return {
+    levels: {
+      title: { ...DEFAULT_CARD_STYLE.levels.title, ...cs.levels?.title },
+      subtitle: { ...DEFAULT_CARD_STYLE.levels.subtitle, ...cs.levels?.subtitle },
+      body: { ...DEFAULT_CARD_STYLE.levels.body, ...cs.levels?.body },
+      caption: { ...DEFAULT_CARD_STYLE.levels.caption, ...cs.levels?.caption },
+    },
+    background: cs.background ?? '',
+    border: cs.border ?? '',
+    // Range inputs persist as strings — coerce so `@if (imageScrim)` and math work.
+    imageScrim: Number(cs.imageScrim ?? 0) || 0,
+  };
 }
 
 export function resolveViewConfig(list: List): ViewConfig {

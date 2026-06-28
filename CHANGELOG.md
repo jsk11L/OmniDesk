@@ -5,6 +5,14 @@ All notable changes to OmniDesk. Breaking changes are called out explicitly.
 ## [Unreleased]
 
 ### Added
+- **Card typography levels (lists):** a 🎨 Style editor defines four named levels
+  (Title / Subtitle / Body / Caption) — each with font (7 curated families),
+  size, weight, colour, uppercase and text-shadow — plus card background, border
+  and an image overlay (scrim) for legibility over light images. Assign any
+  field to a level; replaces the old fixed auto-scaling. Applies to the Large
+  and Cover cards; all in `gridConfig` (no migration).
+- **TO-DO tag filter:** filter the board by tags with Any/All (OR/AND) matching
+  and a live count; reordering is paused while a filter is active.
 - **Edit existing list fields:** the Fields section now lets you rename, change
   type, toggle required, and edit Select options on fields that already exist —
   with live warnings about what each change implies (type change keeps values
