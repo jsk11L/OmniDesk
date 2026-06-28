@@ -5,6 +5,11 @@ All notable changes to OmniDesk. Breaking changes are called out explicitly.
 ## [Unreleased]
 
 ### Added
+- **Free-tier deployment (Cloudflare Pages + Render + Neon):** a `render.yaml`
+  blueprint for the Docker backend (auto-generated JWT secrets, health check,
+  env contract), a build-time `set-env.js` that bakes the API URL into the
+  Angular bundle, an `_redirects` SPA fallback, and a step-by-step runbook at
+  `docs/operations/deploy-cloudflare-render-neon.md`.
 - **Language selector (i18n):** runtime English/Spanish switch via ngx-translate,
   persisted to `localStorage` and seeded from the browser locale. A selector in
   the sidebar footer; the shell navigation is translated, with `en`/`es` JSON

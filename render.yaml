@@ -1,0 +1,57 @@
+# Render Blueprint for the OmniDesk backend (NestJS + Prisma).
+# Database lives on Neon (external) — set DATABASE_URL by hand in the dashboard.
+# Frontend is deployed separately on Cloudflare Pages.
+#
+# Deploy: Render dashboard → "New +" → "Blueprint" → pick this repo.
+# Docs: docs/operations/deploy-cloudflare-render-neon.md
+services:
+  - type: web
+    name: omnidesk-api
+    runtime: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+
+      # ── Database (Neon) ──────────────────────────────────────
+      # Paste the Neon connection string (direct, not pooled), e.g.
+      #   postgresql://user:pass@ep-xxx.eu-central-1.aws.neon.tech/omnidesk?sslmode=require
+      - key: DATABASE_URL
+        sync: false
+
+      # ── Auth secrets (auto-generated, distinct, never placeholders) ──
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+
+      # ── CORS: must equal the Cloudflare Pages origin EXACTLY ──
+      #   e.g. https://omnidesk.pages.dev  (or your custom domain)
+      - key: FRONTEND_URL
+        sync: false
+
+      # ── Sensible production defaults ─────────────────────────
+      - key: CAPTCHA_PROVIDER
+        value: none
+      - key: REGISTRATION_OPEN
+        value: "true"
+      - key: TERMS_VERSION
+        value: "2026-06"
+      # Render mounts an ephemeral filesystem on the free plan — uploaded files
+      # are wiped on every restart/deploy. Add a paid Disk (or external storage)
+      # mounted at /app/uploads if you need them to persist. See the deploy doc.
+      - key: UPLOADS_DIR
+        value: ./uploads
+
+      # ── Optional: web-push (leave unset to disable notifications) ──
+      # - key: VAPID_PUBLIC_KEY
+      #   sync: false
+      # - key: VAPID_PRIVATE_KEY
+      #   sync: false
+      # - key: VAPID_SUBJECT
+      #   value: mailto:you@example.com
