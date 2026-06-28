@@ -5,6 +5,10 @@ All notable changes to OmniDesk. Breaking changes are called out explicitly.
 ## [Unreleased]
 
 ### Added
+- **Language selector (i18n):** runtime English/Spanish switch via ngx-translate,
+  persisted to `localStorage` and seeded from the browser locale. A selector in
+  the sidebar footer; the shell navigation is translated, with `en`/`es` JSON
+  catalogues to extend the rest of the UI incrementally.
 - **List card designer (Large card):** per-field layout — anchor a field to any
   of 9 zones (3×3 matrix), stack it above the title with auto-scaled typography,
   or keep it in the body; hide the "Field:" label; and render DATE fields as

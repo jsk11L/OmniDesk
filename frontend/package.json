@@ -30,6 +30,8 @@
     "@fullcalendar/interaction": "^6.1.15",
     "@fullcalendar/list": "^6.1.15",
     "@fullcalendar/timegrid": "^6.1.15",
+    "@ngx-translate/core": "18",
+    "@ngx-translate/http-loader": "18",
     "@tiptap/core": "^2.6.6",
     "@tiptap/extension-font-family": "^2.6.6",
     "@tiptap/extension-image": "^2.6.6",

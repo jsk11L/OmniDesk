@@ -1,0 +1,32 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "calendar": "Calendar",
+    "lists": "Lists",
+    "notes": "Notes",
+    "todos": "TO-DO",
+    "habits": "Habits",
+    "finance": "Finance",
+    "notifications": "Notifications",
+    "settings": "Settings",
+    "admin": "Admin"
+  },
+  "sidebar": {
+    "workspace": "Workspace",
+    "favorites": "Favorites",
+    "search": "Search or run…",
+    "signOut": "Sign out",
+    "profile": "Profile & settings",
+    "language": "Language"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "create": "Create",
+    "edit": "Edit",
+    "close": "Close",
+    "loading": "Loading…",
+    "search": "Search…"
+  }
+}

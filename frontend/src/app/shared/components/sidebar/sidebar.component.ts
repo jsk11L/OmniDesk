@@ -1,7 +1,9 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { AuthService } from '../../../core/services/auth.service';
+import { LanguageService } from '../../../core/services/language.service';
 import { UploadsService } from '../../services/uploads.service';
 import { FavoritesStore } from '../../services/favorites.store';
 
@@ -16,7 +18,7 @@ interface NavItem {
   selector: 'app-sidebar',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, RouterLinkActive],
+  imports: [RouterLink, RouterLinkActive, TranslatePipe],
   template: `
     <aside class="sb">
       <div class="sb-header">
@@ -26,12 +28,12 @@ interface NavItem {
 
       <button type="button" class="sb-search" (click)="openPalette()" title="Search (Ctrl/⌘ K)">
         <span class="sb-search-ico">🔍</span>
-        <span class="sb-search-text">Search or run…</span>
+        <span class="sb-search-text">{{ 'sidebar.search' | translate }}</span>
         <span class="kbd">⌘K</span>
       </button>
 
       <nav class="sb-section">
-        <div class="sb-section-label">Workspace</div>
+        <div class="sb-section-label">{{ 'sidebar.workspace' | translate }}</div>
         @for (item of mainNav; track item.path) {
           <a
             [routerLink]="item.path"
@@ -40,12 +42,12 @@ interface NavItem {
             class="nav-item"
           >
             <span class="nav-ico">{{ item.icon }}</span>
-            <span>{{ item.label }}</span>
+            <span>{{ item.label | translate }}</span>
           </a>
         }
 
         @if (favorites().length > 0) {
-          <div class="sb-section-label" style="margin-top: 8px">Favorites</div>
+          <div class="sb-section-label" style="margin-top: 8px">{{ 'sidebar.favorites' | translate }}</div>
           @for (f of favorites(); track f.id) {
             <a [routerLink]="favRoute(f)" [queryParams]="favParams(f)" class="nav-item">
               <span class="nav-ico">{{ f.icon ?? (f.kind === 'LIST' ? '🗂️' : '📝') }}</span>
@@ -58,21 +60,30 @@ interface NavItem {
       <div class="sb-footer">
         <a routerLink="/app/notifications" routerLinkActive="active" class="nav-item">
           <span class="nav-ico">🔔</span>
-          <span>Notifications</span>
+          <span>{{ 'nav.notifications' | translate }}</span>
         </a>
         <a routerLink="/app/settings" routerLinkActive="active" class="nav-item">
           <span class="nav-ico">⚙️</span>
-          <span>Settings</span>
+          <span>{{ 'nav.settings' | translate }}</span>
         </a>
         @if (isAdmin()) {
           <a routerLink="/app/admin" routerLinkActive="active" class="nav-item">
             <span class="nav-ico">🛡️</span>
-            <span>Admin</span>
+            <span>{{ 'nav.admin' | translate }}</span>
           </a>
         }
 
+        <label class="lang-row" [title]="'sidebar.language' | translate">
+          <span class="nav-ico">🌐</span>
+          <select class="lang-select" [value]="language.current()" (change)="onLangChange($event)">
+            @for (l of language.available; track l.code) {
+              <option [value]="l.code">{{ l.flag }} {{ l.label }}</option>
+            }
+          </select>
+        </label>
+
         <div class="user-pill">
-          <a routerLink="/app/settings" class="user-main" title="Profile & settings">
+          <a routerLink="/app/settings" class="user-main" [title]="'sidebar.profile' | translate">
             @if (avatarSrc(); as src) {
               <img [src]="src" alt="" class="user-avatar-img" />
             } @else {
@@ -83,7 +94,7 @@ interface NavItem {
               <span class="user-status">{{ userEmail() }}</span>
             </span>
           </a>
-          <button type="button" (click)="logout()" class="user-logout" title="Sign out">⎋</button>
+          <button type="button" (click)="logout()" class="user-logout" [title]="'sidebar.signOut' | translate">⎋</button>
         </div>
       </div>
     </aside>
@@ -177,6 +188,27 @@ interface NavItem {
       border-top: 1px solid var(--color-border-soft);
     }
 
+    .lang-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 6px 10px;
+      border-radius: var(--radius-sm);
+      color: var(--color-text-muted);
+      cursor: pointer;
+    }
+    .lang-row:hover { background: var(--color-surface-hover); }
+    .lang-select {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--color-text-muted);
+      font-family: inherit;
+      font-size: 13px;
+      cursor: pointer;
+      outline: none;
+      padding: 0;
+    }
+    .lang-select option { background: var(--color-surface); color: var(--color-text); }
+
     .user-pill {
       display: flex; align-items: center; gap: 6px;
       margin-top: 6px;
@@ -231,8 +263,13 @@ export class SidebarComponent {
   private readonly router = inject(Router);
   private readonly uploads = inject(UploadsService);
   private readonly favoritesStore = inject(FavoritesStore);
+  protected readonly language = inject(LanguageService);
 
   readonly favorites = this.favoritesStore.favorites;
+
+  protected onLangChange(event: Event): void {
+    this.language.set((event.target as HTMLSelectElement).value);
+  }
 
   constructor() {
     this.favoritesStore.load();
@@ -262,13 +299,13 @@ export class SidebarComponent {
   });
 
   readonly mainNav: NavItem[] = [
-    { path: '/app', label: 'Dashboard', icon: '🏠', exact: true },
-    { path: '/app/calendar', label: 'Calendar', icon: '📅' },
-    { path: '/app/lists', label: 'Lists', icon: '🗂️' },
-    { path: '/app/notes', label: 'Notes', icon: '📝' },
-    { path: '/app/todos', label: 'TO-DO', icon: '✓' },
-    { path: '/app/habits', label: 'Habits', icon: '🔁' },
-    { path: '/app/finance', label: 'Finance', icon: '💰' },
+    { path: '/app', label: 'nav.dashboard', icon: '🏠', exact: true },
+    { path: '/app/calendar', label: 'nav.calendar', icon: '📅' },
+    { path: '/app/lists', label: 'nav.lists', icon: '🗂️' },
+    { path: '/app/notes', label: 'nav.notes', icon: '📝' },
+    { path: '/app/todos', label: 'nav.todos', icon: '✓' },
+    { path: '/app/habits', label: 'nav.habits', icon: '🔁' },
+    { path: '/app/finance', label: 'nav.finance', icon: '💰' },
   ];
 
   protected openPalette(): void {
