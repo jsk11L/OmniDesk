@@ -9,12 +9,14 @@ import type {
   CreateListFieldDto,
   CreateListItemDto,
   CreateListTagDto,
+  ImportAnalysis,
   ImportListReport,
   List,
   ListField,
   ListItem,
   ListTag,
   MoveListItemDto,
+  ObsidianImportConfig,
   UpdateListDto,
   UpdateListFieldDto,
   UpdateListItemDto,
@@ -37,18 +39,25 @@ export class ListsService {
     return this.http.post<ApiResponse<List>>(this.base, dto).pipe(map((r) => r.data));
   }
 
-  /**
-   * Import an Obsidian vault zip as list items (frontmatter → custom fields).
-   * Pass `listId` to append into an existing list, or `name` to create a new one.
-   */
-  importObsidian(file: File, opts: { listId?: string; name?: string } = {}): Observable<ImportListReport> {
+  /** Dry-run: detect fields/types/stats in a vault without importing. */
+  analyzeObsidian(file: File): Observable<ImportAnalysis> {
     const fd = new FormData();
     fd.append('file', file);
-    let params = new HttpParams();
-    if (opts.listId) params = params.set('listId', opts.listId);
-    if (opts.name) params = params.set('name', opts.name);
     return this.http
-      .post<ApiResponse<ImportListReport>>(`${environment.apiUrl}/import/obsidian-list`, fd, { params })
+      .post<ApiResponse<ImportAnalysis>>(`${environment.apiUrl}/import/obsidian-list/analyze`, fd)
+      .pipe(map((r) => r.data));
+  }
+
+  /**
+   * Import an Obsidian vault zip as list items, applying the user-confirmed
+   * field config (rename / retype / exclude) from the analyze step.
+   */
+  importObsidian(file: File, config: ObsidianImportConfig): Observable<ImportListReport> {
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('config', JSON.stringify(config));
+    return this.http
+      .post<ApiResponse<ImportListReport>>(`${environment.apiUrl}/import/obsidian-list`, fd)
       .pipe(map((r) => r.data));
   }
 

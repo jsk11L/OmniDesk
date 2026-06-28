@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  Body,
   Controller,
   Post,
   Query,
@@ -14,6 +15,8 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser, type AuthUser } from '../common/decorators/current-user.decorator';
 import {
   ImporterService,
+  type FieldOverrideInput,
+  type ImportAnalysis,
   type ImportListReport,
   type ImportMode,
   type ImportOwnReport,
@@ -36,6 +39,17 @@ export class ImporterController {
     return this.importer.importObsidian(user.id, file.buffer);
   }
 
+  @Throttle({ default: { limit: 10, ttl: 15 * 60 * 1000 } })
+  @Post('obsidian-list/analyze')
+  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: 200 * 1024 * 1024 } }))
+  async analyzeObsidianList(
+    @UploadedFile() file: Express.Multer.File,
+    @CurrentUser() _user: AuthUser,
+  ): Promise<ImportAnalysis> {
+    if (!file) throw new BadRequestException('A vault .zip file is required');
+    return this.importer.analyzeObsidianVault(file.buffer);
+  }
+
   @Throttle({ default: { limit: 5, ttl: 15 * 60 * 1000 } })
   @Post('obsidian-list')
   @UseInterceptors(FileInterceptor('file', { limits: { fileSize: 200 * 1024 * 1024 } }))
@@ -44,9 +58,22 @@ export class ImporterController {
     @CurrentUser() user: AuthUser,
     @Query('listId') listId?: string,
     @Query('name') name?: string,
+    @Body('config') config?: string,
   ): Promise<ImportListReport> {
     if (!file) throw new BadRequestException('A vault .zip file is required');
-    return this.importer.importObsidianToList(user.id, file.buffer, { listId, listName: name });
+    let parsed: { listId?: string; name?: string; fields?: FieldOverrideInput[] } = {};
+    if (config) {
+      try {
+        parsed = JSON.parse(config) as typeof parsed;
+      } catch {
+        throw new BadRequestException('Invalid import config');
+      }
+    }
+    return this.importer.importObsidianToList(user.id, file.buffer, {
+      listId: parsed.listId ?? listId,
+      listName: parsed.name ?? name,
+      fields: parsed.fields,
+    });
   }
 
   @Throttle({ default: { limit: 5, ttl: 15 * 60 * 1000 } })

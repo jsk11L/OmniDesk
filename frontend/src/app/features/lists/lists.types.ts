@@ -212,6 +212,37 @@ export interface ImportListReport {
   errors: string[];
 }
 
+export interface DetectedField {
+  key: string;
+  suggestedName: string;
+  suggestedType: ListFieldType;
+  noteCount: number;
+  totalValues: number;
+  numericCount: number;
+  dateCount: number;
+  arrayCount: number;
+  sampleValues: string[];
+}
+
+export interface ImportAnalysis {
+  noteCount: number;
+  tagCount: number;
+  fields: DetectedField[];
+}
+
+export interface FieldOverride {
+  key: string;
+  name?: string;
+  type?: ListFieldType;
+  include?: boolean;
+}
+
+export interface ObsidianImportConfig {
+  name?: string;
+  listId?: string;
+  fields: FieldOverride[];
+}
+
 export function resolveGridConfig(list: List): GridConfig {
   return { ...DEFAULT_GRID_CONFIG, ...(list.gridConfig ?? {}) };
 }

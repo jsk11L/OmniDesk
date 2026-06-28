@@ -6,13 +6,16 @@ import { ToastrService } from 'ngx-toastr';
 import { HttpErrorResponse } from '@angular/common/http';
 
 import { ListsService } from '../services/lists.service';
-import { DialogService } from '../../../shared/services/dialog.service';
 import { ImageCellComponent } from '../../../shared/components/image-cell/image-cell.component';
 import {
   CreateListDialogComponent,
   type CreateListDialogResult,
 } from '../create-list-dialog/create-list-dialog.component';
-import type { List } from '../lists.types';
+import {
+  ObsidianImportDialogComponent,
+  type ObsidianImportDialogData,
+} from '../obsidian-import-dialog/obsidian-import-dialog.component';
+import type { List, ObsidianImportConfig } from '../lists.types';
 
 @Component({
   selector: 'app-list-home',
@@ -107,7 +110,6 @@ import type { List } from '../lists.types';
 export class ListHomeComponent implements OnInit {
   private readonly service = inject(ListsService);
   private readonly dialog = inject(MatDialog);
-  private readonly dialogs = inject(DialogService);
   private readonly router = inject(Router);
   private readonly toastr = inject(ToastrService);
 
@@ -141,23 +143,41 @@ export class ListHomeComponent implements OnInit {
     });
   }
 
-  protected async onVaultPicked(event: Event): Promise<void> {
+  protected onVaultPicked(event: Event): void {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     input.value = '';
     if (!file) return;
 
-    const name = await this.dialogs.prompt({
-      title: 'Import Obsidian vault',
-      label: 'Name for the new list',
-      placeholder: 'My games, Books read…',
-      initialValue: file.name.replace(/\.zip$/i, ''),
-      confirmLabel: 'Import',
-    });
-    if (name === null) return; // cancelled
-
+    // Step 1 — analyze (dry run) so the user can reconfigure fields first.
     this.importing.set(true);
-    this.service.importObsidian(file, { name: name || undefined }).subscribe({
+    this.service.analyzeObsidian(file).subscribe({
+      next: (analysis) => {
+        this.importing.set(false);
+        const ref = this.dialog.open<
+          ObsidianImportDialogComponent,
+          ObsidianImportDialogData,
+          ObsidianImportConfig | undefined
+        >(ObsidianImportDialogComponent, {
+          data: { fileName: file.name, analysis },
+          width: 'min(760px, 96vw)',
+          maxWidth: '96vw',
+        });
+        ref.afterClosed().subscribe((config) => {
+          if (config) this.runImport(file, config);
+        });
+      },
+      error: (err: HttpErrorResponse) => {
+        this.importing.set(false);
+        this.toastr.error(this.errMsg(err));
+      },
+    });
+  }
+
+  // Step 2 — import with the confirmed field config.
+  private runImport(file: File, config: ObsidianImportConfig): void {
+    this.importing.set(true);
+    this.service.importObsidian(file, config).subscribe({
       next: (report) => {
         this.importing.set(false);
         this.toastr.success(

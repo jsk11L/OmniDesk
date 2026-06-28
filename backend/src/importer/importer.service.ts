@@ -63,6 +63,33 @@ export interface ImportListReport {
   errors: string[];
 }
 
+/** One frontmatter key detected during the analyze (dry-run) pass. */
+export interface DetectedField {
+  key: string;
+  suggestedName: string;
+  suggestedType: ListFieldType;
+  noteCount: number;
+  totalValues: number;
+  numericCount: number;
+  dateCount: number;
+  arrayCount: number;
+  sampleValues: string[];
+}
+
+export interface ImportAnalysis {
+  noteCount: number;
+  tagCount: number;
+  fields: DetectedField[];
+}
+
+/** Per-field overrides the user confirms before the real import. */
+export interface FieldOverrideInput {
+  key: string;
+  name?: string;
+  type?: ListFieldType;
+  include?: boolean;
+}
+
 @Injectable()
 export class ImporterService {
   private readonly logger = new Logger(ImporterService.name);
@@ -184,6 +211,72 @@ export class ImporterService {
   // ─── Import an Obsidian vault AS LIST ITEMS (frontmatter → custom fields) ──
 
   /**
+   * Dry-run pass over a vault: parses every note's frontmatter and reports the
+   * detected fields (with inferred types + value stats) and tag/note counts,
+   * WITHOUT writing anything. Powers the pre-import configuration panel.
+   */
+  async analyzeObsidianVault(buffer: Buffer): Promise<ImportAnalysis> {
+    if (buffer.length > MAX_BYTES) {
+      throw new BadRequestException('Vault exceeds the 200 MB limit. Split it and import in parts.');
+    }
+    let zip: AdmZip;
+    try {
+      zip = new AdmZip(buffer);
+    } catch {
+      throw new BadRequestException('Could not read the zip file');
+    }
+
+    const mdEntries = zip
+      .getEntries()
+      .filter((e) => !e.isDirectory && !IGNORE.test(e.entryName))
+      .filter((e) => e.entryName.toLowerCase().endsWith('.md'));
+    if (mdEntries.length === 0) {
+      throw new BadRequestException('No Markdown notes found in the vault');
+    }
+
+    const samples = new Map<string, (string | string[])[]>();
+    const order: string[] = [];
+    const tagSet = new Set<string>();
+
+    for (const e of mdEntries) {
+      try {
+        const { frontmatter } = parseFrontmatterFull(e.getData().toString('utf8'));
+        const dir = dirname(e.entryName);
+        const folderTags = dir && dir !== '.' ? dir.split('/').filter(Boolean) : [];
+        for (const t of [...frontmatter.tags, ...folderTags]) tagSet.add(t);
+        for (const [key, value] of Object.entries(frontmatter.fields)) {
+          if (!samples.has(key)) {
+            samples.set(key, []);
+            order.push(key);
+          }
+          samples.get(key)!.push(value);
+        }
+      } catch {
+        // Skip unreadable notes during analysis — the real import reports them.
+      }
+    }
+
+    const fields: DetectedField[] = order.map((key) => {
+      const values = samples.get(key) ?? [];
+      const stats = computeFieldStats(values);
+      return {
+        key,
+        suggestedName: key,
+        suggestedType: inferFieldType(key, values),
+        noteCount: values.length,
+        totalValues: stats.total,
+        numericCount: stats.numeric,
+        dateCount: stats.date,
+        arrayCount: stats.array,
+        sampleValues: stats.samples,
+      };
+    });
+
+    return { noteCount: mdEntries.length, tagCount: tagSet.size, fields };
+  }
+
+
+  /**
    * Turns each note in a vault into a list item, mapping YAML frontmatter keys
    * to custom fields (types inferred), folder + `tags` to list tags, and the
    * note title/filename to the item title. Body content is ignored — this is a
@@ -193,7 +286,7 @@ export class ImporterService {
   async importObsidianToList(
     userId: string,
     buffer: Buffer,
-    opts: { listId?: string; listName?: string },
+    opts: { listId?: string; listName?: string; fields?: FieldOverrideInput[] },
   ): Promise<ImportListReport> {
     if (buffer.length > MAX_BYTES) {
       throw new BadRequestException('Vault exceeds the 200 MB limit. Split it and import in parts.');
@@ -311,18 +404,37 @@ export class ImporterService {
     for (const f of existingFields) {
       fieldByName.set(f.name.toLowerCase(), { id: f.id, fieldType: f.fieldType });
     }
+    // User-confirmed overrides (rename / retype / exclude), keyed by frontmatter key.
+    const overrides = new Map<string, { name: string; type: ListFieldType; include: boolean }>();
+    for (const f of opts.fields ?? []) {
+      overrides.set(f.key, {
+        name: f.name?.trim() || f.key,
+        type: f.type ?? inferFieldType(f.key, fieldSamples.get(f.key) ?? []),
+        include: f.include !== false,
+      });
+    }
+    const hasOverrides = overrides.size > 0;
+
     const keyToField = new Map<string, { id: string; fieldType: ListFieldType }>();
     let position = existingFields.length;
     for (const key of fieldOrder) {
-      const existing = fieldByName.get(key.toLowerCase());
+      let name = key;
+      let fieldType = inferFieldType(key, fieldSamples.get(key) ?? []);
+      if (hasOverrides) {
+        const ov = overrides.get(key);
+        if (!ov || !ov.include) continue; // excluded by the user
+        name = ov.name;
+        fieldType = ov.type;
+      }
+      const existing = fieldByName.get(name.toLowerCase());
       if (existing) {
         keyToField.set(key, existing);
         continue;
       }
-      const fieldType = inferFieldType(key, fieldSamples.get(key) ?? []);
       const nf = await this.prisma.listField.create({
-        data: { listId: list.id, name: key, fieldType, position: position++ },
+        data: { listId: list.id, name, fieldType, position: position++ },
       });
+      fieldByName.set(name.toLowerCase(), { id: nf.id, fieldType });
       keyToField.set(key, { id: nf.id, fieldType });
       report.fieldsCreated++;
     }
@@ -849,6 +961,36 @@ function parseFrontmatterFull(text: string): { frontmatter: FullFrontmatter; bod
     }
   }
   return { frontmatter: fm, body };
+}
+
+/** Value statistics for one frontmatter key (drives the analyze panel + warnings). */
+function computeFieldStats(values: (string | string[])[]): {
+  total: number;
+  numeric: number;
+  date: number;
+  array: number;
+  samples: string[];
+} {
+  let total = 0;
+  let numeric = 0;
+  let date = 0;
+  let array = 0;
+  const samples: string[] = [];
+  for (const v of values) {
+    if (Array.isArray(v)) {
+      if (v.length === 0) continue;
+      total++;
+      array++;
+      if (samples.length < 4) samples.push(v.join(', '));
+      continue;
+    }
+    if (v === '') continue;
+    total++;
+    if (v.trim() !== '' && !Number.isNaN(Number(v))) numeric++;
+    if (!Number.isNaN(Date.parse(v))) date++;
+    if (samples.length < 4) samples.push(v);
+  }
+  return { total, numeric, date, array, samples };
 }
 
 /** Best-effort field-type inference from the sampled values of one key. */

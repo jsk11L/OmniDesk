@@ -13,6 +13,10 @@ All notable changes to OmniDesk. Breaking changes are called out explicitly.
 - **Obsidian → list import:** turn a vault `.zip` into list items — YAML
   frontmatter keys become custom fields (types inferred), `tags` + folders
   become list tags, images upload to assets, and the new fields show on cards.
+  A pre-import panel (dry-run analyze) lets you rename/retype/exclude each
+  detected field, with warnings when a chosen type doesn't fit the values.
+- **Brand icon set:** gradient "O" monogram — SVG favicon, PWA (192/512, with
+  separate `any` + `maskable`) and apple-touch icons, replacing the missing ones.
 - **Calendar day-add affordance:** hovering a day tints the cell and shows a "+".
 - **Finance Wishlist & Savings mini-dashboard:** wishlist value, saved-in-goals
   and left-to-save stat cards; the Wishlist & Savings tab now comes first.
@@ -85,6 +89,10 @@ All notable changes to OmniDesk. Breaking changes are called out explicitly.
   soft-delete purge cron, env validation, offset pagination, smoke test.
 
 ### Fixed
+- **Themed borders no longer render white:** the design tokens (`border-soft`,
+  `surface-2`, `text-faint`, `primary-ghost`…) are now registered as Tailwind
+  colors, so `border-border-soft` etc. follow the active theme instead of
+  falling back to Tailwind's default light grey (TO-DO, calendar, finance).
 - **Custom theme no longer bleeds past logout:** the active theme's inline CSS
   variables are reset on sign-out, so the login screen and the next account
   start from the default palette.
