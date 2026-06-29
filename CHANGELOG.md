@@ -5,6 +5,8 @@ All notable changes to OmniDesk. Breaking changes are called out explicitly.
 ## [Unreleased]
 
 ### Added
+- **List random picker:** an optional 🎲 button (toggled in list Settings → Extras)
+  that spins a roulette over the currently-visible items and opens a random one.
 - **List templates + presets:** new poster (2:3) and square (1:1) card shapes,
   plus a ✨ Templates gallery that scaffolds a ready list — Movies (Letterboxd),
   Music albums, Books, TV series, Games, or Blank — with suggested fields, card

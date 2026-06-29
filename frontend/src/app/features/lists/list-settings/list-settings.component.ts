@@ -295,6 +295,18 @@ const FIELD_TYPES: { value: ListFieldType; label: string }[] = [
         }
       </section>
 
+      <section class="mb-6">
+        <h3 class="text-sm font-medium mb-1">Extras</h3>
+        <label class="flex items-center gap-2 text-sm cursor-pointer">
+          <input type="checkbox" [checked]="rouletteOn()" (change)="toggleRoulette()" class="accent-primary" />
+          🎲 Random picker button
+        </label>
+        <p class="text-xs text-text-muted mt-1">
+          Adds a button in the list header that spins a roulette and opens a random item
+          (respects the current filters).
+        </p>
+      </section>
+
       <section class="mb-2">
         <h3 class="text-sm font-medium mb-3">Predefined tags</h3>
         @if (tags().length === 0) {
@@ -383,6 +395,8 @@ export class ListSettingsComponent {
   protected readonly actionFieldId = signal<string>('');
   /** Other lists (move-action targets), excluding this one. */
   protected readonly otherLists = signal<List[]>([]);
+  /** Whether the 🎲 random-picker button is enabled for this list. */
+  protected readonly rouletteOn = signal(false);
 
   protected readonly selectFields = computed(() =>
     this.fields().filter((f) => f.fieldType === 'SELECT' || f.fieldType === 'MULTI_SELECT'),
@@ -442,6 +456,7 @@ export class ListSettingsComponent {
     });
 
     this.actions.set(list.viewConfig?.actions ?? []);
+    this.rouletteOn.set(list.viewConfig?.enableRoulette === true);
     this.actionForm = this.fb.nonNullable.group({
       label: ['', [Validators.required, Validators.maxLength(40)]],
       color: ['#6366f1'],
@@ -508,6 +523,19 @@ export class ListSettingsComponent {
 
   removeAction(id: string): void {
     this.saveActions(this.actions().filter((a) => a.id !== id));
+  }
+
+  toggleRoulette(): void {
+    const next = !this.rouletteOn();
+    this.rouletteOn.set(next);
+    const viewConfig: Partial<ViewConfig> = {
+      ...(this.data.list.viewConfig ?? {}),
+      enableRoulette: next,
+    };
+    this.data.list = { ...this.data.list, viewConfig };
+    this.service.update(this.data.list.id, { viewConfig }).subscribe({
+      error: (err: HttpErrorResponse) => this.toastr.error(this.errMsg(err)),
+    });
   }
 
   private saveActions(next: ListAction[]): void {

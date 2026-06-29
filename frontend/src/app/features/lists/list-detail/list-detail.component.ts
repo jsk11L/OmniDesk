@@ -56,6 +56,11 @@ import {
   type MoveItemDialogData,
   type MoveItemDialogResult,
 } from '../move-item-dialog/move-item-dialog.component';
+import {
+  RouletteDialogComponent,
+  type RouletteDialogData,
+  type RouletteDialogResult,
+} from '../roulette-dialog/roulette-dialog.component';
 
 interface ItemGroup {
   key: string;
@@ -92,6 +97,11 @@ interface ItemGroup {
                   (isFavorite(l.id) ? 'text-accent hover:bg-surface-hover' : 'text-text-muted hover:bg-surface-hover hover:text-text')
                 "
               >{{ isFavorite(l.id) ? '★' : '☆' }}</button>
+            }
+            @if (enableRoulette()) {
+              <button type="button" (click)="openRoulette()" class="px-3 py-2 rounded text-sm hover:bg-surface-hover" title="Pick a random item">
+                🎲 Random
+              </button>
             }
             <button type="button" (click)="openCardStyle()" class="px-3 py-2 rounded text-sm hover:bg-surface-hover" title="Card typography & style">
               🎨 Style
@@ -549,6 +559,33 @@ export class ListDetailComponent implements OnInit {
   });
 
   protected readonly actions = computed<ListAction[]>(() => this.viewConfig().actions ?? []);
+  protected readonly enableRoulette = computed(() => this.viewConfig().enableRoulette === true);
+
+  /** Spin a roulette over the currently-visible items and open the winner. */
+  protected openRoulette(): void {
+    const items = this.filteredItems();
+    if (items.length === 0) {
+      this.toastr.info('No items to pick from');
+      return;
+    }
+    const entries = items.map((it) => ({
+      id: it.id,
+      title: it.title,
+      image: this.resolveImage(it),
+    }));
+    this.dialog
+      .open<RouletteDialogComponent, RouletteDialogData, RouletteDialogResult>(RouletteDialogComponent, {
+        data: { entries },
+        width: 'min(420px, 95vw)',
+        maxWidth: '95vw',
+      })
+      .afterClosed()
+      .subscribe((id) => {
+        if (!id) return;
+        const item = this.rawItems().find((it) => it.id === id);
+        if (item) this.openEditItem(item);
+      });
+  }
 
   /** Runs a card action: a 'set' updates a field; a 'move' relocates the item. */
   protected runAction(item: ListItem, action: ListAction, event: Event): void {

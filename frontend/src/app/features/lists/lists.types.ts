@@ -185,6 +185,8 @@ export interface ViewConfig {
   sortDir: 'asc' | 'desc';
   filters: ListFilter[];
   actions?: ListAction[];
+  /** Show a 🎲 button that spins a roulette to pick a random item. */
+  enableRoulette?: boolean;
 }
 
 export const DEFAULT_GRID_CONFIG: GridConfig = {
