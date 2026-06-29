@@ -19,7 +19,16 @@
     "db:studio": "pnpm --filter backend prisma:studio",
     "frontend:dev": "pnpm --filter frontend start",
     "frontend:build": "pnpm --filter frontend build",
+    "android:sync": "pnpm --filter frontend build:cloud && cap sync android",
+    "android:open": "cap open android",
     "lint": "pnpm -r lint",
     "format": "pnpm -r format"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.1.2",
+    "@capacitor/core": "^6.1.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.1.2"
   }
 }
