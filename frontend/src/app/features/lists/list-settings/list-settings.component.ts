@@ -222,32 +222,36 @@ const FIELD_TYPES: { value: ListFieldType; label: string }[] = [
       <section class="mb-6">
         <h3 class="text-sm font-medium mb-1">Item action buttons</h3>
         <p class="text-xs text-text-muted mb-3">
-          One-click buttons on cards that set a Select field to a value (e.g. Status → Completed).
+          One-click buttons on cards: set a Select field to a value, or move the item to another
+          list (carrying matching fields over — e.g. a backlog → "Completed").
         </p>
-        @if (selectFields().length === 0) {
-          <p class="text-xs text-text-muted mb-3">Add a Select field first to create actions.</p>
-        } @else {
-          @if (actions().length) {
-            <ul class="space-y-1 mb-3">
-              @for (a of actions(); track a.id) {
-                <li class="flex items-center justify-between text-sm bg-background px-3 py-2 rounded border border-border">
-                  <span class="min-w-0 truncate">
-                    <span class="font-medium" [style.color]="a.color || null">{{ a.label }}</span>
+
+        @if (actions().length) {
+          <ul class="space-y-1 mb-3">
+            @for (a of actions(); track a.id) {
+              <li class="flex items-center justify-between text-sm bg-background px-3 py-2 rounded border border-border">
+                <span class="min-w-0 truncate">
+                  <span class="font-medium" [style.color]="a.color || null">{{ a.label }}</span>
+                  @if (a.kind === 'move') {
+                    <span class="text-xs text-text-muted ml-2">→ move to {{ targetListName(a.targetListId) }}</span>
+                  } @else {
                     <span class="text-xs text-text-muted ml-2">→ {{ fieldName(a.fieldId) }} = {{ a.value }}</span>
-                  </span>
-                  <button type="button" (click)="removeAction(a.id)" class="text-text-muted hover:text-danger shrink-0" aria-label="Remove action">×</button>
-                </li>
-              }
-            </ul>
-          }
-          <form [formGroup]="actionForm" (ngSubmit)="addAction()" class="grid grid-cols-2 gap-2">
-            <input
-              type="text"
-              formControlName="label"
-              placeholder="Button label"
-              maxlength="40"
-              class="px-3 py-2 bg-background border border-border rounded outline-none focus:border-primary text-sm"
-            />
+                  }
+                </span>
+                <button type="button" (click)="removeAction(a.id)" class="text-text-muted hover:text-danger shrink-0" aria-label="Remove action">×</button>
+              </li>
+            }
+          </ul>
+        }
+
+        <!-- Set-a-field action -->
+        <p class="uppercase-tag mb-1">Set a field</p>
+        @if (selectFields().length === 0) {
+          <p class="text-xs text-text-muted mb-4">Add a Select field first to create set-field actions.</p>
+        } @else {
+          <form [formGroup]="actionForm" (ngSubmit)="addAction()" class="grid grid-cols-2 gap-2 mb-4">
+            <input type="text" formControlName="label" placeholder="Button label" maxlength="40"
+              class="px-3 py-2 bg-background border border-border rounded outline-none focus:border-primary text-sm" />
             <input type="color" formControlName="color" class="w-full h-10 bg-background border border-border rounded cursor-pointer" />
             <select formControlName="fieldId" class="px-3 py-2 bg-background border border-border rounded outline-none focus:border-primary text-sm">
               <option value="">Select field…</option>
@@ -263,7 +267,29 @@ const FIELD_TYPES: { value: ListFieldType; label: string }[] = [
             </select>
             <button type="submit" [disabled]="actionForm.invalid"
               class="col-span-2 px-3 py-1.5 text-sm rounded bg-primary text-white hover:opacity-90 disabled:opacity-50">
-              + Add action
+              + Add set action
+            </button>
+          </form>
+        }
+
+        <!-- Move-to-list action -->
+        <p class="uppercase-tag mb-1">Move to another list</p>
+        @if (otherLists().length === 0) {
+          <p class="text-xs text-text-muted">Create another list to enable "move" buttons.</p>
+        } @else {
+          <form [formGroup]="moveActionForm" (ngSubmit)="addMoveAction()" class="grid grid-cols-2 gap-2">
+            <input type="text" formControlName="label" placeholder="Button label — e.g. ✓ Complete" maxlength="40"
+              class="px-3 py-2 bg-background border border-border rounded outline-none focus:border-primary text-sm" />
+            <input type="color" formControlName="color" class="w-full h-10 bg-background border border-border rounded cursor-pointer" />
+            <select formControlName="targetListId" class="col-span-2 px-3 py-2 bg-background border border-border rounded outline-none focus:border-primary text-sm">
+              <option value="">Target list…</option>
+              @for (l of otherLists(); track l.id) {
+                <option [value]="l.id">{{ l.name }}</option>
+              }
+            </select>
+            <button type="submit" [disabled]="moveActionForm.invalid"
+              class="col-span-2 px-3 py-1.5 text-sm rounded bg-primary text-white hover:opacity-90 disabled:opacity-50">
+              + Add move button
             </button>
           </form>
         }
@@ -355,6 +381,8 @@ export class ListSettingsComponent {
   protected readonly actions = signal<ListAction[]>([]);
   /** Mirrors actionForm.fieldId so the value dropdown reacts under OnPush. */
   protected readonly actionFieldId = signal<string>('');
+  /** Other lists (move-action targets), excluding this one. */
+  protected readonly otherLists = signal<List[]>([]);
 
   protected readonly selectFields = computed(() =>
     this.fields().filter((f) => f.fieldType === 'SELECT' || f.fieldType === 'MULTI_SELECT'),
@@ -370,6 +398,7 @@ export class ListSettingsComponent {
   protected readonly editForm;
   protected readonly tagForm;
   protected readonly actionForm;
+  protected readonly moveActionForm;
 
   constructor(
     public ref: MatDialogRef<ListSettingsComponent, 'changed' | 'deleted' | undefined>,
@@ -425,10 +454,26 @@ export class ListSettingsComponent {
         this.actionFieldId.set(id);
         this.actionForm.controls.value.setValue('');
       });
+
+    this.moveActionForm = this.fb.nonNullable.group({
+      label: ['', [Validators.required, Validators.maxLength(40)]],
+      color: ['#22c55e'],
+      targetListId: ['', Validators.required],
+    });
+
+    // Other lists, for move-action targets.
+    this.service.list().subscribe({
+      next: (lists) => this.otherLists.set(lists.filter((l) => l.id !== list.id)),
+      error: () => undefined,
+    });
   }
 
-  protected fieldName(fieldId: string): string {
+  protected fieldName(fieldId: string | undefined): string {
     return this.fields().find((f) => f.id === fieldId)?.name ?? '—';
+  }
+
+  protected targetListName(listId: string | undefined): string {
+    return this.otherLists().find((l) => l.id === listId)?.name ?? '—';
   }
 
   addAction(): void {
@@ -437,6 +482,7 @@ export class ListSettingsComponent {
     const action: ListAction = {
       id: crypto.randomUUID(),
       label: raw.label.trim(),
+      kind: 'set',
       fieldId: raw.fieldId,
       value: raw.value,
       color: raw.color,
@@ -444,6 +490,20 @@ export class ListSettingsComponent {
     this.saveActions([...this.actions(), action]);
     this.actionForm.reset({ label: '', color: '#6366f1', fieldId: '', value: '' });
     this.actionFieldId.set('');
+  }
+
+  addMoveAction(): void {
+    if (this.moveActionForm.invalid) return;
+    const raw = this.moveActionForm.getRawValue();
+    const action: ListAction = {
+      id: crypto.randomUUID(),
+      label: raw.label.trim(),
+      kind: 'move',
+      targetListId: raw.targetListId,
+      color: raw.color,
+    };
+    this.saveActions([...this.actions(), action]);
+    this.moveActionForm.reset({ label: '', color: '#22c55e', targetListId: '' });
   }
 
   removeAction(id: string): void {

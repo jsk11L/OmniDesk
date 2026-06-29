@@ -51,6 +51,11 @@ import {
   CardStyleDialogComponent,
   type CardStyleDialogData,
 } from '../card-style-dialog/card-style-dialog.component';
+import {
+  MoveItemDialogComponent,
+  type MoveItemDialogData,
+  type MoveItemDialogResult,
+} from '../move-item-dialog/move-item-dialog.component';
 
 interface ItemGroup {
   key: string;
@@ -115,6 +120,8 @@ interface ItemGroup {
             <option value="card-large">Large card</option>
             <option value="card-compact">Compact card</option>
             <option value="card-cover">Cover card (Obsidian)</option>
+            <option value="poster">Poster (movies / books)</option>
+            <option value="square">Square cover (albums)</option>
             <option value="dense-list">Dense list</option>
             <option value="gallery-no-image">Gallery without image</option>
             <option value="table">Table</option>
@@ -251,7 +258,7 @@ interface ItemGroup {
               </h2>
             }
 
-            @switch (gridConfig().template) {
+            @switch (effectiveTemplate()) {
               @case ('card-large') {
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6">
                   @for (item of group.items; track item.id) {
@@ -340,10 +347,10 @@ interface ItemGroup {
               }
 
               @case ('card-cover') {
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6">
+                <div [class]="coverGridClass()">
                   @for (item of group.items; track item.id) {
                     <button type="button" (click)="openEditItem(item)"
-                      class="card-cover text-left"
+                      [class]="'card-cover text-left ' + coverAspect()"
                       [style.background-image]="resolveImage(item) ? 'url(' + resolveImage(item) + ')' : null">
                       @if (cardStyle().imageScrim) {
                         <div class="absolute inset-0 z-[1] pointer-events-none" [style.background]="'rgba(0,0,0,' + cardStyle().imageScrim / 100 + ')'"></div>
@@ -543,16 +550,58 @@ export class ListDetailComponent implements OnInit {
 
   protected readonly actions = computed<ListAction[]>(() => this.viewConfig().actions ?? []);
 
-  /** Applies an action's field=value to the item, then refreshes. */
+  /** Runs a card action: a 'set' updates a field; a 'move' relocates the item. */
   protected runAction(item: ListItem, action: ListAction, event: Event): void {
     event.stopPropagation();
-    const customFields = { ...item.customFields, [action.fieldId]: action.value };
+    if (action.kind === 'move') {
+      this.runMoveAction(item, action);
+      return;
+    }
+    if (!action.fieldId) return;
+    const fieldId = action.fieldId;
+    const customFields = { ...item.customFields, [fieldId]: action.value };
     this.service.updateItem(this.id, item.id, { customFields }).subscribe({
       next: () => {
         this.rawItems.update((arr) =>
           arr.map((it) => (it.id === item.id ? { ...it, customFields } : it)),
         );
         this.toastr.success(`${item.title} → ${action.value}`);
+      },
+      error: (err: HttpErrorResponse) => this.toastr.error(this.errMsg(err)),
+    });
+  }
+
+  /** Opens the move dialog (loading the target list's fields), then moves the item. */
+  private runMoveAction(item: ListItem, action: ListAction): void {
+    const sourceList = this.list();
+    if (!sourceList || !action.targetListId) return;
+    this.service.findById(action.targetListId).subscribe({
+      next: (targetList) => {
+        this.dialog
+          .open<MoveItemDialogComponent, MoveItemDialogData, MoveItemDialogResult>(
+            MoveItemDialogComponent,
+            {
+              data: { sourceList, item, targetList },
+              width: 'min(560px, 95vw)',
+              maxWidth: '95vw',
+            },
+          )
+          .afterClosed()
+          .subscribe((result) => {
+            if (!result) return;
+            this.service
+              .moveItem(this.id, item.id, {
+                targetListId: action.targetListId!,
+                customFieldsPatch: result.customFieldsPatch,
+              })
+              .subscribe({
+                next: () => {
+                  this.rawItems.update((arr) => arr.filter((it) => it.id !== item.id));
+                  this.toastr.success(`${item.title} → ${targetList.name}`);
+                },
+                error: (err: HttpErrorResponse) => this.toastr.error(this.errMsg(err)),
+              });
+          });
       },
       error: (err: HttpErrorResponse) => this.toastr.error(this.errMsg(err)),
     });
@@ -622,6 +671,22 @@ export class ListDetailComponent implements OnInit {
   protected readonly cardBg = computed<string | null>(() => this.cardStyle().background || null);
   protected readonly cardBorder = computed<string | null>(() => this.cardStyle().border || null);
 
+  /** Poster/square reuse the Cover card render with a different aspect ratio. */
+  protected readonly effectiveTemplate = computed<GridTemplate>(() => {
+    const t = this.gridConfig().template;
+    return t === 'poster' || t === 'square' ? 'card-cover' : t;
+  });
+  protected readonly coverAspect = computed<string>(() => {
+    const t = this.gridConfig().template;
+    return t === 'poster' ? 'poster' : t === 'square' ? 'square' : '';
+  });
+  protected readonly coverGridClass = computed<string>(() => {
+    const t = this.gridConfig().template;
+    return t === 'poster' || t === 'square'
+      ? 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 mb-6'
+      : 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6';
+  });
+
   /** The level a field renders as: explicit, else a sensible default per slot. */
   protected levelOf(fieldId: string): StyleLevel {
     const layout = this.layoutOf(fieldId);
@@ -684,9 +749,13 @@ export class ListDetailComponent implements OnInit {
     ) {
       const d = new Date(String(value));
       if (!isNaN(d.getTime())) {
-        if (layout.dateFormat === 'year') return String(d.getFullYear());
-        if (layout.dateFormat === 'month') return d.toLocaleDateString('en-US', { month: 'short' });
-        return d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+        // UTC: a date-only value like "2020-01-01" is UTC midnight; reading it in
+        // a negative-offset timezone would otherwise show the previous day/year.
+        if (layout.dateFormat === 'year') return String(d.getUTCFullYear());
+        if (layout.dateFormat === 'month') {
+          return d.toLocaleDateString('en-US', { month: 'short', timeZone: 'UTC' });
+        }
+        return d.toLocaleDateString('en-US', { month: 'short', year: 'numeric', timeZone: 'UTC' });
       }
     }
     return this.formatField(value);
@@ -785,10 +854,12 @@ export class ListDetailComponent implements OnInit {
     if (granularity) {
       const d = new Date(String(raw));
       if (!isNaN(d.getTime())) {
-        const year = d.getFullYear();
+        // UTC throughout: "2020-01-01" is stored as UTC midnight, so a negative
+        // local offset would bucket Jan 1 into the previous year. (Bugfix)
+        const year = d.getUTCFullYear();
         if (granularity === 'year') return { key: String(year), label: String(year) };
-        const month = String(d.getMonth() + 1).padStart(2, '0');
-        const label = d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+        const month = String(d.getUTCMonth() + 1).padStart(2, '0');
+        const label = d.toLocaleDateString('en-US', { month: 'short', year: 'numeric', timeZone: 'UTC' });
         return { key: `${year}-${month}`, label };
       }
     }

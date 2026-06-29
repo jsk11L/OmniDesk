@@ -38,6 +38,8 @@ export type GridTemplate =
   | 'card-large'
   | 'card-compact'
   | 'card-cover'
+  | 'poster'
+  | 'square'
   | 'dense-list'
   | 'gallery-no-image'
   | 'table';
@@ -159,12 +161,22 @@ export interface ListFilter {
 }
 
 /** A one-click button on an item card that sets a SELECT field to a fixed value. */
+/**
+ * A one-click button on an item card.
+ * - `set` (default): sets a SELECT field to a fixed value (e.g. Status → Completed).
+ * - `move`: moves the item to another list, remapping fields by name (e.g. a
+ *   backlog → a "Completed" list), prompting for any fields to fill in.
+ */
 export interface ListAction {
   id: string;
   label: string;
-  fieldId: string;
-  value: string;
   color?: string;
+  kind?: 'set' | 'move';
+  /** kind 'set' */
+  fieldId?: string;
+  value?: string;
+  /** kind 'move' */
+  targetListId?: string;
 }
 
 export interface ViewConfig {

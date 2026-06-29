@@ -4,6 +4,7 @@ import { Router, RouterLink } from '@angular/router';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ToastrService } from 'ngx-toastr';
 import { HttpErrorResponse } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
 
 import { ListsService } from '../services/lists.service';
 import { ImageCellComponent } from '../../../shared/components/image-cell/image-cell.component';
@@ -15,7 +16,12 @@ import {
   ObsidianImportDialogComponent,
   type ObsidianImportDialogData,
 } from '../obsidian-import-dialog/obsidian-import-dialog.component';
-import type { List, ObsidianImportConfig } from '../lists.types';
+import {
+  ListPresetDialogComponent,
+  type ListPresetDialogResult,
+} from '../list-preset-dialog/list-preset-dialog.component';
+import { DEFAULT_CARD_STYLE, type FieldCardLayout, type GridConfig, type List, type ObsidianImportConfig } from '../lists.types';
+import type { ListPreset } from '../list-presets';
 
 @Component({
   selector: 'app-list-home',
@@ -47,6 +53,15 @@ import type { List, ObsidianImportConfig } from '../lists.types';
             class="px-3 py-2 rounded border border-border text-sm hover:bg-surface-hover disabled:opacity-50"
           >
             {{ importing() ? 'Importing…' : '⬇ Obsidian' }}
+          </button>
+          <button
+            type="button"
+            (click)="openPresets()"
+            [disabled]="importing()"
+            title="Start from a template (movies, albums, books…)"
+            class="px-3 py-2 rounded border border-border text-sm hover:bg-surface-hover disabled:opacity-50"
+          >
+            ✨ Templates
           </button>
           <button
             type="button"
@@ -204,6 +219,73 @@ export class ListHomeComponent implements OnInit {
         void this.router.navigate(['/app/lists', result.id]);
       }
     });
+  }
+
+  protected openPresets(): void {
+    this.dialog
+      .open<ListPresetDialogComponent, void, ListPresetDialogResult>(ListPresetDialogComponent, {
+        width: 'min(680px, 96vw)',
+        maxWidth: '96vw',
+      })
+      .afterClosed()
+      .subscribe((result) => {
+        if (result) void this.createFromPreset(result.preset, result.name);
+      });
+  }
+
+  /**
+   * Creates a list from a preset: the list, its fields, then a gridConfig that
+   * wires the freshly-created field ids into visibleFields + per-field layout.
+   */
+  private async createFromPreset(preset: ListPreset, name: string): Promise<void> {
+    this.importing.set(true);
+    try {
+      const list = await firstValueFrom(this.service.create({ name, icon: preset.listIcon }));
+
+      const nameToId: Record<string, string> = {};
+      for (const f of preset.fields) {
+        const created = await firstValueFrom(
+          this.service.createField(list.id, {
+            name: f.name,
+            fieldType: f.type,
+            options: f.options ? { options: f.options } : undefined,
+          }),
+        );
+        nameToId[f.name] = created.id;
+      }
+
+      const onCard = preset.fields.filter((f) => f.onCard);
+      const visibleFields = onCard.map((f) => nameToId[f.name]).filter((id): id is string => !!id);
+      const cardLayout: Record<string, FieldCardLayout> = {};
+      for (const f of onCard) {
+        const id = nameToId[f.name];
+        if (!id) continue;
+        cardLayout[id] = {
+          slot: f.slot ?? 'body',
+          showLabel: f.showLabel ?? false,
+          level: f.level,
+          dateFormat: f.dateFormat,
+        };
+      }
+
+      const gridConfig: Partial<GridConfig> = {
+        template: preset.template,
+        visibleFields,
+        showImage: preset.showImage,
+        imagePosition: 'top',
+        showTags: preset.showTags,
+        cardLayout,
+        cardStyle: preset.cardStyle ?? DEFAULT_CARD_STYLE,
+      };
+      await firstValueFrom(this.service.update(list.id, { gridConfig }));
+
+      this.toastr.success(`Created "${name}"`);
+      void this.router.navigate(['/app/lists', list.id]);
+    } catch (err) {
+      this.toastr.error(this.errMsg(err as HttpErrorResponse));
+    } finally {
+      this.importing.set(false);
+    }
   }
 
   private errMsg(err: HttpErrorResponse): string {

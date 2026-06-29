@@ -286,6 +286,10 @@ body {
   border: 1px solid var(--color-border-soft);
 }
 
+/* Aspect variants: poster (movies/books) and square (albums). */
+.card-cover.poster { aspect-ratio: 2 / 3; }
+.card-cover.square { aspect-ratio: 1 / 1; }
+
 .card-cover:hover {
   transform: scale(1.03);
   box-shadow: var(--shadow-md);
