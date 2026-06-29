@@ -313,6 +313,9 @@ export interface Habit {
   weeklyGoal: number | null;
   goalPeriod: GoalPeriod | null;
   goalTarget: number | null;
+  dailyMin: number | null;
+  dailyMax: number | null;
+  isFeatured: boolean;
   currentStreak: number;
   longestStreak: number;
   perfectWeeks: number;
@@ -325,6 +328,7 @@ export interface HabitEntry {
   habitId: string;
   date: string;
   status: HabitEntryStatus;
+  count: number;
   notes: string | null;
   createdAt: string;
 }

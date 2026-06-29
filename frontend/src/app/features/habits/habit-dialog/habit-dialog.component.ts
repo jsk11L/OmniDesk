@@ -111,6 +111,32 @@ const DAYS = [
           </p>
         </div>
 
+        <div>
+          <span class="block text-xs text-text-muted mb-1">Daily check-ins (optional)</span>
+          <div class="grid grid-cols-2 gap-3">
+            <input
+              type="number"
+              min="1"
+              max="99"
+              formControlName="dailyMin"
+              placeholder="Minimum (e.g. 2)"
+              class="px-3 py-2 bg-background border border-border rounded outline-none focus:border-primary"
+            />
+            <input
+              type="number"
+              min="1"
+              max="99"
+              formControlName="dailyMax"
+              placeholder="Maximum / cap"
+              class="px-3 py-2 bg-background border border-border rounded outline-none focus:border-primary"
+            />
+          </div>
+          <p class="text-xs text-text-muted mt-1">
+            Multi-count habits (e.g. brush teeth min 2, max 4). Tap a day to add a check-in — it's
+            done at the minimum; the maximum caps the count.
+          </p>
+        </div>
+
         <label class="block">
           <span class="block text-xs text-text-muted mb-1">Color</span>
           <input
@@ -175,6 +201,8 @@ export class HabitDialogComponent {
       color: [h?.color ?? '#6366f1'],
       goalPeriod: [(h?.goalPeriod ?? '') as GoalPeriod | ''],
       goalTarget: [h?.goalTarget ?? null as number | null],
+      dailyMin: [h?.dailyMin ?? null as number | null],
+      dailyMax: [h?.dailyMax ?? null as number | null],
     });
     if (h) {
       this.icon.set(h.icon);
@@ -207,6 +235,8 @@ export class HabitDialogComponent {
       activeDays: Array.from(this.activeDays()),
       goalPeriod: raw.goalPeriod ? (raw.goalPeriod as GoalPeriod) : undefined,
       goalTarget: raw.goalPeriod && raw.goalTarget ? Number(raw.goalTarget) : undefined,
+      dailyMin: raw.dailyMin ? Number(raw.dailyMin) : undefined,
+      dailyMax: raw.dailyMax ? Number(raw.dailyMax) : undefined,
     };
 
     const req$ = this.data.habit

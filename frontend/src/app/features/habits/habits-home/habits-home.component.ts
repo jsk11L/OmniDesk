@@ -10,6 +10,10 @@ import {
 } from '../habit-dialog/habit-dialog.component';
 import type { Habit, HabitEntryStatus, HabitStats, HabitWeek } from '../habits.types';
 
+type HeatCell = { status: HabitEntryStatus | null; count: number };
+/** One day of the week-row (matches HabitWeek['days'][number]). */
+type WeekDay = { date: string; status: HabitEntryStatus | null; count: number };
+
 @Component({
   selector: 'app-habits-home',
   standalone: true,
@@ -94,6 +98,11 @@ import type { Habit, HabitEntryStatus, HabitStats, HabitWeek } from '../habits.t
                     <div class="text-xs text-faint mono">no goal set</div>
                   }
                 </button>
+                <button type="button" (click)="setFeatured(habit, $event)" class="card-star"
+                  [class.is-on]="habit.isFeatured"
+                  [title]="habit.isFeatured ? 'Featured habit' : 'Make this the featured habit'">
+                  {{ habit.isFeatured ? '★' : '☆' }}
+                </button>
                 <div class="card-streak mono" [style.color]="'var(--color-accent)'">🔥 {{ habit.currentStreak }}d</div>
               </div>
 
@@ -105,24 +114,28 @@ import type { Habit, HabitEntryStatus, HabitStats, HabitWeek } from '../habits.t
                       <button
                         type="button"
                         [disabled]="isFuture(d.date)"
-                        (click)="toggleDay(habit, d.date, d.status)"
+                        (click)="toggleDay(habit, d)"
                         class="week-btn"
-                        [class.is-today]="isToday(d.date) && !isDone(d.status)"
-                        [class.is-editable]="isEditable(d.date) && !isDone(d.status)"
-                        [class.is-locked]="!isEditable(d.date) && !isFuture(d.date) && !isDone(d.status)"
+                        [class.is-today]="isToday(d.date) && !dayDone(habit, d)"
+                        [class.is-editable]="isEditable(d.date) && !dayDone(habit, d)"
+                        [class.is-locked]="!isEditable(d.date) && !isFuture(d.date) && !dayDone(habit, d)"
                         [class.is-rest]="!isActiveDay(habit, d.date)"
-                        [style.background]="dayBg(habit, d.date, d.status)"
-                        [style.color]="isDone(d.status) ? '#fff' : 'var(--color-text-faint)'"
+                        [style.background]="dayBg(habit, d)"
+                        [style.color]="dayDone(habit, d) ? '#fff' : 'var(--color-text-faint)'"
                         [title]="isEditable(d.date) ? d.date : d.date + ' · locked (only today & yesterday)'"
                       >
-                        @if (isDone(d.status)) { ✓ } @else if (isEditable(d.date)) { + } @else if (isLockedPast(d.date)) { 🔒 }
+                        @if (dayDone(habit, d)) {
+                          @if (isMulti(habit)) { {{ d.count }} } @else { ✓ }
+                        } @else if (d.count > 0) { {{ d.count }} }
+                        @else if (isEditable(d.date)) { + }
+                        @else if (isLockedPast(d.date)) { 🔒 }
                       </button>
                     </div>
                   }
                 </div>
                 <div class="week-foot mono text-xs text-faint">
-                  <span>{{ doneInWeek(wk) }} / 7 this week</span>
-                  <span>{{ weekPct(wk) }}%</span>
+                  <span>{{ doneInWeek(habit, wk) }} / 7 this week</span>
+                  <span>{{ weekPct(habit, wk) }}%</span>
                 </div>
               }
             </div>
@@ -188,6 +201,13 @@ import type { Habit, HabitEntryStatus, HabitStats, HabitWeek } from '../habits.t
     .card-titles { flex: 1; min-width: 0; text-align: left; background: none; border: none; cursor: pointer; padding: 0; }
     .card-name { font-size: 14px; font-weight: 600; color: var(--color-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .card-streak { font-size: 15px; font-weight: 600; flex-shrink: 0; }
+    .card-star {
+      flex-shrink: 0; border: none; background: none; cursor: pointer;
+      font-size: 16px; line-height: 1; padding: 2px;
+      color: var(--color-text-faint); transition: color 100ms, transform 80ms;
+    }
+    .card-star:hover { transform: scale(1.15); }
+    .card-star.is-on { color: var(--color-accent); }
 
     .week-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-top: 14px; }
     .week-cell { text-align: center; }
@@ -223,31 +243,33 @@ export class HabitsHomeComponent implements OnInit {
   private readonly yesterdayStr = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
   private readonly weekDayOrder = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
-  /** Habit with the highest active streak — drives the hero panel. */
+  /** The pinned habit, else the one with the highest active streak. */
   protected readonly featured = computed(() => {
     const list = this.habits();
     if (list.length === 0) return null;
+    const pinned = list.find((h) => h.isFeatured);
+    if (pinned) return pinned;
     return list.reduce((best, h) => (h.currentStreak > best.currentStreak ? h : best), list[0]);
   });
 
   protected readonly doneTodayCount = computed(() => {
     let n = 0;
-    for (const days of this.weekData().values()) {
-      const today = days.find((d) => d.date === this.todayStr);
-      if (today && this.isDone(today.status)) n++;
+    for (const h of this.habits()) {
+      const today = this.weekData().get(h.id)?.find((d) => d.date === this.todayStr);
+      if (today && this.dayDone(h, today)) n++;
     }
     return n;
   });
 
   /** Featured habit's 90-day heatmap, padded Monday-first into 7-row columns. */
-  protected readonly heatCells = computed<({ status: HabitEntryStatus | null } | null)[]>(() => {
+  protected readonly heatCells = computed<(HeatCell | null)[]>(() => {
     const map = this.featuredStats()?.heatmap;
     if (!map || map.length === 0) return [];
     const first = new Date(map[0].date + 'T00:00:00');
     const pad = (first.getDay() + 6) % 7; // Monday = 0
-    const cells: ({ status: HabitEntryStatus | null } | null)[] = [];
+    const cells: (HeatCell | null)[] = [];
     for (let i = 0; i < pad; i++) cells.push(null);
-    for (const c of map) cells.push({ status: c.status });
+    for (const c of map) cells.push({ status: c.status, count: c.count });
     return cells;
   });
 
@@ -298,8 +320,22 @@ export class HabitsHomeComponent implements OnInit {
     return this.weekData().get(habitId);
   }
 
-  protected isDone(status: HabitEntryStatus | null): boolean {
-    return status === 'DONE' || status === 'RECOVERED';
+  /** Check-ins that count the day as done: min, else max, else 1. */
+  protected target(habit: Habit): number {
+    return habit.dailyMin ?? habit.dailyMax ?? 1;
+  }
+  /** Tap ceiling before the cell cycles back to 0. */
+  protected cap(habit: Habit): number {
+    return habit.dailyMax ?? habit.dailyMin ?? 1;
+  }
+  protected isMulti(habit: Habit): boolean {
+    return this.cap(habit) > 1;
+  }
+  /** Whether a day counts as complete for this habit (count-aware). */
+  protected dayDone(habit: Habit, d: { status: HabitEntryStatus | null; count: number }): boolean {
+    if (d.status === 'RECOVERED') return true;
+    if (d.status !== 'DONE') return false;
+    return d.count >= this.target(habit);
   }
 
   protected isToday(date: string): boolean {
@@ -328,24 +364,31 @@ export class HabitsHomeComponent implements OnInit {
     return this.weekDayOrder[dow];
   }
 
-  protected dayBg(habit: Habit, date: string, status: HabitEntryStatus | null): string {
-    if (this.isDone(status)) {
-      return this.isToday(date) ? 'var(--color-primary)' : 'var(--color-primary-soft)';
+  protected dayBg(habit: Habit, d: WeekDay): string {
+    if (this.dayDone(habit, d)) {
+      return this.isToday(d.date) ? 'var(--color-primary)' : 'var(--color-primary-soft)';
     }
+    if (d.count > 0) return 'color-mix(in srgb, var(--color-primary) 40%, transparent)'; // partial progress
     return 'var(--color-surface-2)';
   }
 
-  protected doneInWeek(days: HabitWeek['days']): number {
-    return days.filter((d) => this.isDone(d.status)).length;
+  protected doneInWeek(habit: Habit, days: WeekDay[]): number {
+    return days.filter((d) => this.dayDone(habit, d)).length;
   }
 
-  protected weekPct(days: HabitWeek['days']): number {
-    return Math.round((this.doneInWeek(days) / 7) * 100);
+  protected weekPct(habit: Habit, days: WeekDay[]): number {
+    return Math.round((this.doneInWeek(habit, days) / 7) * 100);
   }
 
-  protected heatColor(cell: { status: HabitEntryStatus | null } | null): string {
+  protected heatColor(cell: HeatCell | null): string {
     if (!cell) return 'transparent';
-    if (this.isDone(cell.status)) return 'var(--color-primary)';
+    const target = this.featuredStats()?.target ?? 1;
+    if (cell.status === 'RECOVERED' || (cell.status === 'DONE' && cell.count >= target)) {
+      return 'var(--color-primary)';
+    }
+    if (cell.status === 'DONE' && cell.count > 0) {
+      return 'color-mix(in srgb, var(--color-primary) 45%, transparent)';
+    }
     if (cell.status === 'MISSED') return 'color-mix(in srgb, var(--color-danger) 35%, transparent)';
     return 'var(--color-surface-2)';
   }
@@ -355,22 +398,44 @@ export class HabitsHomeComponent implements OnInit {
   }
 
   protected goalLabel(habit: Habit): string | null {
-    if (!habit.goalPeriod || !habit.goalTarget) return null;
-    return `${habit.goalTarget}× ${habit.goalPeriod.toLowerCase()}`;
+    const parts: string[] = [];
+    if (habit.dailyMin != null && habit.dailyMax != null) {
+      parts.push(`${habit.dailyMin}–${habit.dailyMax}×/day`);
+    } else if (habit.dailyMin != null) {
+      parts.push(`min ${habit.dailyMin}×/day`);
+    } else if (habit.dailyMax != null) {
+      parts.push(`${habit.dailyMax}×/day`);
+    }
+    if (habit.goalPeriod && habit.goalTarget) {
+      parts.push(`${habit.goalTarget}× ${habit.goalPeriod.toLowerCase()}`);
+    }
+    return parts.length ? parts.join(' · ') : null;
   }
 
-  protected toggleDay(habit: Habit, date: string, status: HabitEntryStatus | null): void {
-    if (!this.isEditable(date)) {
+  /** Tap a day: increment the count up to the cap, then cycle back to clear. */
+  protected toggleDay(habit: Habit, d: WeekDay): void {
+    if (!this.isEditable(d.date)) {
       this.toastr.info('You can only check today and yesterday');
       return;
     }
-    const done = this.isDone(status);
-    const req$ = done
-      ? this.service.deleteEntry(habit.id, date)
-      : this.service.markEntry(habit.id, { date, status: 'DONE' });
+    const ceiling = this.cap(habit);
+    let next = (d.count ?? 0) + 1;
+    if (next > ceiling) next = 0;
+    const req$ =
+      next === 0
+        ? this.service.deleteEntry(habit.id, d.date)
+        : this.service.markEntry(habit.id, { date: d.date, status: 'DONE', count: next });
     req$.subscribe({
       next: () => this.reload(),
-      error: () => this.toastr.error(done ? 'Could not unmark' : 'Could not mark'),
+      error: () => this.toastr.error('Could not update'),
+    });
+  }
+
+  protected setFeatured(habit: Habit, event: Event): void {
+    event.stopPropagation();
+    this.service.update(habit.id, { isFeatured: true }).subscribe({
+      next: () => this.reload(),
+      error: () => this.toastr.error('Could not set featured'),
     });
   }
 

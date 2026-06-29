@@ -503,6 +503,9 @@ model Habit {
   weeklyGoal    Int?
   goalPeriod    GoalPeriod?
   goalTarget    Int?
+  dailyMin      Int? // minimum check-ins/day to count as done (optional)
+  dailyMax      Int? // target/cap for the day's progress (optional)
+  isFeatured    Boolean  @default(false) // shown as the hero habit
   currentStreak Int      @default(0)
   longestStreak Int      @default(0)
   perfectWeeks  Int      @default(0)
@@ -519,6 +522,7 @@ model HabitEntry {
   habitId   String
   date      DateTime         @db.Date
   status    HabitEntryStatus
+  count     Int              @default(1) // times logged that day (multi-count habits)
   notes     String?
   createdAt DateTime         @default(now())
 

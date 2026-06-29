@@ -8,8 +8,8 @@ import type {
   CreateHabitDto,
   Habit,
   HabitEntry,
-  HabitEntryStatus,
   HabitStats,
+  HabitToday,
   HabitWeek,
   MarkHabitEntryDto,
   UpdateHabitDto,
@@ -24,10 +24,10 @@ export class HabitsService {
     return this.http.get<ApiResponse<Habit[]>>(this.base).pipe(map((r) => r.data));
   }
 
-  /** Today's entry status per habit in one request (avoids the per-habit N+1). */
-  today(): Observable<{ habitId: string; status: HabitEntryStatus }[]> {
+  /** Today's entry status + count per habit in one request (avoids the per-habit N+1). */
+  today(): Observable<HabitToday[]> {
     return this.http
-      .get<ApiResponse<{ habitId: string; status: HabitEntryStatus }[]>>(`${this.base}/today`)
+      .get<ApiResponse<HabitToday[]>>(`${this.base}/today`)
       .pipe(map((r) => r.data));
   }
 

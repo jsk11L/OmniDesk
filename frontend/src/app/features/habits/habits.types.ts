@@ -8,12 +8,19 @@ export interface HabitStats {
   longestStreak: number;
   perfectWeeks: number;
   monthCompletionPct: number;
-  heatmap: Array<{ date: string; status: HabitEntryStatus | null }>;
+  target: number;
+  heatmap: Array<{ date: string; status: HabitEntryStatus | null; count: number }>;
 }
 
 export interface HabitWeek {
   habitId: string;
-  days: Array<{ date: string; status: HabitEntryStatus | null }>;
+  days: Array<{ date: string; status: HabitEntryStatus | null; count: number }>;
+}
+
+export interface HabitToday {
+  habitId: string;
+  status: HabitEntryStatus;
+  count: number;
 }
 
 export interface CreateHabitDto {
@@ -25,6 +32,9 @@ export interface CreateHabitDto {
   weeklyGoal?: number;
   goalPeriod?: GoalPeriod;
   goalTarget?: number;
+  dailyMin?: number;
+  dailyMax?: number;
+  isFeatured?: boolean;
 }
 
 export type UpdateHabitDto = Partial<CreateHabitDto>;
@@ -32,5 +42,6 @@ export type UpdateHabitDto = Partial<CreateHabitDto>;
 export interface MarkHabitEntryDto {
   date: string;
   status: HabitEntryStatus;
+  count?: number;
   notes?: string;
 }

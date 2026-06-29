@@ -2,6 +2,7 @@ import {
   ArrayMaxSize,
   ArrayUnique,
   IsArray,
+  IsBoolean,
   IsEnum,
   IsInt,
   IsOptional,
@@ -60,4 +61,20 @@ export class CreateHabitDto {
   @Min(1)
   @Max(366)
   goalTarget?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(99)
+  dailyMin?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(99)
+  dailyMax?: number;
+
+  @IsOptional()
+  @IsBoolean()
+  isFeatured?: boolean;
 }

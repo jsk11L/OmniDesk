@@ -36,12 +36,37 @@ export class HabitsService {
         weeklyGoal: dto.weeklyGoal ?? null,
         goalPeriod: dto.goalPeriod ?? null,
         goalTarget: dto.goalTarget ?? null,
+        dailyMin: dto.dailyMin ?? null,
+        dailyMax: dto.dailyMax ?? null,
+        isFeatured: dto.isFeatured ?? false,
       },
     });
   }
 
+  /** How many check-ins count the day as done: min, else max, else 1. */
+  private dailyTarget(habit: { dailyMin: number | null; dailyMax: number | null }): number {
+    return habit.dailyMin ?? habit.dailyMax ?? 1;
+  }
+
+  /** A day is "complete" when recovered, or done with the count target met. */
+  private isComplete(
+    habit: { dailyMin: number | null; dailyMax: number | null },
+    entry: { status: HabitEntryStatus; count: number },
+  ): boolean {
+    if (entry.status === HabitEntryStatus.RECOVERED) return true;
+    if (entry.status !== HabitEntryStatus.DONE) return false;
+    return entry.count >= this.dailyTarget(habit);
+  }
+
   async update(userId: string, id: string, dto: UpdateHabitDto): Promise<Habit> {
     const habit = await this.findById(userId, id);
+    // Only one habit is featured at a time.
+    if (dto.isFeatured === true) {
+      await this.prisma.habit.updateMany({
+        where: { userId, id: { not: id } },
+        data: { isFeatured: false },
+      });
+    }
     return this.prisma.habit.update({
       where: { id },
       data: {
@@ -53,6 +78,9 @@ export class HabitsService {
         weeklyGoal: dto.weeklyGoal === undefined ? habit.weeklyGoal : dto.weeklyGoal || null,
         goalPeriod: dto.goalPeriod === undefined ? habit.goalPeriod : dto.goalPeriod || null,
         goalTarget: dto.goalTarget === undefined ? habit.goalTarget : dto.goalTarget || null,
+        dailyMin: dto.dailyMin === undefined ? habit.dailyMin : dto.dailyMin || null,
+        dailyMax: dto.dailyMax === undefined ? habit.dailyMax : dto.dailyMax || null,
+        isFeatured: dto.isFeatured === undefined ? habit.isFeatured : dto.isFeatured,
       },
     });
   }
@@ -79,12 +107,14 @@ export class HabitsService {
   }
 
   /** Today's entry status for every habit of the user, in a single query (avoids N+1). */
-  async today(userId: string): Promise<{ habitId: string; status: HabitEntryStatus }[]> {
+  async today(
+    userId: string,
+  ): Promise<{ habitId: string; status: HabitEntryStatus; count: number }[]> {
     const start = new Date(new Date().toISOString().slice(0, 10));
     const end = new Date(start.getTime() + 24 * 60 * 60 * 1000);
     return this.prisma.habitEntry.findMany({
       where: { habit: { userId }, date: { gte: start, lt: end } },
-      select: { habitId: true, status: true },
+      select: { habitId: true, status: true, count: true },
     });
   }
 
@@ -93,16 +123,19 @@ export class HabitsService {
     const date = new Date(dto.date);
     date.setUTCHours(0, 0, 0, 0);
 
+    const count = dto.count ?? 1;
     const entry = await this.prisma.habitEntry.upsert({
       where: { habitId_date: { habitId, date } },
       create: {
         habitId,
         date,
         status: dto.status,
+        count,
         notes: dto.notes ?? null,
       },
       update: {
         status: dto.status,
+        count,
         notes: dto.notes ?? null,
       },
     });
@@ -117,7 +150,10 @@ export class HabitsService {
    * entry status; the client derives REST/active days from `activeDays`.
    */
   async week(userId: string): Promise<
-    Array<{ habitId: string; days: Array<{ date: string; status: HabitEntryStatus | null }> }>
+    Array<{
+      habitId: string;
+      days: Array<{ date: string; status: HabitEntryStatus | null; count: number }>;
+    }>
   > {
     const monday = new Date();
     monday.setUTCHours(0, 0, 0, 0);
@@ -140,21 +176,24 @@ export class HabitsService {
       }),
       this.prisma.habitEntry.findMany({
         where: { habit: { userId }, date: { gte: monday, lt: end } },
-        select: { habitId: true, date: true, status: true },
+        select: { habitId: true, date: true, status: true, count: true },
       }),
     ]);
 
-    const byHabit = new Map<string, Map<string, HabitEntryStatus>>();
+    const byHabit = new Map<string, Map<string, { status: HabitEntryStatus; count: number }>>();
     for (const e of entries) {
       const day = new Date(e.date).toISOString().slice(0, 10);
-      const m = byHabit.get(e.habitId) ?? new Map<string, HabitEntryStatus>();
-      m.set(day, e.status);
+      const m = byHabit.get(e.habitId) ?? new Map<string, { status: HabitEntryStatus; count: number }>();
+      m.set(day, { status: e.status, count: e.count });
       byHabit.set(e.habitId, m);
     }
 
     return habits.map((h) => ({
       habitId: h.id,
-      days: dates.map((date) => ({ date, status: byHabit.get(h.id)?.get(date) ?? null })),
+      days: dates.map((date) => {
+        const e = byHabit.get(h.id)?.get(date);
+        return { date, status: e?.status ?? null, count: e?.count ?? 0 };
+      }),
     }));
   }
 
@@ -172,7 +211,8 @@ export class HabitsService {
     longestStreak: number;
     perfectWeeks: number;
     monthCompletionPct: number;
-    heatmap: Array<{ date: string; status: HabitEntryStatus | null }>;
+    target: number;
+    heatmap: Array<{ date: string; status: HabitEntryStatus | null; count: number }>;
   }> {
     const habit = await this.findById(userId, habitId);
 
@@ -184,7 +224,7 @@ export class HabitsService {
       orderBy: { date: 'asc' },
     });
 
-    const heatmap: Array<{ date: string; status: HabitEntryStatus | null }> = [];
+    const heatmap: Array<{ date: string; status: HabitEntryStatus | null; count: number }> = [];
     const today = new Date();
     today.setUTCHours(0, 0, 0, 0);
     for (let i = 89; i >= 0; i--) {
@@ -197,7 +237,7 @@ export class HabitsService {
       );
       let status: HabitEntryStatus | null = entry?.status ?? null;
       if (!isActiveDay && !status) status = HabitEntryStatus.REST;
-      heatmap.push({ date: d.toISOString().slice(0, 10), status });
+      heatmap.push({ date: d.toISOString().slice(0, 10), status, count: entry?.count ?? 0 });
     }
 
     const monthStart = new Date(today);
@@ -210,7 +250,7 @@ export class HabitsService {
       const dow = cd.getUTCDay();
       if (!habit.activeDays.includes(dow)) continue;
       activeDaysInMonth++;
-      if (c.status === HabitEntryStatus.DONE || c.status === HabitEntryStatus.RECOVERED) doneInMonth++;
+      if (c.status && this.isComplete(habit, { status: c.status, count: c.count })) doneInMonth++;
     }
     const monthCompletionPct =
       activeDaysInMonth > 0 ? Math.round((doneInMonth / activeDaysInMonth) * 100) : 0;
@@ -220,6 +260,7 @@ export class HabitsService {
       longestStreak: habit.longestStreak,
       perfectWeeks: habit.perfectWeeks,
       monthCompletionPct,
+      target: this.dailyTarget(habit),
       heatmap,
     };
   }
@@ -247,7 +288,7 @@ export class HabitsService {
       const entry = entries.find(
         (e) => new Date(e.date).toISOString().slice(0, 10) === cursor.toISOString().slice(0, 10),
       );
-      if (entry?.status === HabitEntryStatus.DONE || entry?.status === HabitEntryStatus.RECOVERED) {
+      if (entry && this.isComplete(habit, entry)) {
         currentStreak++;
         cursor.setUTCDate(cursor.getUTCDate() - 1);
       } else {
@@ -257,7 +298,7 @@ export class HabitsService {
 
     let longestStreak = Math.max(habit.longestStreak, currentStreak);
 
-    const perfectWeeks = this.countPerfectWeeks(habit.activeDays, entries, today);
+    const perfectWeeks = this.countPerfectWeeks(habit, entries, today);
 
     await this.prisma.habit.update({
       where: { id: habitId },
@@ -273,15 +314,16 @@ export class HabitsService {
    * `Date.getUTCDay()` (0 = Sunday).
    */
   private countPerfectWeeks(
-    activeDays: number[],
-    entries: { date: Date | string; status: HabitEntryStatus }[],
+    habit: { activeDays: number[]; dailyMin: number | null; dailyMax: number | null },
+    entries: { date: Date | string; status: HabitEntryStatus; count: number }[],
     today: Date,
   ): number {
+    const activeDays = habit.activeDays;
     if (entries.length === 0 || activeDays.length === 0) return 0;
 
     const completed = new Set(
       entries
-        .filter((e) => e.status === HabitEntryStatus.DONE || e.status === HabitEntryStatus.RECOVERED)
+        .filter((e) => this.isComplete(habit, e))
         .map((e) => new Date(e.date).toISOString().slice(0, 10)),
     );
 
