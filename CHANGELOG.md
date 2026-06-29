@@ -5,6 +5,18 @@ All notable changes to OmniDesk. Breaking changes are called out explicitly.
 ## [Unreleased]
 
 ### Added
+- **List templates + presets:** new poster (2:3) and square (1:1) card shapes,
+  plus a ✨ Templates gallery that scaffolds a ready list — Movies (Letterboxd),
+  Music albums, Books, TV series, Games, or Blank — with suggested fields, card
+  layout and style. Adding a preset is data, not code (one configurable engine).
+- **Multi-count habits:** optional daily **minimum** and **maximum** check-ins
+  (e.g. brush teeth min 2, max 4; water 8). Tapping a day adds a check-in up to
+  the cap; the day is "done" at the minimum. Streaks, heatmap and completion %
+  are count-aware and backward-compatible (existing habits stay done-at-1). Plus
+  a ⭐ **featured habit** picker for the hero panel and richer goal labels.
+- **Android app scaffold (Capacitor):** `capacitor.config.ts`, root deps/scripts
+  and an `android/SETUP.md` runbook to wrap the PWA into a native Android shell
+  (one codebase). Native project generation (`cap add android`) is run locally.
 - **Card typography levels (lists):** a 🎨 Style editor defines four named levels
   (Title / Subtitle / Body / Caption) — each with font (7 curated families),
   size, weight, colour, uppercase and text-shadow — plus card background, border
