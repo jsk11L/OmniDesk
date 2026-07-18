@@ -91,6 +91,10 @@ export interface CardStyle {
   border: string;
   /** 0–100 dark overlay over the card image (legibility for light images). */
   imageScrim: number;
+  /** Card width in px (drives grid density); 0 = responsive default. */
+  cardWidth: number;
+  /** Card min-height in px; 0 = auto. */
+  cardHeight: number;
 }
 
 /** Curated font set offered in the card style editor. */
@@ -135,6 +139,8 @@ export const DEFAULT_CARD_STYLE: CardStyle = {
   background: '',
   border: '',
   imageScrim: 0,
+  cardWidth: 0,
+  cardHeight: 0,
 };
 
 /** The 3×3 anchor matrix, row-major, for the layout picker UI. */
@@ -340,8 +346,10 @@ export function resolveCardStyle(config: GridConfig): CardStyle {
     },
     background: cs.background ?? '',
     border: cs.border ?? '',
-    // Range inputs persist as strings — coerce so `@if (imageScrim)` and math work.
+    // Numeric inputs may persist as strings — coerce so math/bindings work.
     imageScrim: Number(cs.imageScrim ?? 0) || 0,
+    cardWidth: Number(cs.cardWidth ?? 0) || 0,
+    cardHeight: Number(cs.cardHeight ?? 0) || 0,
   };
 }
 

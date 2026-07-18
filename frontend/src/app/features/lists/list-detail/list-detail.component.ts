@@ -162,21 +162,14 @@ interface ItemGroup {
                       </div>
                       @if (layoutEditorFieldId() === f.id && isFieldVisible(f.id)) {
                         <div class="px-2 pb-2 pt-1.5 mt-0.5 border-t border-border">
-                          <p class="uppercase-tag mb-1">Position on card</p>
-                          <div class="grid grid-cols-3 gap-0.5 w-[84px] mb-1.5">
-                            @for (slot of matrixSlots; track slot) {
-                              <button type="button" (click)="setFieldSlot(f.id, slot)"
-                                [class]="'h-6 rounded text-[9px] grid place-items-center border transition-colors ' + (layoutOf(f.id).slot === slot ? 'border-primary bg-primary/20 text-primary' : 'border-border text-text-faint hover:bg-background')"
-                                [title]="'Anchor: ' + slot">●</button>
-                            }
-                          </div>
+                          <p class="uppercase-tag mb-1">Placement</p>
                           <div class="flex gap-1 mb-2">
                             <button type="button" (click)="setFieldSlot(f.id, 'stack')"
                               [class]="'px-2 py-1 rounded text-xs border transition-colors ' + (layoutOf(f.id).slot === 'stack' ? 'border-primary text-primary bg-primary/10' : 'border-border text-text-muted hover:bg-background')"
-                              title="Stack above the title (auto-scaled)">Stack ↑ title</button>
+                              title="Stack above the title">Above title</button>
                             <button type="button" (click)="setFieldSlot(f.id, 'body')"
                               [class]="'px-2 py-1 rounded text-xs border transition-colors ' + (layoutOf(f.id).slot === 'body' ? 'border-primary text-primary bg-primary/10' : 'border-border text-text-muted hover:bg-background')"
-                              title="Default flow under the title">Body</button>
+                              title="Default flow under the title">Below title</button>
                           </div>
                           <label class="flex items-center gap-1.5 text-xs text-text-muted cursor-pointer">
                             <input type="checkbox" [checked]="layoutOf(f.id).showLabel" (change)="toggleFieldLabel(f.id)" class="accent-primary" />
@@ -286,10 +279,11 @@ interface ItemGroup {
 
             @switch (effectiveTemplate()) {
               @case ('card-large') {
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6"
+                  [style.grid-template-columns]="cardGridCols()">
                   @for (item of group.items; track item.id) {
                     <div class="bg-surface border border-border rounded-lg overflow-hidden hover:border-primary transition-colors flex flex-col"
-                      [style.background]="cardBg()" [style.border-color]="cardBorder()">
+                      [style.background]="cardBg()" [style.border-color]="cardBorder()" [style.min-height.px]="cardMinHeight()">
                       <button type="button" (click)="openEditItem(item)" class="text-left">
                         @if (gridConfig().showImage && resolveImage(item); as src) {
                           <div class="relative">
@@ -351,9 +345,11 @@ interface ItemGroup {
               }
 
               @case ('card-compact') {
-                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2 mb-6">
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2 mb-6"
+                  [style.grid-template-columns]="cardGridCols()">
                   @for (item of group.items; track item.id) {
-                    <div class="bg-surface border border-border rounded overflow-hidden hover:border-primary transition-colors flex flex-col">
+                    <div class="bg-surface border border-border rounded overflow-hidden hover:border-primary transition-colors flex flex-col"
+                      [style.min-height.px]="cardMinHeight()">
                       <button type="button" (click)="openEditItem(item)" class="text-left">
                         @if (gridConfig().showImage && resolveImage(item); as src) {
                           <img [src]="src" alt="" class="w-full aspect-square object-cover" />
@@ -373,7 +369,7 @@ interface ItemGroup {
               }
 
               @case ('card-cover') {
-                <div [class]="coverGridClass()">
+                <div [class]="coverGridClass()" [style.grid-template-columns]="cardGridCols()">
                   @for (item of group.items; track item.id) {
                     <div class="flex flex-col gap-1">
                     <button type="button" (click)="openEditItem(item)"
@@ -448,9 +444,11 @@ interface ItemGroup {
               }
 
               @case ('gallery-no-image') {
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-6"
+                  [style.grid-template-columns]="cardGridCols()">
                   @for (item of group.items; track item.id) {
-                    <div class="bg-surface border border-border rounded-lg hover:border-primary transition-colors flex flex-col">
+                    <div class="bg-surface border border-border rounded-lg hover:border-primary transition-colors flex flex-col"
+                      [style.min-height.px]="cardMinHeight()">
                     <button type="button" (click)="openEditItem(item)"
                       class="text-left p-4">
                       <h3 class="font-semibold mb-1">{{ item.title }}</h3>
@@ -746,6 +744,12 @@ export class ListDetailComponent implements OnInit {
   protected readonly cardStyle = computed<CardStyle>(() => resolveCardStyle(this.gridConfig()));
   protected readonly cardBg = computed<string | null>(() => this.cardStyle().background || null);
   protected readonly cardBorder = computed<string | null>(() => this.cardStyle().border || null);
+  /** Custom card width overrides the responsive grid columns (0 = default). */
+  protected readonly cardGridCols = computed<string | null>(() => {
+    const w = this.cardStyle().cardWidth;
+    return w > 0 ? `repeat(auto-fill, minmax(${w}px, 1fr))` : null;
+  });
+  protected readonly cardMinHeight = computed<number | null>(() => this.cardStyle().cardHeight || null);
 
   /** Poster/square reuse the Cover card render with a different aspect ratio. */
   protected readonly effectiveTemplate = computed<GridTemplate>(() => {

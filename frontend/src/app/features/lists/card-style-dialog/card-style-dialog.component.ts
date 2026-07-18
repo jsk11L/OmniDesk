@@ -102,6 +102,18 @@ export interface CardStyleDialogData {
               <span class="block text-xs text-text-muted mb-1">Image overlay (legibility over light images) — {{ style.imageScrim }}%</span>
               <input type="range" min="0" max="90" [(ngModel)]="style.imageScrim" class="w-full accent-primary" />
             </label>
+            <div class="grid grid-cols-2 gap-2">
+              <label class="block">
+                <span class="block text-xs text-text-muted mb-1">Card width (px, 0 = auto)</span>
+                <input type="number" min="0" max="600" [(ngModel)]="style.cardWidth"
+                  class="w-full px-2 py-1.5 bg-background border border-border rounded text-sm outline-none focus:border-primary" />
+              </label>
+              <label class="block">
+                <span class="block text-xs text-text-muted mb-1">Card height (px, 0 = auto)</span>
+                <input type="number" min="0" max="900" [(ngModel)]="style.cardHeight"
+                  class="w-full px-2 py-1.5 bg-background border border-border rounded text-sm outline-none focus:border-primary" />
+              </label>
+            </div>
           </div>
         </div>
 
