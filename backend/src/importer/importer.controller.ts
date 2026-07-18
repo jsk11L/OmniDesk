@@ -21,6 +21,7 @@ import {
   type ImportMode,
   type ImportOwnReport,
   type ImportReport,
+  type ListJsonSpec,
 } from './importer.service';
 
 @Controller('import')
@@ -74,6 +75,23 @@ export class ImporterController {
       listName: parsed.name ?? name,
       fields: parsed.fields,
     });
+  }
+
+  @Throttle({ default: { limit: 20, ttl: 15 * 60 * 1000 } })
+  @Post('list-json')
+  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: 50 * 1024 * 1024 } }))
+  async listJson(
+    @UploadedFile() file: Express.Multer.File,
+    @CurrentUser() user: AuthUser,
+  ): Promise<ImportListReport> {
+    if (!file) throw new BadRequestException('A .json list file is required');
+    let spec: ListJsonSpec;
+    try {
+      spec = JSON.parse(file.buffer.toString('utf8')) as ListJsonSpec;
+    } catch {
+      throw new BadRequestException('The file is not valid JSON');
+    }
+    return this.importer.importListJson(user.id, spec);
   }
 
   @Throttle({ default: { limit: 5, ttl: 15 * 60 * 1000 } })

@@ -44,6 +44,16 @@ import type { ListPreset } from '../list-presets';
             placeholder="Search lists…"
             class="px-3 py-2 bg-surface border border-border rounded text-sm outline-none focus:border-primary w-64"
           />
+          <input #jsonInput type="file" accept=".json,application/json" class="hidden" (change)="onJsonPicked($event)" />
+          <button
+            type="button"
+            (click)="jsonInput.click()"
+            [disabled]="importing()"
+            title="Create a complete list from a .json file (fields + items ready)"
+            class="px-3 py-2 rounded border border-border text-sm hover:bg-surface-hover disabled:opacity-50"
+          >
+            ⬆ JSON
+          </button>
           <input #vaultInput type="file" accept=".zip" class="hidden" (change)="onVaultPicked($event)" />
           <button
             type="button"
@@ -153,6 +163,25 @@ export class ListHomeComponent implements OnInit {
       },
       error: (err: HttpErrorResponse) => {
         this.loading.set(false);
+        this.toastr.error(this.errMsg(err));
+      },
+    });
+  }
+
+  protected onJsonPicked(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+    this.importing.set(true);
+    this.service.importListJson(file).subscribe({
+      next: (report) => {
+        this.importing.set(false);
+        this.toastr.success(`Created "${report.listName}" · ${report.itemsCreated} items`);
+        void this.router.navigate(['/app/lists', report.listId]);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.importing.set(false);
         this.toastr.error(this.errMsg(err));
       },
     });

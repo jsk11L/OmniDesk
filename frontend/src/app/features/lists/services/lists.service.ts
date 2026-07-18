@@ -39,6 +39,15 @@ export class ListsService {
     return this.http.post<ApiResponse<List>>(this.base, dto).pipe(map((r) => r.data));
   }
 
+  /** Create a complete list from a JSON spec file (fields + items + layout). */
+  importListJson(file: File): Observable<ImportListReport> {
+    const fd = new FormData();
+    fd.append('file', file);
+    return this.http
+      .post<ApiResponse<ImportListReport>>(`${environment.apiUrl}/import/list-json`, fd)
+      .pipe(map((r) => r.data));
+  }
+
   /** Dry-run: detect fields/types/stats in a vault without importing. */
   analyzeObsidian(file: File): Observable<ImportAnalysis> {
     const fd = new FormData();

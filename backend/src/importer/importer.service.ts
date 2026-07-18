@@ -17,6 +17,7 @@ import type {
 } from '@prisma/client';
 import AdmZip from 'adm-zip';
 import { basename, dirname, extname } from 'path';
+import { randomUUID } from 'crypto';
 
 import { PrismaService } from '../prisma/prisma.service';
 import { UploadsService } from '../uploads/uploads.service';
@@ -88,6 +89,21 @@ export interface FieldOverrideInput {
   name?: string;
   type?: ListFieldType;
   include?: boolean;
+}
+
+/** A complete list described as JSON — creates a ready-to-use list in one shot. */
+export interface ListJsonSpec {
+  name: string;
+  icon?: string;
+  description?: string;
+  template?: string; // GridTemplate; defaults to 'card-large'
+  showImage?: boolean;
+  fields: { name: string; type: ListFieldType; options?: string[] }[];
+  items: { title: string; fields?: Record<string, unknown>; tags?: string[] }[];
+  /** Field NAMES shown on cards; defaults to all fields. */
+  visibleFields?: string[];
+  /** Move buttons resolved by target list NAME at import time. */
+  actions?: { label: string; color?: string; targetListName: string }[];
 }
 
 @Injectable()
@@ -500,6 +516,137 @@ export class ImporterService {
     });
 
     return report;
+  }
+
+  // ─── Import a complete list from a JSON spec ─────────────
+
+  /**
+   * Builds a whole list (fields + items + card layout + move buttons) from a
+   * single JSON spec. Item customFields are keyed by field NAME in the spec and
+   * remapped to the freshly-created field ids. Items are inserted with a single
+   * createMany so thousands of rows import fast.
+   */
+  async importListJson(userId: string, spec: ListJsonSpec): Promise<ImportListReport> {
+    if (!spec || typeof spec !== 'object' || !spec.name?.trim()) {
+      throw new BadRequestException('Invalid list JSON: "name" is required');
+    }
+    if (!Array.isArray(spec.fields) || !Array.isArray(spec.items)) {
+      throw new BadRequestException('Invalid list JSON: "fields" and "items" arrays are required');
+    }
+    if (spec.items.length > 20_000) {
+      throw new BadRequestException('Too many items (max 20,000)');
+    }
+
+    const report: ImportListReport = {
+      listId: '',
+      listName: spec.name.trim(),
+      itemsCreated: 0,
+      fieldsCreated: 0,
+      tagsCreated: 0,
+      assetsUploaded: 0,
+      skipped: [],
+      errors: [],
+    };
+
+    const list = await this.prisma.list.create({
+      data: {
+        userId,
+        name: spec.name.trim(),
+        icon: spec.icon ?? null,
+        description: spec.description ?? null,
+        defaultView: 'GRID',
+        defaultSortDir: 'DESC',
+        gridConfig: {} as Json,
+        viewConfig: {} as Json,
+      },
+    });
+    report.listId = list.id;
+
+    // Fields (name → id).
+    const nameToId = new Map<string, string>();
+    let position = 0;
+    for (const f of spec.fields) {
+      if (!f?.name?.trim() || !f.type) continue;
+      const created = await this.prisma.listField.create({
+        data: {
+          listId: list.id,
+          name: f.name.trim(),
+          fieldType: f.type,
+          position: position++,
+          options: f.options?.length ? ({ options: f.options } as Json) : Prisma.JsonNull,
+        },
+      });
+      nameToId.set(f.name.trim().toLowerCase(), created.id);
+      report.fieldsCreated++;
+    }
+
+    // Items — one bulk insert, customFields remapped by field name → id.
+    if (spec.items.length) {
+      const rows = spec.items.map((it, i) => {
+        const customFields: Record<string, unknown> = {};
+        for (const [k, v] of Object.entries(it.fields ?? {})) {
+          const id = nameToId.get(k.trim().toLowerCase());
+          if (id && v !== null && v !== undefined && v !== '') customFields[id] = v;
+        }
+        return {
+          listId: list.id,
+          title: (it.title ?? 'Untitled').toString().slice(0, 300),
+          customFields: customFields as Json,
+          position: i,
+        };
+      });
+      await this.prisma.listItem.createMany({ data: rows });
+      report.itemsCreated = rows.length;
+    }
+
+    // Card layout + move buttons.
+    const visibleIds = (spec.visibleFields?.length
+      ? spec.visibleFields
+      : spec.fields.map((f) => f.name)
+    )
+      .map((n) => nameToId.get(n.trim().toLowerCase()))
+      .filter((id): id is string => !!id);
+
+    const actions = await this.resolveJsonActions(userId, spec.actions);
+
+    await this.prisma.list.update({
+      where: { id: list.id },
+      data: {
+        gridConfig: {
+          template: spec.template ?? 'card-large',
+          visibleFields: visibleIds,
+          showImage: spec.showImage ?? true,
+          imagePosition: 'top',
+          showTags: true,
+        } as Json,
+        viewConfig: (actions.length ? { actions } : {}) as Json,
+      },
+    });
+
+    return report;
+  }
+
+  /** Turns spec move-actions (targetListName) into ListAction objects with real target ids. */
+  private async resolveJsonActions(
+    userId: string,
+    specActions: ListJsonSpec['actions'],
+  ): Promise<Array<{ id: string; label: string; color?: string; kind: 'move'; targetListId: string }>> {
+    if (!specActions?.length) return [];
+    const lists = await this.prisma.list.findMany({ where: { userId }, select: { id: true, name: true } });
+    const byName = new Map(lists.map((l) => [l.name.trim().toLowerCase(), l.id]));
+    const out: Array<{ id: string; label: string; color?: string; kind: 'move'; targetListId: string }> = [];
+    for (const a of specActions) {
+      const targetListId = byName.get(a.targetListName?.trim().toLowerCase() ?? '');
+      if (!targetListId) continue;
+      out.push({
+        id: randomUUID(),
+        label: a.label,
+        color: a.color,
+        kind: 'move',
+        targetListId,
+      });
+    }
+    return out;
   }
 
   // ─── Import from an OmniDesk export (Block 5b, D-021) ─────
