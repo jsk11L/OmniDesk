@@ -5,6 +5,12 @@ All notable changes to OmniDesk. Breaking changes are called out explicitly.
 ## [Unreleased]
 
 ### Added
+- **Movable card title (lists):** the item title is now a reorderable entry in
+  the Fields popover — move it up/down among the fields (↑ ↓) to place it anywhere
+  in the card's text flow (e.g. at the very bottom for a game index). Replaces the
+  fixed "above/below title" split with one ordered list that mirrors the card
+  exactly. Backward-compatible: existing lists keep their current title position
+  until you move it (stored as a `__title__` marker in `visibleFields`).
 - **Unified card model (lists):** the Large and Cover cards collapse into a single
   **Card** view parametrized by three orthogonal controls in the toolbar — **Shape**
   (Cover 7:4 / Poster 2:3 / Square 1:1 / Free), **Text position** (On image /

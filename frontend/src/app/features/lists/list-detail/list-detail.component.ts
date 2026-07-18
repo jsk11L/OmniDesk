@@ -35,6 +35,7 @@ import {
   levelToCss,
   CARD_MATRIX_SLOTS,
   DEFAULT_FIELD_LAYOUT,
+  TITLE_KEY,
   type GridConfig,
   type CardStyle,
   type CardShape,
@@ -69,6 +70,18 @@ interface ItemGroup {
   key: string;
   label: string;
   items: ListItem[];
+}
+
+/** A row in the Fields popover: a real field, or the movable title entry. */
+interface CardFieldRow {
+  id: string;
+  name: string;
+  /** True for the synthetic title row (TITLE_KEY). */
+  isTitle: boolean;
+  /** The backing field, or null for the title row. */
+  field: ListField | null;
+  /** True when the row participates in the card text flow (reorderable with ↑ ↓). */
+  inFlow: boolean;
 }
 
 @Component({
@@ -164,36 +177,34 @@ interface ItemGroup {
               </button>
               @if (fieldsPanelOpen()) {
                 <div class="absolute z-30 mt-1 right-0 w-72 bg-surface border border-border rounded-lg shadow-lg p-2 max-h-[70vh] overflow-auto">
-                  <p class="uppercase-tag px-2 pb-1">Fields shown on cards</p>
-                  @for (f of fieldConfigRows(); track f.id) {
+                  <p class="uppercase-tag px-2 pb-1">Card order — move with ↑ ↓ (title included)</p>
+                  @for (row of fieldConfigRows(); track row.id) {
                     <div class="rounded hover:bg-surface-hover">
                       <div class="flex items-center gap-2 px-2 py-1.5 text-sm">
-                        <input type="checkbox" [checked]="isFieldVisible(f.id)" (change)="toggleFieldVisible(f.id)" class="accent-primary" />
-                        <span class="flex-1 truncate">{{ f.name }}</span>
-                        @if (isFieldVisible(f.id)) {
-                          <button type="button" (click)="moveField(f.id, -1)" class="w-6 h-6 grid place-items-center rounded hover:bg-background text-text-muted" title="Move up">↑</button>
-                          <button type="button" (click)="moveField(f.id, 1)" class="w-6 h-6 grid place-items-center rounded hover:bg-background text-text-muted" title="Move down">↓</button>
-                          <button type="button" (click)="toggleLayoutEditor(f.id)"
-                            [class]="'w-6 h-6 grid place-items-center rounded text-xs ' + (layoutEditorFieldId() === f.id ? 'bg-primary/20 text-primary' : 'hover:bg-background text-text-muted')"
-                            title="Card layout (Large card)">▦</button>
+                        @if (row.isTitle) {
+                          <span class="w-4 text-center text-[11px] font-bold text-primary" title="The item's title">T</span>
+                          <span class="flex-1 truncate font-medium">{{ row.name }}</span>
+                        } @else {
+                          <input type="checkbox" [checked]="isFieldVisible(row.id)" (change)="toggleFieldVisible(row.id)" class="accent-primary" />
+                          <span class="flex-1 truncate">{{ row.name }}</span>
+                        }
+                        @if (row.inFlow) {
+                          <button type="button" (click)="moveFlowKey(row.id, -1)" class="w-6 h-6 grid place-items-center rounded hover:bg-background text-text-muted" title="Move up">↑</button>
+                          <button type="button" (click)="moveFlowKey(row.id, 1)" class="w-6 h-6 grid place-items-center rounded hover:bg-background text-text-muted" title="Move down">↓</button>
+                        }
+                        @if (!row.isTitle && isFieldVisible(row.id)) {
+                          <button type="button" (click)="toggleLayoutEditor(row.id)"
+                            [class]="'w-6 h-6 grid place-items-center rounded text-xs ' + (layoutEditorFieldId() === row.id ? 'bg-primary/20 text-primary' : 'hover:bg-background text-text-muted')"
+                            title="Field style">▦</button>
                         }
                       </div>
-                      @if (layoutEditorFieldId() === f.id && isFieldVisible(f.id)) {
+                      @if (!row.isTitle && row.field && layoutEditorFieldId() === row.id && isFieldVisible(row.id)) {
                         <div class="px-2 pb-2 pt-1.5 mt-0.5 border-t border-border">
-                          <p class="uppercase-tag mb-1">Placement</p>
-                          <div class="flex gap-1 mb-2">
-                            <button type="button" (click)="setFieldSlot(f.id, 'stack')"
-                              [class]="'px-2 py-1 rounded text-xs border transition-colors ' + (layoutOf(f.id).slot === 'stack' ? 'border-primary text-primary bg-primary/10' : 'border-border text-text-muted hover:bg-background')"
-                              title="Stack above the title">Above title</button>
-                            <button type="button" (click)="setFieldSlot(f.id, 'body')"
-                              [class]="'px-2 py-1 rounded text-xs border transition-colors ' + (layoutOf(f.id).slot === 'body' ? 'border-primary text-primary bg-primary/10' : 'border-border text-text-muted hover:bg-background')"
-                              title="Default flow under the title">Below title</button>
-                          </div>
                           <label class="flex items-center gap-1.5 text-xs text-text-muted cursor-pointer">
-                            <input type="checkbox" [checked]="layoutOf(f.id).showLabel" (change)="toggleFieldLabel(f.id)" class="accent-primary" />
-                            Show "{{ f.name }}:" label
+                            <input type="checkbox" [checked]="layoutOf(row.id).showLabel" (change)="toggleFieldLabel(row.id)" class="accent-primary" />
+                            Show "{{ row.name }}:" label
                           </label>
-                          <select [ngModel]="levelOf(f.id)" (ngModelChange)="setFieldLevel(f.id, $event)"
+                          <select [ngModel]="levelOf(row.id)" (ngModelChange)="setFieldLevel(row.id, $event)"
                             class="w-full mt-1.5 px-2 py-1 bg-background border border-border rounded text-xs outline-none focus:border-primary"
                             title="Typographic level (edit fonts/sizes in 🎨 Style)">
                             <option value="title">Level: Title</option>
@@ -201,8 +212,8 @@ interface ItemGroup {
                             <option value="body">Level: Body</option>
                             <option value="caption">Level: Caption</option>
                           </select>
-                          @if (f.fieldType === 'DATE') {
-                            <select [ngModel]="layoutOf(f.id).dateFormat ?? 'full'" (ngModelChange)="setFieldDateFormat(f.id, $event)"
+                          @if (row.field?.fieldType === 'DATE') {
+                            <select [ngModel]="layoutOf(row.id).dateFormat ?? 'full'" (ngModelChange)="setFieldDateFormat(row.id, $event)"
                               class="w-full mt-1.5 px-2 py-1 bg-background border border-border rounded text-xs outline-none focus:border-primary">
                               <option value="full">Date: full</option>
                               <option value="month">Date: month only (May)</option>
@@ -261,21 +272,17 @@ interface ItemGroup {
         </div>
       </header>
 
-      <!-- Shared card text: stack fields, title, body fields, tags. onImage adds cover styling. -->
+      <!-- Shared card text: a single ordered flow of fields + the title (movable). onImage adds cover styling. -->
       <ng-template #cardTextInner let-item let-onImage="onImage">
-        @for (fieldId of stackFieldsRender(); track fieldId) {
-          @if (fieldById(fieldId); as f) {
-            <div class="truncate leading-tight" [class]="onImage ? 'card-cover-meta' : ''" [style]="fieldStyle(fieldId)">
-              @if (layoutOf(fieldId).showLabel) { <span class="opacity-70">{{ f.name }}: </span> }{{ formatFieldFor(f, item.customFields[f.id]) }}
-            </div>
-          }
-        }
-        <h3 class="leading-tight truncate" [class]="onImage ? 'card-cover-title' : ''" [style]="titleStyle()">{{ item.title }}</h3>
-        @for (fieldId of bodyFields(); track fieldId) {
-          @if (fieldById(fieldId); as f) {
-            <p class="mt-0.5 truncate" [class]="onImage ? 'card-cover-meta' : ''" [style]="fieldStyle(fieldId)">
-              @if (layoutOf(fieldId).showLabel) { <strong>{{ f.name }}:</strong> }{{ formatFieldFor(f, item.customFields[f.id]) }}
-            </p>
+        @for (key of cardFlow(); track key) {
+          @if (key === titleKey) {
+            <h3 class="leading-tight truncate" [class]="onImage ? 'card-cover-title' : ''" [style]="titleStyle()">{{ item.title }}</h3>
+          } @else {
+            @if (fieldById(key); as f) {
+              <div class="truncate leading-tight mt-0.5" [class]="onImage ? 'card-cover-meta' : ''" [style]="fieldStyle(key)">
+                @if (layoutOf(key).showLabel) { <span class="opacity-70">{{ f.name }}: </span> }{{ formatFieldFor(f, item.customFields[f.id]) }}
+              </div>
+            }
           }
         }
         @if (gridConfig().showTags && item.tags?.length) {
@@ -586,19 +593,57 @@ export class ListDetailComponent implements OnInit {
   protected readonly list = signal<List | null>(null);
   protected readonly rawItems = signal<ListItem[]>([]);
   protected readonly fieldsPanelOpen = signal(false);
-  /** Which field's per-card layout editor (3×3 matrix) is expanded, if any. */
+  /** Which field's per-card style editor is expanded, if any. */
   protected readonly layoutEditorFieldId = signal<string | null>(null);
-  protected readonly matrixSlots = CARD_MATRIX_SLOTS;
+  protected readonly titleKey = TITLE_KEY;
   protected search = '';
 
-  /** All fields ordered so the currently-visible ones (in their saved order) come first. */
-  protected readonly fieldConfigRows = computed<ListField[]>(() => {
+  /**
+   * Rows for the Fields popover: the card flow (visible fields + the movable
+   * title, reorderable) first, then anchored-but-visible fields, then hidden
+   * fields (togglable). Mirrors the on-card render order so ↑/↓ match reality.
+   */
+  protected readonly fieldConfigRows = computed<CardFieldRow[]>(() => {
     const fields = this.list()?.fields ?? [];
-    const visible = this.gridConfig().visibleFields;
     const byId = new Map(fields.map((f) => [f.id, f]));
-    const ordered = visible.map((id) => byId.get(id)).filter((f): f is ListField => !!f);
-    const rest = fields.filter((f) => !visible.includes(f.id));
-    return [...ordered, ...rest];
+    const flow = this.cardFlow();
+    const flowSet = new Set(flow);
+    const vf = this.gridConfig().visibleFields;
+
+    const flowRows: CardFieldRow[] = flow
+      .map((id): CardFieldRow =>
+        id === TITLE_KEY
+          ? { id, name: 'Title', isTitle: true, field: null, inFlow: true }
+          : { id, name: byId.get(id)?.name ?? '', isTitle: false, field: byId.get(id) ?? null, inFlow: true },
+      )
+      .filter((r) => r.isTitle || r.field);
+
+    // Legacy anchored fields (absolutely positioned) — visible but not in the flow.
+    const anchoredRows: CardFieldRow[] = vf
+      .filter((id) => id !== TITLE_KEY && !flowSet.has(id) && byId.has(id))
+      .map((id) => ({ id, name: byId.get(id)!.name, isTitle: false, field: byId.get(id)!, inFlow: false }));
+
+    const hiddenRows: CardFieldRow[] = fields
+      .filter((f) => !vf.includes(f.id))
+      .map((f) => ({ id: f.id, name: f.name, isTitle: false, field: f, inFlow: false }));
+
+    return [...flowRows, ...anchoredRows, ...hiddenRows];
+  });
+
+  /**
+   * Ordered keys rendered in the card text, top→bottom (fields + the title).
+   * If `visibleFields` contains TITLE_KEY the stored order wins; otherwise
+   * (legacy lists) the title sits between the "above title" and "below title"
+   * fields, reproducing the pre-movable-title appearance.
+   */
+  protected readonly cardFlow = computed<string[]>(() => {
+    const vf = this.gridConfig().visibleFields ?? [];
+    const anchored = new Set<CardSlot>(CARD_MATRIX_SLOTS);
+    const flow = vf.filter((id) => id === TITLE_KEY || !anchored.has(this.layoutOf(id).slot));
+    if (vf.includes(TITLE_KEY)) return flow;
+    const stack = flow.filter((id) => this.layoutOf(id).slot === 'stack').reverse();
+    const body = flow.filter((id) => this.layoutOf(id).slot !== 'stack');
+    return [...stack, TITLE_KEY, ...body];
   });
 
   protected readonly actions = computed<ListAction[]>(() => this.viewConfig().actions ?? []);
@@ -699,13 +744,21 @@ export class ListDetailComponent implements OnInit {
     this.patchGridConfig({ visibleFields: next });
   }
 
-  protected moveField(fieldId: string, delta: number): void {
-    const visible = [...this.gridConfig().visibleFields];
-    const i = visible.indexOf(fieldId);
+  /**
+   * Reorder a card-flow key (a field or the title) by one step. Persists the
+   * flow — including TITLE_KEY — into `visibleFields`, materializing the legacy
+   * order the first time so the title becomes an explicit, movable entry.
+   */
+  protected moveFlowKey(key: string, delta: number): void {
+    const flow = [...this.cardFlow()];
+    const i = flow.indexOf(key);
     const j = i + delta;
-    if (i < 0 || j < 0 || j >= visible.length) return;
-    [visible[i], visible[j]] = [visible[j], visible[i]];
-    this.patchGridConfig({ visibleFields: visible });
+    if (i < 0 || j < 0 || j >= flow.length) return;
+    [flow[i], flow[j]] = [flow[j], flow[i]];
+    // Anchored (absolutely-positioned) visible fields aren't in the flow — keep them.
+    const flowSet = new Set(this.cardFlow());
+    const anchoredIds = this.gridConfig().visibleFields.filter((id) => !flowSet.has(id));
+    this.patchGridConfig({ visibleFields: [...flow, ...anchoredIds] });
   }
 
   protected patchGrid(patch: Partial<GridConfig>): void {
@@ -719,10 +772,6 @@ export class ListDetailComponent implements OnInit {
 
   protected toggleLayoutEditor(fieldId: string): void {
     this.layoutEditorFieldId.update((cur) => (cur === fieldId ? null : fieldId));
-  }
-
-  protected setFieldSlot(fieldId: string, slot: CardSlot): void {
-    this.patchFieldLayout(fieldId, { slot });
   }
 
   protected toggleFieldLabel(fieldId: string): void {
@@ -836,17 +885,6 @@ export class ListDetailComponent implements OnInit {
   protected titleStyle(): { [k: string]: string } {
     return levelToCss(this.cardStyle().levels.title);
   }
-
-  /** Visible 'stack' fields ordered top→bottom for rendering above the title. */
-  protected readonly stackFieldsRender = computed<string[]>(() =>
-    this.gridConfig()
-      .visibleFields.filter((id) => this.layoutOf(id).slot === 'stack')
-      .reverse(),
-  );
-
-  protected readonly bodyFields = computed<string[]>(() =>
-    this.gridConfig().visibleFields.filter((id) => this.layoutOf(id).slot === 'body'),
-  );
 
   protected readonly anchoredFields = computed<{ id: string; cls: string }[]>(() => {
     const matrix = new Set<CardSlot>(CARD_MATRIX_SLOTS);

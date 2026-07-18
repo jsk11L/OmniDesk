@@ -162,6 +162,14 @@ export const CARD_MATRIX_SLOTS: CardSlot[] = [
 
 export const DEFAULT_FIELD_LAYOUT: FieldCardLayout = { slot: 'body', showLabel: true };
 
+/**
+ * Sentinel key for the item TITLE as a movable entry in the card flow order.
+ * When it appears in `GridConfig.visibleFields`, the title renders at that exact
+ * position among the fields; otherwise (legacy lists) it defaults to sitting
+ * between the "above title" (stack) and "below title" (body) fields.
+ */
+export const TITLE_KEY = '__title__';
+
 export type FilterType =
   | 'text-contains'
   | 'number-range'
