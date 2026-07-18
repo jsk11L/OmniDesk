@@ -5,6 +5,12 @@ All notable changes to OmniDesk. Breaking changes are called out explicitly.
 ## [Unreleased]
 
 ### Added
+- **Import items into a list (per-item review):** the list's "+ Add item" is now a
+  menu — **Create manually** or **Import from file**. Import reads a JSON file
+  (`{ items: [...] }` or a bare array; fields keyed by name, matched to the list's
+  fields) and — instead of bulk-inserting — opens the item editor **pre-filled,
+  one item at a time** so you review/edit each before it's added (Save & next /
+  Skip / Stop import). No new list is created; items go into the current list.
 - **Positionable action buttons (lists):** the set/move button row can be placed
   Below the card (default), Above it, or as an Overlay on the top/bottom of the
   card, and aligned Left / Center / Right — configured per list in Settings →

@@ -73,6 +73,13 @@ interface ItemGroup {
   items: ListItem[];
 }
 
+/** A candidate item parsed from an import file, before the per-item review. */
+interface ImportItemSpec {
+  title: string;
+  /** Custom values keyed by field NAME (remapped to ids at review time). */
+  customFields?: Record<string, unknown>;
+}
+
 /** A row in the Fields popover: a real field, or the movable title entry. */
 interface CardFieldRow {
   id: string;
@@ -126,10 +133,26 @@ interface CardFieldRow {
             <button type="button" (click)="openSettings()" class="px-3 py-2 rounded text-sm hover:bg-surface-hover">
               ⚙ Settings
             </button>
-            <button type="button" (click)="openCreateItem()" [disabled]="!list()"
-              class="px-4 py-2 rounded bg-primary text-white text-sm font-medium hover:opacity-90 disabled:opacity-50">
-              + New item
-            </button>
+            <div class="relative">
+              <button type="button" (click)="addMenuOpen.set(!addMenuOpen())" [disabled]="!list()"
+                class="px-4 py-2 rounded bg-primary text-white text-sm font-medium hover:opacity-90 disabled:opacity-50">
+                + Add item ▾
+              </button>
+              @if (addMenuOpen()) {
+                <div class="absolute z-30 mt-1 right-0 w-56 bg-surface border border-border rounded-lg shadow-lg p-1">
+                  <button type="button" (click)="addMenuOpen.set(false); openCreateItem()"
+                    class="w-full text-left px-3 py-2 text-sm rounded hover:bg-surface-hover">✏️ Create manually</button>
+                  <label class="w-full block text-left px-3 py-2 text-sm rounded hover:bg-surface-hover cursor-pointer">
+                    📥 Import from file…
+                    <input type="file" accept=".json,application/json,.txt,.md" class="hidden"
+                      (change)="onImportFileSelected($event)" />
+                  </label>
+                  <p class="px-3 pt-1 pb-1.5 text-[11px] text-text-faint leading-snug">
+                    JSON with an <code>items</code> array. You review every item before it's added.
+                  </p>
+                </div>
+              }
+            </div>
           </div>
         </div>
 
@@ -605,6 +628,8 @@ export class ListDetailComponent implements OnInit {
   protected readonly list = signal<List | null>(null);
   protected readonly rawItems = signal<ListItem[]>([]);
   protected readonly fieldsPanelOpen = signal(false);
+  /** The "+ Add item" dropdown (Create / Import). */
+  protected readonly addMenuOpen = signal(false);
   /** Which field's per-card style editor is expanded, if any. */
   protected readonly layoutEditorFieldId = signal<string | null>(null);
   protected readonly titleKey = TITLE_KEY;
@@ -1220,6 +1245,109 @@ export class ListDetailComponent implements OnInit {
     );
     ref.afterClosed().subscribe((item) => {
       if (item !== undefined) this.reload();
+    });
+  }
+
+  // ─── Import items into THIS list (file → per-item review) ─────────
+  protected onImportFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = ''; // allow re-picking the same file later
+    this.addMenuOpen.set(false);
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      let candidates: ImportItemSpec[];
+      try {
+        candidates = this.parseImportFile(String(reader.result ?? ''));
+      } catch {
+        this.toastr.error('Could not parse the file — expected JSON with an items array');
+        return;
+      }
+      if (candidates.length === 0) {
+        this.toastr.info('No items found in the file');
+        return;
+      }
+      this.reviewImportQueue(candidates, 0, 0);
+    };
+    reader.onerror = () => this.toastr.error('Could not read the file');
+    reader.readAsText(file);
+  }
+
+  /** Parse a JSON file into candidate items. Accepts `{ items: [...] }` or a bare array. */
+  private parseImportFile(text: string): ImportItemSpec[] {
+    const data: unknown = JSON.parse(text);
+    const raw = Array.isArray(data)
+      ? data
+      : Array.isArray((data as { items?: unknown[] })?.items)
+        ? (data as { items: unknown[] }).items
+        : null;
+    if (!raw) throw new Error('No items array');
+    return raw.map((it) => this.normalizeSpecItem(it));
+  }
+
+  private normalizeSpecItem(it: unknown): ImportItemSpec {
+    if (typeof it === 'string') return { title: it };
+    const obj = (it ?? {}) as Record<string, unknown>;
+    const title = String(obj['title'] ?? obj['name'] ?? '');
+    if (obj['customFields'] && typeof obj['customFields'] === 'object') {
+      return { title, customFields: obj['customFields'] as Record<string, unknown> };
+    }
+    // Flat object: treat every non-reserved key as a field keyed by name.
+    const customFields: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(obj)) {
+      if (k === 'title' || k === 'name' || k === 'tags') continue;
+      customFields[k] = v;
+    }
+    return { title, customFields };
+  }
+
+  /** Remap a candidate's name-keyed fields to this list's field ids for the dialog seed. */
+  private candidateToPrefill(spec: ImportItemSpec, list: List): { title: string; customFields: Record<string, unknown> } {
+    const byName = new Map((list.fields ?? []).map((f) => [f.name.trim().toLowerCase(), f]));
+    const customFields: Record<string, unknown> = {};
+    for (const [name, value] of Object.entries(spec.customFields ?? {})) {
+      const field = byName.get(name.trim().toLowerCase());
+      if (field && value !== null && value !== undefined && value !== '') {
+        customFields[field.id] = value;
+      }
+    }
+    return { title: spec.title, customFields };
+  }
+
+  /**
+   * Walk the import candidates, opening the item dialog pre-filled for each so the
+   * user reviews/edits before it's created. Save & next → create + advance; Skip →
+   * advance without creating; Stop import → abort. Nothing is created up front.
+   */
+  private reviewImportQueue(candidates: ImportItemSpec[], index: number, created: number): void {
+    const list = this.list();
+    if (!list) return;
+    if (index >= candidates.length) {
+      if (created > 0) this.reload();
+      this.toastr.success(`Import finished — ${created} item(s) added`);
+      return;
+    }
+
+    const prefill = this.candidateToPrefill(candidates[index], list);
+    const ref = this.dialog.open<ListItemDialogComponent, ListItemDialogData, ListItemDialogResult>(
+      ListItemDialogComponent,
+      {
+        data: { list, prefill, reviewInfo: { index, total: candidates.length } },
+        width: 'min(620px, 95vw)',
+        maxWidth: '95vw',
+      },
+    );
+    ref.afterClosed().subscribe((result) => {
+      if (result === undefined) {
+        // Stop import
+        if (created > 0) this.reload();
+        this.toastr.info(`Import stopped — ${created} item(s) added, ${candidates.length - index} left`);
+        return;
+      }
+      const nextCreated = result === 'skip' ? created : created + 1;
+      this.reviewImportQueue(candidates, index + 1, nextCreated);
     });
   }
 

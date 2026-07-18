@@ -13,9 +13,14 @@ import type { List, ListField, ListItem } from '../lists.types';
 export interface ListItemDialogData {
   list: List;
   item?: ListItem;
+  /** Seed values for a CREATE (used by the per-item import review). */
+  prefill?: { title?: string; customFields?: Record<string, unknown> };
+  /** When set, the dialog is one step of an import review (shows progress + Skip). */
+  reviewInfo?: { index: number; total: number };
 }
 
-export type ListItemDialogResult = ListItem | undefined;
+/** A created item, `'skip'` to skip this import step, or `undefined` to cancel/stop. */
+export type ListItemDialogResult = ListItem | 'skip' | undefined;
 
 @Component({
   selector: 'app-list-item-dialog',
@@ -25,7 +30,13 @@ export type ListItemDialogResult = ListItem | undefined;
   template: `
     <div class="bg-surface text-text p-6 w-[min(600px,95vw)] max-h-[90vh] overflow-y-auto">
       <h2 class="text-lg font-semibold mb-4">
-        {{ data.item ? 'Edit item' : 'New item' }}
+        @if (data.item) {
+          Edit item
+        } @else if (data.reviewInfo) {
+          Review imported item {{ data.reviewInfo.index + 1 }} / {{ data.reviewInfo.total }}
+        } @else {
+          New item
+        }
       </h2>
 
       <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-4">
@@ -150,12 +161,18 @@ export type ListItemDialogResult = ListItem | undefined;
             <span></span>
           }
           <div class="flex gap-2">
-            <button type="button" (click)="ref.close()" class="px-4 py-2 text-sm rounded hover:bg-surface-hover">
-              Cancel
+            <button type="button" (click)="ref.close(undefined)" class="px-4 py-2 text-sm rounded hover:bg-surface-hover">
+              {{ data.reviewInfo ? 'Stop import' : 'Cancel' }}
             </button>
+            @if (data.reviewInfo) {
+              <button type="button" (click)="ref.close('skip')" [disabled]="loading()"
+                class="px-4 py-2 text-sm rounded border border-border hover:bg-surface-hover">
+                Skip
+              </button>
+            }
             <button type="submit" [disabled]="form.invalid || loading()"
               class="px-4 py-2 text-sm rounded bg-primary text-white hover:opacity-90 disabled:opacity-50">
-              {{ loading() ? 'Saving…' : 'Save' }}
+              {{ loading() ? 'Saving…' : (data.reviewInfo ? 'Save & next' : 'Save') }}
             </button>
           </div>
         </div>
@@ -263,11 +280,11 @@ export class ListItemDialogComponent implements OnInit {
 
     const item = data.item;
     this.form = this.fb.nonNullable.group({
-      title: [item?.title ?? '', [Validators.required, Validators.maxLength(200)]],
+      title: [item?.title ?? data.prefill?.title ?? '', [Validators.required, Validators.maxLength(200)]],
     });
 
     for (const field of this.fields) {
-      const stored = item?.customFields?.[field.id];
+      const stored = item?.customFields?.[field.id] ?? data.prefill?.customFields?.[field.id];
       const validators = field.isRequired ? [Validators.required] : [];
       const initial = this.normalizeForControl(stored, field);
       this.customControls.set(field.id, new FormControl(initial, { validators }));
