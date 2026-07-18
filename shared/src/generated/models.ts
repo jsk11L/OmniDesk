@@ -56,6 +56,7 @@ export interface User {
   dndStart: string | null;
   dndEnd: string | null;
   quietDays: number[];
+  dashboardConfig: unknown | null;
   createdAt: string;
   updatedAt: string;
   activeThemeId: string | null;

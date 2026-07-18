@@ -5,6 +5,12 @@ All notable changes to OmniDesk. Breaking changes are called out explicitly.
 ## [Unreleased]
 
 ### Added
+- **Customizable dashboard (synced):** a ⚙ Customize panel lets you show/hide and
+  reorder every widget — the 4 stat cards (Balance, Tasks today, Events, Best
+  streak) and 6 panels (Upcoming events, On your plate, Savings pots, Mini
+  calendar, Habits, Recent notes). The layout is saved to your account
+  (`User.dashboardConfig`) so it syncs across devices — e.g. hide Balance if you
+  don't track finance. New widgets appear automatically; Reset restores defaults.
 - **Import items into a list (per-item review):** the list's "+ Add item" is now a
   menu — **Create manually** or **Import from file**. Import reads a JSON file
   (`{ items: [...] }` or a bare array; fields keyed by name, matched to the list's

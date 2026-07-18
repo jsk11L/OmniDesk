@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -68,6 +69,17 @@ export interface DashboardData {
   habitsToday: DashboardHabitWidget[];
   recentNotes: DashboardNoteWidget[];
   randomItem: unknown | null;
+}
+
+/** One widget's visibility in the user's dashboard layout. */
+export interface DashboardWidgetPref {
+  id: string;
+  visible: boolean;
+}
+
+/** Ordered widget layout for the dashboard (null in DB → frontend defaults). */
+export interface DashboardConfig {
+  widgets: DashboardWidgetPref[];
 }
 
 @Injectable()
@@ -327,6 +339,37 @@ export class DashboardService {
       list: { id: list.id, name: list.name, icon: list.icon },
       item: { id: item.id, title: item.title, imageUrl, customFields },
     };
+  }
+
+  /** The user's saved dashboard layout, or null when they've never customized it. */
+  async getConfig(userId: string): Promise<DashboardConfig | null> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { dashboardConfig: true },
+    });
+    const raw = user?.dashboardConfig;
+    return this.isConfig(raw) ? raw : null;
+  }
+
+  /** Persist the widget layout, sanitizing to `{ id, visible }[]`. */
+  async saveConfig(userId: string, config: DashboardConfig): Promise<DashboardConfig> {
+    const widgets: DashboardWidgetPref[] = (config?.widgets ?? [])
+      .filter((w): w is DashboardWidgetPref => !!w && typeof w.id === 'string')
+      .map((w) => ({ id: w.id, visible: w.visible !== false }));
+    const next: DashboardConfig = { widgets };
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { dashboardConfig: next as unknown as Prisma.InputJsonValue },
+    });
+    return next;
+  }
+
+  private isConfig(raw: unknown): raw is DashboardConfig {
+    return (
+      !!raw &&
+      typeof raw === 'object' &&
+      Array.isArray((raw as DashboardConfig).widgets)
+    );
   }
 }
 

@@ -59,6 +59,9 @@ model User {
   dndEnd              String?
   quietDays           Int[]     @default([]) // 0=Sun … 6=Sat; no push on these days
 
+  // Dashboard layout: ordered widget visibility [{ id, visible }]. Null = defaults.
+  dashboardConfig     Json?
+
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
 
