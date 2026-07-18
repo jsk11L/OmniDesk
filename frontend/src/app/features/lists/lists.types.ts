@@ -203,12 +203,21 @@ export interface ListAction {
   targetListId?: string;
 }
 
+/** Where the action-button row sits on a card. `overlay-*` floats over the card. */
+export type ActionsPosition = 'below' | 'above' | 'overlay-top' | 'overlay-bottom';
+/** Horizontal alignment of the action-button row. */
+export type ActionsAlign = 'left' | 'center' | 'right';
+
 export interface ViewConfig {
   groupBy: string | null;
   sortBy: string;
   sortDir: 'asc' | 'desc';
   filters: ListFilter[];
   actions?: ListAction[];
+  /** Position of the action-button row on cards (default 'below'). */
+  actionsPosition?: ActionsPosition;
+  /** Horizontal alignment of the action-button row (default 'left'). */
+  actionsAlign?: ActionsAlign;
   /** Show a 🎲 button that spins a roulette to pick a random item. */
   enableRoulette?: boolean;
 }

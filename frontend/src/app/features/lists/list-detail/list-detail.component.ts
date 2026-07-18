@@ -47,6 +47,7 @@ import {
   type ViewConfig,
   type GridTemplate,
   type ListAction,
+  type ActionsPosition,
   type CardSlot,
   type FieldCardLayout,
   type DateDisplayFormat,
@@ -297,7 +298,7 @@ interface CardFieldRow {
       <!-- Shared action buttons (set/move) — rendered on every card template. -->
       <ng-template #actionsRow let-item>
         @if (actions().length) {
-          <div class="flex flex-wrap gap-1" (click)="$event.stopPropagation()">
+          <div [class]="'flex flex-wrap gap-1 ' + actionsAlignClass()" (click)="$event.stopPropagation()">
             @for (a of actions(); track a.id) {
               <button type="button" (click)="runAction(item, a, $event)"
                 class="text-xs px-2 py-1 rounded border border-border bg-surface hover:border-primary hover:bg-surface-hover transition-colors"
@@ -332,7 +333,10 @@ interface CardFieldRow {
               @case ('card') {
                 <div [class]="cardGridClass()" [style.grid-template-columns]="cardGridCols()">
                   @for (item of group.items; track item.id) {
-                    <div class="flex flex-col gap-1" [style.min-height.px]="cardMinHeight()">
+                    <div class="relative flex flex-col gap-1" [style.min-height.px]="cardMinHeight()">
+                      @if (actions().length && actionsPos() === 'above') {
+                        <ng-container *ngTemplateOutlet="actionsRow; context: { $implicit: item }"></ng-container>
+                      }
                       @if (textPosition() === 'on') {
                         <!-- Text overlaid on the image -->
                         <button type="button" (click)="openEditItem(item)"
@@ -387,8 +391,16 @@ interface CardFieldRow {
                           }
                         </button>
                       }
-                      @if (actions().length) {
+                      @if (actions().length && actionsPos() === 'below') {
                         <ng-container *ngTemplateOutlet="actionsRow; context: { $implicit: item }"></ng-container>
+                      }
+                      @if (actions().length && (actionsPos() === 'overlay-top' || actionsPos() === 'overlay-bottom')) {
+                        <div class="absolute left-0 right-0 z-10 px-2 pointer-events-none"
+                          [class.top-2]="actionsPos() === 'overlay-top'" [class.bottom-2]="actionsPos() === 'overlay-bottom'">
+                          <div class="pointer-events-auto">
+                            <ng-container *ngTemplateOutlet="actionsRow; context: { $implicit: item }"></ng-container>
+                          </div>
+                        </div>
                       }
                     </div>
                   }
@@ -648,6 +660,17 @@ export class ListDetailComponent implements OnInit {
 
   protected readonly actions = computed<ListAction[]>(() => this.viewConfig().actions ?? []);
   protected readonly enableRoulette = computed(() => this.viewConfig().enableRoulette === true);
+
+  /** Where the action-button row sits on a card. */
+  protected readonly actionsPos = computed<ActionsPosition>(() => this.viewConfig().actionsPosition ?? 'below');
+  /** Justify class for the action-button row alignment. */
+  protected readonly actionsAlignClass = computed<string>(() => {
+    switch (this.viewConfig().actionsAlign) {
+      case 'center': return 'justify-center';
+      case 'right': return 'justify-end';
+      default: return 'justify-start';
+    }
+  });
 
   /** Spin a roulette over the currently-visible items and open the winner. */
   protected openRoulette(): void {

@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, Inject, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { ToastrService } from 'ngx-toastr';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -10,6 +10,8 @@ import { DialogService } from '../../../shared/services/dialog.service';
 import type {
   List,
   ListAction,
+  ActionsPosition,
+  ActionsAlign,
   ListField,
   ListFieldType,
   ListTag,
@@ -37,7 +39,7 @@ const FIELD_TYPES: { value: ListFieldType; label: string }[] = [
   selector: 'app-list-settings',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, MatDialogModule],
+  imports: [ReactiveFormsModule, FormsModule, MatDialogModule],
   template: `
     <div class="bg-surface text-text p-6 w-[min(640px,95vw)] max-h-[90vh] overflow-y-auto">
       <div class="flex items-start justify-between mb-4">
@@ -242,6 +244,28 @@ const FIELD_TYPES: { value: ListFieldType; label: string }[] = [
               </li>
             }
           </ul>
+
+          <div class="grid grid-cols-2 gap-2 mb-4">
+            <label class="block">
+              <span class="block text-xs text-text-muted mb-1">Buttons position</span>
+              <select [ngModel]="actionsPosition()" (ngModelChange)="setActionsPosition($event)"
+                class="w-full px-2 py-1.5 bg-background border border-border rounded text-sm outline-none focus:border-primary">
+                <option value="below">Below card</option>
+                <option value="above">Above card</option>
+                <option value="overlay-top">Overlay · top</option>
+                <option value="overlay-bottom">Overlay · bottom</option>
+              </select>
+            </label>
+            <label class="block">
+              <span class="block text-xs text-text-muted mb-1">Buttons alignment</span>
+              <select [ngModel]="actionsAlign()" (ngModelChange)="setActionsAlign($event)"
+                class="w-full px-2 py-1.5 bg-background border border-border rounded text-sm outline-none focus:border-primary">
+                <option value="left">Left</option>
+                <option value="center">Center</option>
+                <option value="right">Right</option>
+              </select>
+            </label>
+          </div>
         }
 
         <!-- Set-a-field action -->
@@ -397,6 +421,9 @@ export class ListSettingsComponent {
   protected readonly otherLists = signal<List[]>([]);
   /** Whether the 🎲 random-picker button is enabled for this list. */
   protected readonly rouletteOn = signal(false);
+  /** Position + alignment of the action-button row on cards. */
+  protected readonly actionsPosition = signal<ActionsPosition>('below');
+  protected readonly actionsAlign = signal<ActionsAlign>('left');
 
   protected readonly selectFields = computed(() =>
     this.fields().filter((f) => f.fieldType === 'SELECT' || f.fieldType === 'MULTI_SELECT'),
@@ -457,6 +484,8 @@ export class ListSettingsComponent {
 
     this.actions.set(list.viewConfig?.actions ?? []);
     this.rouletteOn.set(list.viewConfig?.enableRoulette === true);
+    this.actionsPosition.set(list.viewConfig?.actionsPosition ?? 'below');
+    this.actionsAlign.set(list.viewConfig?.actionsAlign ?? 'left');
     this.actionForm = this.fb.nonNullable.group({
       label: ['', [Validators.required, Validators.maxLength(40)]],
       color: ['#6366f1'],
@@ -528,10 +557,21 @@ export class ListSettingsComponent {
   toggleRoulette(): void {
     const next = !this.rouletteOn();
     this.rouletteOn.set(next);
-    const viewConfig: Partial<ViewConfig> = {
-      ...(this.data.list.viewConfig ?? {}),
-      enableRoulette: next,
-    };
+    this.patchViewConfig({ enableRoulette: next });
+  }
+
+  setActionsPosition(pos: ActionsPosition): void {
+    this.actionsPosition.set(pos);
+    this.patchViewConfig({ actionsPosition: pos });
+  }
+
+  setActionsAlign(align: ActionsAlign): void {
+    this.actionsAlign.set(align);
+    this.patchViewConfig({ actionsAlign: align });
+  }
+
+  private patchViewConfig(patch: Partial<ViewConfig>): void {
+    const viewConfig: Partial<ViewConfig> = { ...(this.data.list.viewConfig ?? {}), ...patch };
     this.data.list = { ...this.data.list, viewConfig };
     this.service.update(this.data.list.id, { viewConfig }).subscribe({
       error: (err: HttpErrorResponse) => this.toastr.error(this.errMsg(err)),

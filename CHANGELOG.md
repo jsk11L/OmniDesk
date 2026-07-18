@@ -5,6 +5,10 @@ All notable changes to OmniDesk. Breaking changes are called out explicitly.
 ## [Unreleased]
 
 ### Added
+- **Positionable action buttons (lists):** the set/move button row can be placed
+  Below the card (default), Above it, or as an Overlay on the top/bottom of the
+  card, and aligned Left / Center / Right — configured per list in Settings →
+  Item action buttons, stored in `viewConfig`.
 - **Movable card title (lists):** the item title is now a reorderable entry in
   the Fields popover — move it up/down among the fields (↑ ↓) to place it anywhere
   in the card's text flow (e.g. at the very bottom for a game index). Replaces the
