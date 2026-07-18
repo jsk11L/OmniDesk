@@ -354,19 +354,27 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
 
   private editor: Editor | null = null;
   private currentNoteId: string | null = null;
-  private readonly save$ = new Subject<{ id: string; payload: UpdateNoteDto }>();
+  /** Debounced/merged autosave: accumulates every edit for a note so one field can't clobber another. */
+  private pending: { id: string; payload: UpdateNoteDto } | null = null;
+  private readonly saveTick$ = new Subject<void>();
   private readonly destroy$ = new Subject<void>();
+  private readonly flushOnUnload = (): void => this.flushPending();
 
   constructor() {
     // Sync the selected note into the editor + local state whenever the input
     // changes. allowSignalWrites is REQUIRED (Angular <=18): writing signals in
     // an effect throws NG0600 by default, which would abort the effect before
     // applyNoteToEditor() runs and leave the editor showing the previous note.
+    // Load a note into the editor ONLY when the id actually changes. This is
+    // what stops our own save — echoed back through noteUpdated() as a new note
+    // object with the same id — from resetting the editor/fields and clobbering
+    // in-progress edits.
     effect(
       () => {
         const n = this.note();
-        // Reset the editor content FIRST so a stale signal write can never
-        // strand the editor on the previous note's content.
+        if (n.id === this.currentNoteId) return;
+        if (this.currentNoteId !== null) this.flushPending(); // persist the note we're leaving
+        this.currentNoteId = n.id;
         this.applyNoteToEditor(n);
         this.title = n.title;
         this.icon = n.icon ?? '';
@@ -379,11 +387,10 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
       { allowSignalWrites: true },
     );
 
-    // The note id is captured at enqueue time (not at flush time) so a debounced
-    // autosave from note A can never be written onto note B after switching.
-    this.save$.pipe(debounceTime(2000), takeUntil(this.destroy$)).subscribe(({ id, payload }) => {
-      this.flush(payload, id);
-    });
+    this.saveTick$
+      .pipe(debounceTime(800), takeUntil(this.destroy$))
+      .subscribe(() => this.flushPending());
+    window.addEventListener('beforeunload', this.flushOnUnload);
   }
 
   ngAfterViewInit(): void {
@@ -398,9 +405,7 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
       ],
       content: '<p></p>',
       onUpdate: ({ editor }) => {
-        this.status.set('dirty');
-        const json = editor.getJSON();
-        this.save$.next({ id: this.note().id, payload: { content: JSON.stringify(json) } });
+        this.queueSave({ content: JSON.stringify(editor.getJSON()) });
       },
       onSelectionUpdate: ({ editor }) => {
         this.imageSelected.set(editor.isActive('image'));
@@ -410,6 +415,8 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.flushPending(); // never leave the last edits unsaved on navigation/teardown
+    window.removeEventListener('beforeunload', this.flushOnUnload);
     this.editor?.destroy();
     this.destroy$.next();
     this.destroy$.complete();
@@ -428,8 +435,6 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
 
   private applyNoteToEditor(note: Note): void {
     if (!this.editor) return;
-    if (this.currentNoteId === note.id) return;
-    this.currentNoteId = note.id;
     const content = this.parseContent(note.content);
     this.editor.commands.setContent(content as never, false);
   }
@@ -507,22 +512,17 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
   }
 
   protected onMetaChange(): void {
-    this.status.set('dirty');
-    this.save$.next({
-      id: this.note().id,
-      payload: {
-        title: this.title.trim() || 'Untitled',
-        icon: this.icon?.trim() || undefined,
-        description: this.description.trim() || undefined,
-        coverImageUrl: this.coverImageUrl.trim() || undefined,
-      },
+    this.queueSave({
+      title: this.title.trim() || 'Untitled',
+      icon: this.icon?.trim() || undefined,
+      description: this.description.trim() || undefined,
+      coverImageUrl: this.coverImageUrl.trim() || undefined,
     });
   }
 
   protected onIconChange(value: string | null): void {
     this.icon = value;
-    this.status.set('dirty');
-    this.save$.next({ id: this.note().id, payload: { icon: value ?? undefined } });
+    this.queueSave({ icon: value ?? undefined });
   }
 
   protected openSettings(): void {
@@ -568,15 +568,15 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
     const next = [...this.tags(), v];
     this.tags.set(next);
     this.newTag = '';
-    this.status.set('saving');
-    this.flush({ tags: next });
+    this.queueSave({ tags: next });
+    this.flushPending();
   }
 
   protected removeTag(index: number): void {
     const next = this.tags().filter((_, i) => i !== index);
     this.tags.set(next);
-    this.status.set('saving');
-    this.flush({ tags: next });
+    this.queueSave({ tags: next });
+    this.flushPending();
   }
 
   protected async deleteSelected(): Promise<void> {
@@ -597,14 +597,31 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
     });
   }
 
-  private flush(payload: UpdateNoteDto, id: string = this.note().id): void {
+  /** Merge an edit into the pending payload for the current note and schedule a save. */
+  private queueSave(patch: UpdateNoteDto): void {
+    const id = this.note().id;
+    if (this.pending && this.pending.id !== id) this.flushPending();
+    this.pending = { id, payload: { ...(this.pending?.payload ?? {}), ...patch } };
+    this.status.set('dirty');
+    this.saveTick$.next();
+  }
+
+  /** Persist the accumulated pending edits now (called on debounce, note switch, and teardown). */
+  private flushPending(): void {
+    if (!this.pending) return;
+    const { id, payload } = this.pending;
+    this.pending = null;
     this.status.set('saving');
     this.service.update(id, payload).subscribe({
       next: (updated) => {
-        this.status.set('saved');
+        if (!this.pending) this.status.set('saved');
         this.noteUpdated.emit(updated);
       },
-      error: () => this.status.set('error'),
+      error: () => {
+        // Don't drop the user's data — re-merge it under any newer edits so a retry keeps it.
+        this.pending = { id, payload: { ...payload, ...(this.pending?.payload ?? {}) } };
+        this.status.set('error');
+      },
     });
   }
 
