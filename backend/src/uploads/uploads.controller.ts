@@ -34,4 +34,9 @@ export class UploadsController {
   async usage(@CurrentUser() user: AuthUser) {
     return { data: await this.service.usage(user.id) };
   }
+
+  @Get('storage')
+  async storage(@CurrentUser() user: AuthUser) {
+    return { data: await this.service.storage(user.id) };
+  }
 }

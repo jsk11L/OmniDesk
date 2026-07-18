@@ -16,6 +16,11 @@ export interface UploadUsage {
   percent: number;
 }
 
+export interface StorageInfo {
+  uploads: UploadUsage;
+  data: { total: number; breakdown: { module: string; count: number; bytes: number }[] };
+}
+
 @Injectable({ providedIn: 'root' })
 export class UploadsService {
   private readonly http = inject(HttpClient);
@@ -32,6 +37,13 @@ export class UploadsService {
   usage(): Observable<UploadUsage> {
     return this.http
       .get<ApiResponse<UploadUsage>>(`${this.endpoint}/usage`)
+      .pipe(map((res) => res.data));
+  }
+
+  /** Uploaded-file quota + the byte footprint of all the user's data, per module. */
+  storage(): Observable<StorageInfo> {
+    return this.http
+      .get<ApiResponse<StorageInfo>>(`${this.endpoint}/storage`)
       .pipe(map((res) => res.data));
   }
 

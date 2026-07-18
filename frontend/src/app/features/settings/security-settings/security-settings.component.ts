@@ -4,7 +4,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { ToastrService } from 'ngx-toastr';
 
 import { AuthService, TwoFactorSetup } from '../../../core/services/auth.service';
-import { UploadsService, UploadUsage } from '../../../shared/services/uploads.service';
+import { UploadsService, StorageInfo } from '../../../shared/services/uploads.service';
 import { DialogService } from '../../../shared/services/dialog.service';
 import { DataExportService } from '../../../core/services/data-export.service';
 
@@ -18,21 +18,43 @@ import { DataExportService } from '../../../core/services/data-export.service';
       <!-- Storage usage -->
       <section>
         <h2 class="text-sm font-semibold mb-3">Storage</h2>
-        @if (usage(); as u) {
+        @if (storage(); as s) {
+          <!-- Uploaded images (the quota) -->
           <div class="flex items-center justify-between text-sm mb-1">
-            <span>{{ formatBytes(u.used) }} of {{ formatBytes(u.quota) }} used</span>
-            <span class="text-text-muted">{{ u.percent }}%</span>
+            <span>Uploaded images — {{ formatBytes(s.uploads.used) }} of {{ formatBytes(s.uploads.quota) }}</span>
+            <span class="text-text-muted">{{ s.uploads.percent }}%</span>
           </div>
           <div class="w-full h-2 bg-surface rounded overflow-hidden">
             <div
               class="h-full transition-all"
-              [style.width.%]="u.percent"
-              [style.background]="u.percent >= 100 ? 'var(--color-danger)' : 'var(--color-primary)'"
+              [style.width.%]="s.uploads.percent"
+              [style.background]="s.uploads.percent >= 100 ? 'var(--color-danger)' : 'var(--color-primary)'"
             ></div>
           </div>
-          @if (u.percent >= 100) {
-            <p class="text-xs text-danger mt-1">You're out of storage. Delete some images to upload more.</p>
+          @if (s.uploads.percent >= 100) {
+            <p class="text-xs text-danger mt-1">You're out of upload space. Delete some images to upload more.</p>
           }
+          <p class="text-xs text-text-muted mt-1">
+            Only counts files uploaded to the server. Images added by URL (Spotify, TMDB…) don't use this.
+          </p>
+
+          <!-- Actual data footprint across every module -->
+          <div class="mt-5">
+            <div class="flex items-center justify-between text-sm mb-2">
+              <span class="font-medium">Your data</span>
+              <span class="text-text-muted">{{ formatBytes(s.data.total) }} total</span>
+            </div>
+            <div class="space-y-1.5">
+              @for (m of s.data.breakdown; track m.module) {
+                <div class="flex items-center justify-between text-xs">
+                  <span class="text-text-muted">
+                    {{ m.module }} <span class="text-text-faint">· {{ m.count }}</span>
+                  </span>
+                  <span class="mono">{{ formatBytes(m.bytes) }}</span>
+                </div>
+              }
+            </div>
+          </div>
         } @else {
           <p class="text-text-muted text-sm">Loading usage…</p>
         }
@@ -144,7 +166,7 @@ export class SecuritySettingsComponent implements OnInit {
   protected readonly exporting = signal(false);
   protected readonly importing = signal(false);
   protected importMode: 'merge' | 'replace' = 'merge';
-  protected readonly usage = signal<UploadUsage | null>(null);
+  protected readonly storage = signal<StorageInfo | null>(null);
   protected readonly twoFaEnabled = signal(false);
   protected readonly setup = signal<TwoFactorSetup | null>(null);
   protected readonly backupCodes = signal<string[] | null>(null);
@@ -152,7 +174,7 @@ export class SecuritySettingsComponent implements OnInit {
   protected code = '';
 
   ngOnInit(): void {
-    this.uploads.usage().subscribe({ next: (u) => this.usage.set(u), error: () => undefined });
+    this.uploads.storage().subscribe({ next: (s) => this.storage.set(s), error: () => undefined });
     this.auth.twoFactorStatus().subscribe({
       next: (s) => this.twoFaEnabled.set(s.enabled),
       error: () => undefined,

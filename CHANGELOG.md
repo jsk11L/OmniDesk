@@ -5,6 +5,10 @@ All notable changes to OmniDesk. Breaking changes are called out explicitly.
 ## [Unreleased]
 
 ### Added
+- **Real data footprint in Storage:** Settings → Security now shows, besides the
+  uploaded-image quota, the byte size of all your actual content broken down by
+  module (Notes, List items, Calendar, To-Do, Habits, Finance) with counts — so
+  "0 KB" no longer misleads when your data lives in the database, not in uploads.
 - **List random picker:** an optional 🎲 button (toggled in list Settings → Extras)
   that spins a roulette over the currently-visible items and opens a random one.
 - **List templates + presets:** new poster (2:3) and square (1:1) card shapes,

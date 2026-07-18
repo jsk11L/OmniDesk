@@ -19,6 +19,17 @@ export interface UploadUsage {
   percent: number;
 }
 
+export interface StorageBreakdownItem {
+  module: string;
+  count: number;
+  bytes: number;
+}
+
+export interface StorageInfo {
+  uploads: UploadUsage;
+  data: { total: number; breakdown: StorageBreakdownItem[] };
+}
+
 const ALLOWED_MIME = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
 
 @Injectable()
@@ -104,6 +115,83 @@ export class UploadsService {
       quota: this.quotaBytes,
       percent: this.quotaBytes > 0 ? Math.min(100, Math.round((used / this.quotaBytes) * 100)) : 0,
     };
+  }
+
+  /** Uploaded-file quota + the byte footprint of the user's DB data, per module. */
+  async storage(userId: string): Promise<StorageInfo> {
+    const [uploads, data] = await Promise.all([this.usage(userId), this.dataUsage(userId)]);
+    return { uploads, data };
+  }
+
+  /** Estimated bytes of the user's actual content (text + JSON), grouped by module. */
+  private async dataUsage(
+    userId: string,
+  ): Promise<{ total: number; breakdown: StorageBreakdownItem[] }> {
+    const b = (s: string | null | undefined): number => (s ? Buffer.byteLength(s, 'utf8') : 0);
+    const jb = (o: unknown): number => (o ? Buffer.byteLength(JSON.stringify(o), 'utf8') : 0);
+
+    const [notes, listItems, events, todoItems, habits, habitEntries, transactions] =
+      await Promise.all([
+        this.prisma.note.findMany({
+          where: { userId },
+          select: { title: true, content: true, plainText: true },
+        }),
+        this.prisma.listItem.findMany({
+          where: { list: { userId } },
+          select: { title: true, customFields: true },
+        }),
+        this.prisma.calendarEvent.findMany({
+          where: { userId },
+          select: { title: true, description: true, location: true },
+        }),
+        this.prisma.todoItem.findMany({
+          where: { column: { board: { userId } } },
+          select: { title: true, description: true },
+        }),
+        this.prisma.habit.findMany({ where: { userId }, select: { name: true, description: true } }),
+        this.prisma.habitEntry.findMany({ where: { habit: { userId } }, select: { notes: true } }),
+        this.prisma.transaction.findMany({
+          where: { board: { userId } },
+          select: { title: true, notes: true },
+        }),
+      ]);
+
+    const breakdown: StorageBreakdownItem[] = [
+      {
+        module: 'Notes',
+        count: notes.length,
+        bytes: notes.reduce((s, n) => s + b(n.title) + b(n.content) + b(n.plainText), 0),
+      },
+      {
+        module: 'List items',
+        count: listItems.length,
+        bytes: listItems.reduce((s, i) => s + b(i.title) + jb(i.customFields), 0),
+      },
+      {
+        module: 'Calendar',
+        count: events.length,
+        bytes: events.reduce((s, e) => s + b(e.title) + b(e.description) + b(e.location), 0),
+      },
+      {
+        module: 'To-Do',
+        count: todoItems.length,
+        bytes: todoItems.reduce((s, t) => s + b(t.title) + b(t.description), 0),
+      },
+      {
+        module: 'Habits',
+        count: habits.length + habitEntries.length,
+        bytes:
+          habits.reduce((s, h) => s + b(h.name) + b(h.description), 0) +
+          habitEntries.reduce((s, e) => s + b(e.notes), 0),
+      },
+      {
+        module: 'Finance',
+        count: transactions.length,
+        bytes: transactions.reduce((s, t) => s + b(t.title) + b(t.notes), 0),
+      },
+    ];
+    const total = breakdown.reduce((s, x) => s + x.bytes, 0);
+    return { total, breakdown };
   }
 
   private async fileSize(path: string): Promise<number> {
