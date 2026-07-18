@@ -5,6 +5,12 @@ All notable changes to OmniDesk. Breaking changes are called out explicitly.
 ## [Unreleased]
 
 ### Added
+- **Anchored notes:** tie a note to a calendar **event** or a **list item** via a
+  📌 Note button in the event/item editor — it opens a popup editor for that
+  element's note (one per element). Anchored notes are hidden from the main notes
+  list and gathered in a collapsible "📌 Anchored" section in Notes, each showing
+  its element's live label. Backed by `Note.anchorType`/`anchorId` (they stay
+  real, searchable notes).
 - **Customizable dashboard (synced):** a ⚙ Customize panel lets you show/hide and
   reorder every widget — the 4 stat cards (Balance, Tasks today, Events, Best
   streak) and 6 panels (Upcoming events, On your plate, Savings pots, Mini

@@ -23,7 +23,8 @@ export class NotesService {
   constructor(private readonly prisma: PrismaService) {}
 
   async list(userId: string, params: ListNotesParams): Promise<Paginated<Note>> {
-    const where: Prisma.NoteWhereInput = { userId };
+    // Anchored notes live with their element, not in the main notes list.
+    const where: Prisma.NoteWhereInput = { userId, anchorType: null };
 
     if (params.q) {
       where.OR = [
@@ -64,8 +65,9 @@ export class NotesService {
     return note;
   }
 
-  create(userId: string, dto: CreateNoteDto): Promise<Note> {
+  async create(userId: string, dto: CreateNoteDto): Promise<Note> {
     const content = dto.content ?? '';
+    const anchor = await this.resolveAnchor(userId, dto.anchorType, dto.anchorId);
     return this.prisma.note.create({
       data: {
         userId,
@@ -77,8 +79,75 @@ export class NotesService {
         coverImageUrl: dto.coverImageUrl ?? null,
         isPinned: dto.isPinned ?? false,
         tags: dto.tags ?? [],
+        anchorType: anchor?.type ?? null,
+        anchorId: anchor?.id ?? null,
       },
     });
+  }
+
+  /** Notes anchored to an element, with the element's live label resolved. */
+  async listAnchored(userId: string): Promise<(Note & { anchorLabel: string | null })[]> {
+    const notes = await this.prisma.note.findMany({
+      where: { userId, NOT: { anchorType: null } },
+      orderBy: { updatedAt: 'desc' },
+      include: { notifications: true },
+    });
+
+    const eventIds = notes.filter((n) => n.anchorType === 'event' && n.anchorId).map((n) => n.anchorId!);
+    const itemIds = notes.filter((n) => n.anchorType === 'list-item' && n.anchorId).map((n) => n.anchorId!);
+    const [events, items] = await Promise.all([
+      eventIds.length
+        ? this.prisma.calendarEvent.findMany({ where: { id: { in: eventIds } }, select: { id: true, title: true } })
+        : [],
+      itemIds.length
+        ? this.prisma.listItem.findMany({ where: { id: { in: itemIds } }, select: { id: true, title: true } })
+        : [],
+    ]);
+
+    const labels = new Map<string, string>();
+    for (const e of events) labels.set(e.id, e.title);
+    for (const it of items) labels.set(it.id, it.title);
+
+    return notes.map((n) => ({ ...n, anchorLabel: n.anchorId ? labels.get(n.anchorId) ?? null : null }));
+  }
+
+  /** The note anchored to a given element, or null. */
+  async findByAnchor(userId: string, type: string, id: string): Promise<Note | null> {
+    return this.prisma.note.findFirst({
+      where: { userId, anchorType: type, anchorId: id },
+      include: { notifications: true },
+    });
+  }
+
+  /** Validate an anchor target belongs to the user and has no note yet. */
+  private async resolveAnchor(
+    userId: string,
+    type?: string,
+    id?: string,
+  ): Promise<{ type: string; id: string } | null> {
+    if (!type && !id) return null;
+    if (!type || !id) {
+      throw new BadRequestException('anchorType and anchorId must be provided together');
+    }
+
+    if (type === 'event') {
+      const ev = await this.prisma.calendarEvent.findFirst({ where: { id, userId }, select: { id: true } });
+      if (!ev) throw new NotFoundException('Anchor event not found');
+    } else if (type === 'list-item') {
+      const it = await this.prisma.listItem.findFirst({
+        where: { id, list: { userId } },
+        select: { id: true },
+      });
+      if (!it) throw new NotFoundException('Anchor item not found');
+    } else {
+      throw new BadRequestException('Invalid anchorType');
+    }
+
+    const existing = await this.prisma.note.findFirst({ where: { anchorType: type, anchorId: id } });
+    if (existing) {
+      throw new BadRequestException('This element already has an anchored note');
+    }
+    return { type, id };
   }
 
   /** A user may keep at most this many pinned notes at once. */

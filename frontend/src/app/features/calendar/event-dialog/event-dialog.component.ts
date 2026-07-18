@@ -1,12 +1,17 @@
 import { ChangeDetectionStrategy, Component, Inject, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { ToastrService } from 'ngx-toastr';
 import { HttpErrorResponse } from '@angular/common/http';
 
 import { CalendarService } from '../services/calendar.service';
 import { DialogService } from '../../../shared/services/dialog.service';
 import { NotificationAttachPanelComponent } from '../../../shared/components/notification-attach-panel/notification-attach-panel.component';
+import {
+  AnchoredNoteDialogComponent,
+  type AnchoredNoteDialogData,
+  type AnchoredNoteDialogResult,
+} from '../../notes/anchored-note-dialog/anchored-note-dialog.component';
 import type { CalendarEvent } from '../calendar.types';
 
 export interface EventDialogData {
@@ -122,14 +127,25 @@ function toLocalInput(date: Date): string {
 
         <div class="flex justify-between items-center pt-2">
           @if (data.event) {
-            <button
-              type="button"
-              (click)="remove()"
-              [disabled]="loading()"
-              class="text-sm text-danger hover:underline"
-            >
-              Delete event
-            </button>
+            <div class="flex gap-3 items-center">
+              <button
+                type="button"
+                (click)="remove()"
+                [disabled]="loading()"
+                class="text-sm text-danger hover:underline"
+              >
+                Delete event
+              </button>
+              <button
+                type="button"
+                (click)="openAnchoredNote()"
+                [disabled]="loading()"
+                class="text-sm text-text-muted hover:text-text"
+                title="Anchored note for this event"
+              >
+                📌 Note
+              </button>
+            </div>
           } @else {
             <span></span>
           }
@@ -159,6 +175,7 @@ export class EventDialogComponent {
   private readonly service = inject(CalendarService);
   private readonly dialogs = inject(DialogService);
   private readonly toastr = inject(ToastrService);
+  private readonly dialog = inject(MatDialog);
 
   protected readonly loading = signal(false);
   protected readonly error = signal<string | null>(null);
@@ -250,6 +267,18 @@ export class EventDialogComponent {
         this.error.set(this.errMsg(err));
       },
     });
+  }
+
+  openAnchoredNote(): void {
+    if (!this.data.event) return;
+    this.dialog.open<AnchoredNoteDialogComponent, AnchoredNoteDialogData, AnchoredNoteDialogResult>(
+      AnchoredNoteDialogComponent,
+      {
+        data: { anchorType: 'event', anchorId: this.data.event.id, anchorLabel: this.data.event.title },
+        width: 'min(560px, 95vw)',
+        maxWidth: '95vw',
+      },
+    );
   }
 
   detachNotification(notifId: string): void {

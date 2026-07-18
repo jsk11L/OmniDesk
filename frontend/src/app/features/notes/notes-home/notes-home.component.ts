@@ -10,12 +10,18 @@ import {
 import { FormsModule } from '@angular/forms';
 import { NgTemplateOutlet } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { MatDialog } from '@angular/material/dialog';
 import { ToastrService } from 'ngx-toastr';
 import { HttpErrorResponse } from '@angular/common/http';
 
 import { NotesService } from '../services/notes.service';
 import { NoteEditorComponent } from '../note-editor/note-editor.component';
-import type { Note } from '../notes.types';
+import {
+  AnchoredNoteDialogComponent,
+  type AnchoredNoteDialogData,
+  type AnchoredNoteDialogResult,
+} from '../anchored-note-dialog/anchored-note-dialog.component';
+import type { AnchoredNote, Note, NoteAnchorType } from '../notes.types';
 
 @Component({
   selector: 'app-notes-home',
@@ -64,6 +70,29 @@ import type { Note } from '../notes.types';
         </div>
 
         <div class="flex-1 overflow-y-auto p-2">
+          @if (anchoredNotes().length) {
+            <button type="button" (click)="toggleAnchored()"
+              class="w-full flex items-center justify-between px-2 py-1.5 rounded hover:bg-surface-hover mb-1">
+              <span class="uppercase-tag">📌 Anchored · {{ anchoredNotes().length }}</span>
+              <span class="text-text-faint text-xs">{{ anchoredOpen() ? '▾' : '▸' }}</span>
+            </button>
+            @if (anchoredOpen()) {
+              <div class="space-y-1 mb-3">
+                @for (note of anchoredNotes(); track note.id) {
+                  <button type="button" (click)="openAnchored(note)"
+                    class="w-full text-left px-3 py-2 rounded text-sm hover:bg-surface-hover border-l-2 border-transparent">
+                    <div class="flex items-center gap-1.5">
+                      <span class="text-xs">{{ note.anchorType === 'event' ? '📅' : '🗂️' }}</span>
+                      <span class="font-medium truncate">{{ note.title || 'Untitled' }}</span>
+                    </div>
+                    <p class="text-xs text-text-muted mt-0.5 truncate">
+                      {{ note.anchorLabel ?? '(element deleted)' }}
+                    </p>
+                  </button>
+                }
+              </div>
+            }
+          }
           @if (loading()) {
             <p class="text-text-muted text-sm p-2">Loading…</p>
           } @else if (notes().length === 0) {
@@ -188,6 +217,11 @@ export class NotesHomeComponent implements OnInit {
   private readonly service = inject(NotesService);
   private readonly toastr = inject(ToastrService);
   private readonly route = inject(ActivatedRoute);
+  private readonly dialog = inject(MatDialog);
+
+  /** Anchored notes (tied to events / list items), shown in a collapsible section. */
+  protected readonly anchoredNotes = signal<AnchoredNote[]>([]);
+  protected readonly anchoredOpen = signal(false);
 
   /** Note id to auto-select once the list loads (deep-link from dashboard, ?note=). */
   private pendingSelectId: string | null = null;
@@ -245,10 +279,42 @@ export class NotesHomeComponent implements OnInit {
   ngOnInit(): void {
     this.pendingSelectId = this.route.snapshot.queryParamMap.get('note');
     this.reload();
+    this.loadAnchored();
   }
 
   protected select(note: Note): void {
     this.selectedId.set(note.id);
+  }
+
+  protected toggleAnchored(): void {
+    this.anchoredOpen.update((v) => !v);
+  }
+
+  private loadAnchored(): void {
+    this.service.listAnchored().subscribe({
+      next: (notes) => this.anchoredNotes.set(notes),
+      error: () => undefined,
+    });
+  }
+
+  /** Open an anchored note's popup editor; refresh the list after any change. */
+  protected openAnchored(note: AnchoredNote): void {
+    if (!note.anchorType || !note.anchorId) return;
+    const ref = this.dialog.open<AnchoredNoteDialogComponent, AnchoredNoteDialogData, AnchoredNoteDialogResult>(
+      AnchoredNoteDialogComponent,
+      {
+        data: {
+          anchorType: note.anchorType as NoteAnchorType,
+          anchorId: note.anchorId,
+          anchorLabel: note.anchorLabel ?? note.title,
+        },
+        width: 'min(560px, 95vw)',
+        maxWidth: '95vw',
+      },
+    );
+    ref.afterClosed().subscribe((result) => {
+      if (result === 'changed') this.loadAnchored();
+    });
   }
 
   protected reload(): void {

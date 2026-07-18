@@ -40,6 +40,22 @@ export class NotesController {
     return this.notes.create(user.id, dto);
   }
 
+  /** All anchored notes (with their element's live label). */
+  @Get('anchored')
+  listAnchored(@CurrentUser() user: AuthUser) {
+    return this.notes.listAnchored(user.id);
+  }
+
+  /** The note anchored to a given element, or null. */
+  @Get('anchor')
+  findByAnchor(
+    @CurrentUser() user: AuthUser,
+    @Query('type') type: string,
+    @Query('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.notes.findByAnchor(user.id, type, id);
+  }
+
   @Get(':id')
   findOne(@CurrentUser() user: AuthUser, @Param('id', ParseUUIDPipe) id: string) {
     return this.notes.findById(user.id, id);

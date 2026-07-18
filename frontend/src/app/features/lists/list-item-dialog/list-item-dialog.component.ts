@@ -1,11 +1,16 @@
 import { ChangeDetectionStrategy, Component, Inject, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, FormControl, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { ToastrService } from 'ngx-toastr';
 import { HttpErrorResponse } from '@angular/common/http';
 
 import { ListsService } from '../services/lists.service';
 import { DialogService } from '../../../shared/services/dialog.service';
+import {
+  AnchoredNoteDialogComponent,
+  type AnchoredNoteDialogData,
+  type AnchoredNoteDialogResult,
+} from '../../notes/anchored-note-dialog/anchored-note-dialog.component';
 import { ImageInputComponent } from '../../../shared/components/image-input/image-input.component';
 import { NotificationAttachPanelComponent } from '../../../shared/components/notification-attach-panel/notification-attach-panel.component';
 import type { List, ListField, ListItem } from '../lists.types';
@@ -156,6 +161,10 @@ export type ListItemDialogResult = ListItem | 'skip' | undefined;
                 class="text-sm text-text-muted hover:text-text">
                 {{ movePanelOpen() ? '✕ Cancel move' : 'Move to…' }}
               </button>
+              <button type="button" (click)="openAnchoredNote()" [disabled]="loading()"
+                class="text-sm text-text-muted hover:text-text" title="Anchored note for this item">
+                📌 Note
+              </button>
             </div>
           } @else {
             <span></span>
@@ -253,6 +262,7 @@ export class ListItemDialogComponent implements OnInit {
   private readonly service = inject(ListsService);
   private readonly dialogs = inject(DialogService);
   private readonly toastr = inject(ToastrService);
+  private readonly dialog = inject(MatDialog);
 
   protected readonly loading = signal(false);
   protected readonly error = signal<string | null>(null);
@@ -482,6 +492,18 @@ export class ListItemDialogComponent implements OnInit {
         this.error.set(this.errMsg(err));
       },
     });
+  }
+
+  openAnchoredNote(): void {
+    if (!this.data.item) return;
+    this.dialog.open<AnchoredNoteDialogComponent, AnchoredNoteDialogData, AnchoredNoteDialogResult>(
+      AnchoredNoteDialogComponent,
+      {
+        data: { anchorType: 'list-item', anchorId: this.data.item.id, anchorLabel: this.data.item.title },
+        width: 'min(560px, 95vw)',
+        maxWidth: '95vw',
+      },
+    );
   }
 
   private normalizeForControl(stored: unknown, field: ListField): unknown {

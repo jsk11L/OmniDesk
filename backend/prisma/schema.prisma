@@ -358,12 +358,17 @@ model Note {
   coverImageUrl String?
   isPinned      Boolean  @default(false)
   tags          String[] @default([])
+  // Anchored notes: tie a note to a calendar event or list item (hidden from the
+  // main notes list). anchorType ∈ {"event","list-item"}; one note per element.
+  anchorType    String?
+  anchorId      String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
   user          User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   notifications NoteNotification[]
 
+  @@unique([anchorType, anchorId])
   @@index([userId, updatedAt])
 }
 

@@ -2,8 +2,10 @@ import {
   ArrayMaxSize,
   IsArray,
   IsBoolean,
+  IsIn,
   IsOptional,
   IsString,
+  IsUUID,
   Matches,
   MaxLength,
   MinLength,
@@ -47,4 +49,13 @@ export class CreateNoteDto {
   @IsString({ each: true })
   @MaxLength(50, { each: true })
   tags?: string[];
+
+  /** Anchor this note to an element (hidden from the main notes list). */
+  @IsOptional()
+  @IsIn(['event', 'list-item'])
+  anchorType?: 'event' | 'list-item';
+
+  @IsOptional()
+  @IsUUID()
+  anchorId?: string;
 }

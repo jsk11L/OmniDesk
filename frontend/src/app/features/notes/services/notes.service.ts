@@ -4,7 +4,7 @@ import { map, Observable } from 'rxjs';
 
 import { environment } from '../../../../environments/environment';
 import type { ApiResponse } from '../../../core/models/api-response.model';
-import type { CreateNoteDto, Note, UpdateNoteDto } from '../notes.types';
+import type { AnchoredNote, CreateNoteDto, Note, NoteAnchorType, UpdateNoteDto } from '../notes.types';
 
 export interface ImportReport {
   notesCreated: number;
@@ -52,6 +52,21 @@ export class NotesService {
   delete(id: string): Observable<{ id: string }> {
     return this.http
       .delete<ApiResponse<{ id: string }>>(`${this.base}/${id}`)
+      .pipe(map((r) => r.data));
+  }
+
+  /** All anchored notes (hidden from the main list), with their element label. */
+  listAnchored(): Observable<AnchoredNote[]> {
+    return this.http
+      .get<ApiResponse<AnchoredNote[]>>(`${this.base}/anchored`)
+      .pipe(map((r) => r.data));
+  }
+
+  /** The note anchored to a given element, or null if none yet. */
+  findByAnchor(type: NoteAnchorType, id: string): Observable<Note | null> {
+    const params = new HttpParams().set('type', type).set('id', id);
+    return this.http
+      .get<ApiResponse<Note | null>>(`${this.base}/anchor`, { params })
       .pipe(map((r) => r.data));
   }
 }

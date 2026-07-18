@@ -220,6 +220,8 @@ export interface Note {
   coverImageUrl: string | null;
   isPinned: boolean;
   tags: string[];
+  anchorType: string | null;
+  anchorId: string | null;
   createdAt: string;
   updatedAt: string;
 }
