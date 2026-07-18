@@ -35,11 +35,12 @@ export interface ListItem {
 }
 
 export type GridTemplate =
-  | 'card-large'
+  | 'card' // unified card (shape × text position × text bg)
+  | 'card-large' // legacy → card + free + below
   | 'card-compact'
-  | 'card-cover'
-  | 'poster'
-  | 'square'
+  | 'card-cover' // legacy → card + cover + on
+  | 'poster' // legacy → card + poster + on
+  | 'square' // legacy → card + square + on
   | 'dense-list'
   | 'gallery-no-image'
   | 'table';
@@ -117,6 +118,11 @@ export interface FieldCardLayout {
   level?: StyleLevel;
 }
 
+/** Image aspect of a card. `free` = natural band (no crop). */
+export type CardShape = 'cover' | 'poster' | 'square' | 'free';
+/** Where the text sits relative to the image. `on` overlays it. */
+export type TextPosition = 'on' | 'below' | 'above';
+
 export interface GridConfig {
   template: GridTemplate;
   visibleFields: string[];
@@ -127,6 +133,10 @@ export interface GridConfig {
   cardLayout?: Record<string, FieldCardLayout>;
   /** Typographic levels + card chrome (Large/Cover cards). */
   cardStyle?: CardStyle;
+  /** Orthogonal card model (the 'card' view): shape × text position × text bg. */
+  cardShape?: CardShape;
+  textPosition?: TextPosition;
+  textBackground?: boolean;
 }
 
 export const DEFAULT_CARD_STYLE: CardStyle = {

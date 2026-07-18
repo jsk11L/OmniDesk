@@ -37,6 +37,8 @@ import {
   DEFAULT_FIELD_LAYOUT,
   type GridConfig,
   type CardStyle,
+  type CardShape,
+  type TextPosition,
   type StyleLevel,
   type List,
   type ListField,
@@ -126,17 +128,33 @@ interface ItemGroup {
             class="px-3 py-2 bg-surface border border-border rounded text-sm outline-none focus:border-primary w-64"
           />
 
-          <select [ngModel]="gridConfig().template" (ngModelChange)="setTemplate($event)"
+          <select [ngModel]="effectiveTemplate()" (ngModelChange)="setTemplate($event)"
             class="px-3 py-2 bg-surface border border-border rounded text-sm outline-none focus:border-primary">
-            <option value="card-large">Large card</option>
-            <option value="card-compact">Compact card</option>
-            <option value="card-cover">Cover card</option>
-            <option value="poster">Poster</option>
-            <option value="square">Square</option>
-            <option value="dense-list">Dense list</option>
+            <option value="card">Card</option>
+            <option value="card-compact">Compact</option>
+            <option value="dense-list">List</option>
             <option value="gallery-no-image">Gallery</option>
             <option value="table">Table</option>
           </select>
+
+          @if (effectiveTemplate() === 'card') {
+            <select [ngModel]="cardShape()" (ngModelChange)="setCardShape($event)"
+              class="px-3 py-2 bg-surface border border-border rounded text-sm outline-none focus:border-primary" title="Card shape">
+              <option value="cover">Shape: Cover</option>
+              <option value="poster">Shape: Poster</option>
+              <option value="square">Shape: Square</option>
+              <option value="free">Shape: Free</option>
+            </select>
+            <select [ngModel]="textPosition()" (ngModelChange)="setTextPosition($event)"
+              class="px-3 py-2 bg-surface border border-border rounded text-sm outline-none focus:border-primary" title="Text position">
+              <option value="on">Text: On image</option>
+              <option value="below">Text: Below</option>
+              <option value="above">Text: Above</option>
+            </select>
+            <button type="button" (click)="toggleTextBg()"
+              [class]="'px-3 py-2 rounded text-sm border ' + (textBg() ? 'border-primary text-primary bg-primary-ghost' : 'border-border text-text-muted hover:bg-surface-hover')"
+              title="Text background panel">Text bg</button>
+          }
 
           @if ((list()?.fields?.length ?? 0) > 0) {
             <div class="relative">
@@ -243,6 +261,32 @@ interface ItemGroup {
         </div>
       </header>
 
+      <!-- Shared card text: stack fields, title, body fields, tags. onImage adds cover styling. -->
+      <ng-template #cardTextInner let-item let-onImage="onImage">
+        @for (fieldId of stackFieldsRender(); track fieldId) {
+          @if (fieldById(fieldId); as f) {
+            <div class="truncate leading-tight" [class]="onImage ? 'card-cover-meta' : ''" [style]="fieldStyle(fieldId)">
+              @if (layoutOf(fieldId).showLabel) { <span class="opacity-70">{{ f.name }}: </span> }{{ formatFieldFor(f, item.customFields[f.id]) }}
+            </div>
+          }
+        }
+        <h3 class="leading-tight truncate" [class]="onImage ? 'card-cover-title' : ''" [style]="titleStyle()">{{ item.title }}</h3>
+        @for (fieldId of bodyFields(); track fieldId) {
+          @if (fieldById(fieldId); as f) {
+            <p class="mt-0.5 truncate" [class]="onImage ? 'card-cover-meta' : ''" [style]="fieldStyle(fieldId)">
+              @if (layoutOf(fieldId).showLabel) { <strong>{{ f.name }}:</strong> }{{ formatFieldFor(f, item.customFields[f.id]) }}
+            </p>
+          }
+        }
+        @if (gridConfig().showTags && item.tags?.length) {
+          <div class="flex flex-wrap gap-1 mt-2">
+            @for (t of item.tags!; track t.tagId) {
+              @if (tagLookup(t.tagId); as tag) { <app-tag-chip [label]="tag.name" [color]="tag.color" /> }
+            }
+          </div>
+        }
+      </ng-template>
+
       <!-- Shared action buttons (set/move) — rendered on every card template. -->
       <ng-template #actionsRow let-item>
         @if (actions().length) {
@@ -278,66 +322,66 @@ interface ItemGroup {
             }
 
             @switch (effectiveTemplate()) {
-              @case ('card-large') {
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6"
-                  [style.grid-template-columns]="cardGridCols()">
+              @case ('card') {
+                <div [class]="cardGridClass()" [style.grid-template-columns]="cardGridCols()">
                   @for (item of group.items; track item.id) {
-                    <div class="bg-surface border border-border rounded-lg overflow-hidden hover:border-primary transition-colors flex flex-col"
-                      [style.background]="cardBg()" [style.border-color]="cardBorder()" [style.min-height.px]="cardMinHeight()">
-                      <button type="button" (click)="openEditItem(item)" class="text-left">
-                        @if (gridConfig().showImage && resolveImage(item); as src) {
-                          <div class="relative">
-                            <img [src]="src" alt="" class="w-full h-40 object-cover" />
-                            @if (cardStyle().imageScrim) {
-                              <div class="absolute inset-0 pointer-events-none" [style.background]="'rgba(0,0,0,' + cardStyle().imageScrim / 100 + ')'"></div>
-                            }
-                          </div>
-                        }
-                        <div class="p-3 relative min-h-[3.25rem]">
-                          <!-- Fields stacked ABOVE the title -->
-                          @for (fieldId of stackFieldsRender(); track fieldId) {
-                            @if (fieldById(fieldId); as f) {
-                              <div class="truncate leading-tight" [style]="fieldStyle(fieldId)">
-                                @if (layoutOf(fieldId).showLabel) { <span class="opacity-70">{{ f.name }}: </span> }{{ formatFieldFor(f, item.customFields[f.id]) }}
-                              </div>
-                            }
+                    <div class="flex flex-col gap-1" [style.min-height.px]="cardMinHeight()">
+                      @if (textPosition() === 'on') {
+                        <!-- Text overlaid on the image -->
+                        <button type="button" (click)="openEditItem(item)"
+                          [class]="'card-cover text-left ' + shapeClass()"
+                          [style.background-image]="resolveImage(item) ? 'url(' + resolveImage(item) + ')' : null"
+                          [style.background-color]="resolveImage(item) ? null : (cardBg() || 'var(--color-surface-2)')"
+                          [style.border-color]="cardBorder()">
+                          @if (cardStyle().imageScrim) {
+                            <div class="absolute inset-0 z-[1] pointer-events-none" [style.background]="'rgba(0,0,0,' + cardStyle().imageScrim / 100 + ')'"></div>
                           }
-
-                          <h3 class="leading-tight truncate" [style]="titleStyle()">{{ item.title }}</h3>
-
-                          <!-- Fields in the default body flow -->
-                          @for (fieldId of bodyFields(); track fieldId) {
-                            @if (fieldById(fieldId); as f) {
-                              <p class="mt-0.5 truncate" [style]="fieldStyle(fieldId)">
-                                @if (layoutOf(fieldId).showLabel) { <strong>{{ f.name }}:</strong> }{{ formatFieldFor(f, item.customFields[f.id]) }}
-                              </p>
-                            }
-                          }
-
-                          @if (gridConfig().showTags && item.tags?.length) {
-                            <div class="flex flex-wrap gap-1 mt-2">
-                              @for (t of item.tags!; track t.tagId) {
-                                @if (tagLookup(t.tagId); as tag) {
-                                  <app-tag-chip [label]="tag.name" [color]="tag.color" />
+                          <div class="card-cover-content">
+                            <div class="card-cover-top">
+                              @if (gridConfig().showTags) {
+                                @for (t of item.tags ?? []; track t.tagId) {
+                                  @if (tagLookup(t.tagId); as tag) { <span class="card-cover-badge" [style.color]="tag.color">{{ tag.name }}</span> }
                                 }
                               }
                             </div>
-                          }
-
-                          <!-- Fields anchored to one of the 9 matrix zones -->
+                            <div [class.card-text-panel]="textBg()">
+                              <ng-container *ngTemplateOutlet="cardTextInner; context: { $implicit: item, onImage: true }"></ng-container>
+                            </div>
+                          </div>
                           @for (a of anchoredFields(); track a.id) {
                             @if (fieldById(a.id); as f) {
-                              <span [class]="'card-anchor ' + a.cls" [style]="fieldStyle(a.id)">
-                                @if (layoutOf(a.id).showLabel) { <span class="opacity-70">{{ f.name }}: </span> }{{ formatFieldFor(f, item.customFields[f.id]) }}
-                              </span>
+                              <span [class]="'card-anchor ' + a.cls" [style]="fieldStyle(a.id)">@if (layoutOf(a.id).showLabel) { <span class="opacity-70">{{ f.name }}: </span> }{{ formatFieldFor(f, item.customFields[f.id]) }}</span>
                             }
                           }
-                        </div>
-                      </button>
+                        </button>
+                      } @else {
+                        <!-- Image as an element, text above or below it -->
+                        <button type="button" (click)="openEditItem(item)"
+                          class="w-full text-left cursor-pointer relative bg-surface border border-border rounded-lg overflow-hidden hover:border-primary transition-colors flex flex-col"
+                          [style.background]="cardBg()" [style.border-color]="cardBorder()">
+                          @if (textPosition() === 'above') {
+                            <div class="p-3"><ng-container *ngTemplateOutlet="cardTextInner; context: { $implicit: item, onImage: false }"></ng-container></div>
+                          }
+                          @if (gridConfig().showImage && resolveImage(item); as src) {
+                            <div class="relative">
+                              <img [src]="src" alt="" [class]="'w-full object-cover ' + shapeImgClass()" />
+                              @if (cardStyle().imageScrim) {
+                                <div class="absolute inset-0 pointer-events-none" [style.background]="'rgba(0,0,0,' + cardStyle().imageScrim / 100 + ')'"></div>
+                              }
+                            </div>
+                          }
+                          @if (textPosition() === 'below') {
+                            <div class="p-3"><ng-container *ngTemplateOutlet="cardTextInner; context: { $implicit: item, onImage: false }"></ng-container></div>
+                          }
+                          @for (a of anchoredFields(); track a.id) {
+                            @if (fieldById(a.id); as f) {
+                              <span [class]="'card-anchor ' + a.cls" [style]="fieldStyle(a.id)">@if (layoutOf(a.id).showLabel) { <span class="opacity-70">{{ f.name }}: </span> }{{ formatFieldFor(f, item.customFields[f.id]) }}</span>
+                            }
+                          }
+                        </button>
+                      }
                       @if (actions().length) {
-                        <div class="px-3 pb-3 mt-auto">
-                          <ng-container *ngTemplateOutlet="actionsRow; context: { $implicit: item }"></ng-container>
-                        </div>
+                        <ng-container *ngTemplateOutlet="actionsRow; context: { $implicit: item }"></ng-container>
                       }
                     </div>
                   }
@@ -363,44 +407,6 @@ interface ItemGroup {
                           <ng-container *ngTemplateOutlet="actionsRow; context: { $implicit: item }"></ng-container>
                         </div>
                       }
-                    </div>
-                  }
-                </div>
-              }
-
-              @case ('card-cover') {
-                <div [class]="coverGridClass()" [style.grid-template-columns]="cardGridCols()">
-                  @for (item of group.items; track item.id) {
-                    <div class="flex flex-col gap-1">
-                    <button type="button" (click)="openEditItem(item)"
-                      [class]="'card-cover text-left ' + coverAspect()"
-                      [style.background-image]="resolveImage(item) ? 'url(' + resolveImage(item) + ')' : null">
-                      @if (cardStyle().imageScrim) {
-                        <div class="absolute inset-0 z-[1] pointer-events-none" [style.background]="'rgba(0,0,0,' + cardStyle().imageScrim / 100 + ')'"></div>
-                      }
-                      <div class="card-cover-content">
-                        <div class="card-cover-top">
-                          @if (gridConfig().showTags) {
-                            @for (t of item.tags ?? []; track t.tagId) {
-                              @if (tagLookup(t.tagId); as tag) {
-                                <span class="card-cover-badge" [style.color]="tag.color">{{ tag.name }}</span>
-                              }
-                            }
-                          }
-                        </div>
-                        <div>
-                          @for (fieldId of gridConfig().visibleFields; track fieldId) {
-                            @if (fieldById(fieldId); as f) {
-                              <div class="card-cover-meta" [style]="fieldStyle(fieldId)">@if (layoutOf(fieldId).showLabel) { <span>{{ f.name }}: </span> }{{ formatFieldFor(f, item.customFields[f.id]) }}</div>
-                            }
-                          }
-                          <div class="card-cover-title" [style]="titleStyle()">{{ item.title }}</div>
-                        </div>
-                      </div>
-                    </button>
-                    @if (actions().length) {
-                      <ng-container *ngTemplateOutlet="actionsRow; context: { $implicit: item }"></ng-container>
-                    }
                     </div>
                   }
                 </div>
@@ -751,18 +757,65 @@ export class ListDetailComponent implements OnInit {
   });
   protected readonly cardMinHeight = computed<number | null>(() => this.cardStyle().cardHeight || null);
 
-  /** Poster/square reuse the Cover card render with a different aspect ratio. */
+  /** View discriminator for the @switch — all card templates fold into 'card'. */
   protected readonly effectiveTemplate = computed<GridTemplate>(() => {
     const t = this.gridConfig().template;
-    return t === 'poster' || t === 'square' ? 'card-cover' : t;
+    if (t === 'card-large' || t === 'card-cover' || t === 'poster' || t === 'square' || t === 'card') {
+      return 'card' as GridTemplate;
+    }
+    return t;
   });
-  protected readonly coverAspect = computed<string>(() => {
-    const t = this.gridConfig().template;
-    return t === 'poster' ? 'poster' : t === 'square' ? 'square' : '';
+
+  /** Card shape, derived from the explicit setting or the legacy template. */
+  protected readonly cardShape = computed<CardShape>(() => {
+    const g = this.gridConfig();
+    if (g.cardShape) return g.cardShape;
+    switch (g.template) {
+      case 'card-cover':
+        return 'cover';
+      case 'poster':
+        return 'poster';
+      case 'square':
+        return 'square';
+      default:
+        return 'free';
+    }
   });
-  protected readonly coverGridClass = computed<string>(() => {
-    const t = this.gridConfig().template;
-    return t === 'poster' || t === 'square'
+
+  protected readonly textPosition = computed<TextPosition>(() => {
+    const g = this.gridConfig();
+    if (g.textPosition) return g.textPosition;
+    return g.template === 'card-large' ? 'below' : 'on';
+  });
+
+  protected readonly textBg = computed<boolean>(() => {
+    const g = this.gridConfig();
+    return g.textBackground !== undefined ? g.textBackground : this.textPosition() !== 'on';
+  });
+
+  /** Aspect class for the on-image cover box (free falls back to cover's 7:4). */
+  protected readonly shapeClass = computed<string>(() => {
+    const s = this.cardShape();
+    return s === 'poster' ? 'poster' : s === 'square' ? 'square' : '';
+  });
+
+  /** Aspect class for the <img> element when text is below/above. */
+  protected readonly shapeImgClass = computed<string>(() => {
+    switch (this.cardShape()) {
+      case 'poster':
+        return 'aspect-[2/3]';
+      case 'square':
+        return 'aspect-square';
+      case 'cover':
+        return 'aspect-[7/4]';
+      default:
+        return 'h-40';
+    }
+  });
+
+  protected readonly cardGridClass = computed<string>(() => {
+    const s = this.cardShape();
+    return s === 'poster' || s === 'square'
       ? 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 mb-6'
       : 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6';
   });
@@ -985,7 +1038,28 @@ export class ListDetailComponent implements OnInit {
   }
 
   protected setTemplate(template: GridTemplate): void {
+    if (template === 'card') {
+      const g = this.gridConfig();
+      this.patchGridConfig({
+        template: 'card',
+        cardShape: g.cardShape ?? this.cardShape(),
+        textPosition: g.textPosition ?? this.textPosition(),
+      });
+      return;
+    }
     this.patchGridConfig({ template });
+  }
+
+  protected setCardShape(cardShape: CardShape): void {
+    this.patchGridConfig({ template: 'card', cardShape });
+  }
+
+  protected setTextPosition(textPosition: TextPosition): void {
+    this.patchGridConfig({ template: 'card', textPosition });
+  }
+
+  protected toggleTextBg(): void {
+    this.patchGridConfig({ template: 'card', textBackground: !this.textBg() });
   }
 
   protected setGroupBy(groupBy: string | null): void {

@@ -5,6 +5,15 @@ All notable changes to OmniDesk. Breaking changes are called out explicitly.
 ## [Unreleased]
 
 ### Added
+- **Unified card model (lists):** the Large and Cover cards collapse into a single
+  **Card** view parametrized by three orthogonal controls in the toolbar — **Shape**
+  (Cover 7:4 / Poster 2:3 / Square 1:1 / Free), **Text position** (On image /
+  Below / Above) and a **Text bg** toggle (a solid panel behind on-image text for
+  legibility). "Large Card" and "Cover Card" were the same card differing only in
+  text position, so they are now one. Action buttons (set/move) render on **every**
+  view — Card, Compact, List, Gallery and Table — not just the large card. Legacy
+  `card-large` / `card-cover` / `poster` / `square` templates fold into the new
+  model with matching defaults (no migration; all in `gridConfig`).
 - **Real data footprint in Storage:** Settings → Security now shows, besides the
   uploaded-image quota, the byte size of all your actual content broken down by
   module (Notes, List items, Calendar, To-Do, Habits, Finance) with counts — so
