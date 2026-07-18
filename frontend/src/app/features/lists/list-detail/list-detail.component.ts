@@ -7,6 +7,7 @@ import {
   OnInit,
   signal,
 } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
@@ -72,7 +73,7 @@ interface ItemGroup {
   selector: 'app-list-detail',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, RouterLink, MatDialogModule, TagChipComponent],
+  imports: [FormsModule, RouterLink, MatDialogModule, TagChipComponent, NgTemplateOutlet],
   template: `
     <div class="h-full flex flex-col">
       <header class="px-6 py-4 border-b border-border">
@@ -129,11 +130,11 @@ interface ItemGroup {
             class="px-3 py-2 bg-surface border border-border rounded text-sm outline-none focus:border-primary">
             <option value="card-large">Large card</option>
             <option value="card-compact">Compact card</option>
-            <option value="card-cover">Cover card (Obsidian)</option>
-            <option value="poster">Poster (movies / books)</option>
-            <option value="square">Square cover (albums)</option>
+            <option value="card-cover">Cover card</option>
+            <option value="poster">Poster</option>
+            <option value="square">Square</option>
             <option value="dense-list">Dense list</option>
-            <option value="gallery-no-image">Gallery without image</option>
+            <option value="gallery-no-image">Gallery</option>
             <option value="table">Table</option>
           </select>
 
@@ -249,6 +250,21 @@ interface ItemGroup {
         </div>
       </header>
 
+      <!-- Shared action buttons (set/move) — rendered on every card template. -->
+      <ng-template #actionsRow let-item>
+        @if (actions().length) {
+          <div class="flex flex-wrap gap-1" (click)="$event.stopPropagation()">
+            @for (a of actions(); track a.id) {
+              <button type="button" (click)="runAction(item, a, $event)"
+                class="text-xs px-2 py-1 rounded border border-border bg-surface hover:border-primary hover:bg-surface-hover transition-colors"
+                [style.color]="a.color || null">
+                {{ a.label }}
+              </button>
+            }
+          </div>
+        }
+      </ng-template>
+
       <div class="flex-1 overflow-auto p-6">
         @if (loading()) {
           <p class="text-text-muted">Loading…</p>
@@ -325,14 +341,8 @@ interface ItemGroup {
                         </div>
                       </button>
                       @if (actions().length) {
-                        <div class="flex flex-wrap gap-1 px-3 pb-3 mt-auto">
-                          @for (a of actions(); track a.id) {
-                            <button type="button" (click)="runAction(item, a, $event)"
-                              class="text-xs px-2 py-1 rounded border border-border hover:border-primary hover:bg-surface-hover transition-colors"
-                              [style.color]="a.color || null">
-                              {{ a.label }}
-                            </button>
-                          }
+                        <div class="px-3 pb-3 mt-auto">
+                          <ng-container *ngTemplateOutlet="actionsRow; context: { $implicit: item }"></ng-container>
                         </div>
                       }
                     </div>
@@ -343,15 +353,21 @@ interface ItemGroup {
               @case ('card-compact') {
                 <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2 mb-6">
                   @for (item of group.items; track item.id) {
-                    <button type="button" (click)="openEditItem(item)"
-                      class="text-left bg-surface border border-border rounded overflow-hidden hover:border-primary transition-colors">
-                      @if (gridConfig().showImage && resolveImage(item); as src) {
-                        <img [src]="src" alt="" class="w-full aspect-square object-cover" />
+                    <div class="bg-surface border border-border rounded overflow-hidden hover:border-primary transition-colors flex flex-col">
+                      <button type="button" (click)="openEditItem(item)" class="text-left">
+                        @if (gridConfig().showImage && resolveImage(item); as src) {
+                          <img [src]="src" alt="" class="w-full aspect-square object-cover" />
+                        }
+                        <div class="p-2">
+                          <h3 class="text-xs font-medium truncate">{{ item.title }}</h3>
+                        </div>
+                      </button>
+                      @if (actions().length) {
+                        <div class="px-2 pb-2 mt-auto">
+                          <ng-container *ngTemplateOutlet="actionsRow; context: { $implicit: item }"></ng-container>
+                        </div>
                       }
-                      <div class="p-2">
-                        <h3 class="text-xs font-medium truncate">{{ item.title }}</h3>
-                      </div>
-                    </button>
+                    </div>
                   }
                 </div>
               }
@@ -359,6 +375,7 @@ interface ItemGroup {
               @case ('card-cover') {
                 <div [class]="coverGridClass()">
                   @for (item of group.items; track item.id) {
+                    <div class="flex flex-col gap-1">
                     <button type="button" (click)="openEditItem(item)"
                       [class]="'card-cover text-left ' + coverAspect()"
                       [style.background-image]="resolveImage(item) ? 'url(' + resolveImage(item) + ')' : null">
@@ -385,6 +402,10 @@ interface ItemGroup {
                         </div>
                       </div>
                     </button>
+                    @if (actions().length) {
+                      <ng-container *ngTemplateOutlet="actionsRow; context: { $implicit: item }"></ng-container>
+                    }
+                    </div>
                   }
                 </div>
               }
@@ -392,9 +413,9 @@ interface ItemGroup {
               @case ('dense-list') {
                 <ul class="space-y-1 mb-6">
                   @for (item of group.items; track item.id) {
-                    <li>
+                    <li class="flex items-center gap-2">
                       <button type="button" (click)="openEditItem(item)"
-                        class="w-full text-left flex items-center gap-3 px-3 py-2 bg-surface border border-border rounded hover:border-primary transition-colors">
+                        class="flex-1 min-w-0 text-left flex items-center gap-3 px-3 py-2 bg-surface border border-border rounded hover:border-primary transition-colors">
                         @if (gridConfig().showImage && resolveImage(item); as src) {
                           <img [src]="src" alt="" class="w-10 h-10 object-cover rounded shrink-0" />
                         }
@@ -418,6 +439,9 @@ interface ItemGroup {
                           </div>
                         }
                       </button>
+                      @if (actions().length) {
+                        <ng-container *ngTemplateOutlet="actionsRow; context: { $implicit: item }"></ng-container>
+                      }
                     </li>
                   }
                 </ul>
@@ -426,8 +450,9 @@ interface ItemGroup {
               @case ('gallery-no-image') {
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
                   @for (item of group.items; track item.id) {
+                    <div class="bg-surface border border-border rounded-lg hover:border-primary transition-colors flex flex-col">
                     <button type="button" (click)="openEditItem(item)"
-                      class="text-left p-4 bg-surface border border-border rounded-lg hover:border-primary transition-colors">
+                      class="text-left p-4">
                       <h3 class="font-semibold mb-1">{{ item.title }}</h3>
                       @for (fieldId of gridConfig().visibleFields; track fieldId) {
                         @if (fieldById(fieldId); as f) {
@@ -446,6 +471,12 @@ interface ItemGroup {
                         </div>
                       }
                     </button>
+                    @if (actions().length) {
+                      <div class="px-4 pb-4">
+                        <ng-container *ngTemplateOutlet="actionsRow; context: { $implicit: item }"></ng-container>
+                      </div>
+                    }
+                    </div>
                   }
                 </div>
               }
@@ -461,6 +492,9 @@ interface ItemGroup {
                         }
                         @if (gridConfig().showTags) {
                           <th class="px-3 py-2 text-left">Tags</th>
+                        }
+                        @if (actions().length) {
+                          <th class="px-3 py-2 text-left">Actions</th>
                         }
                       </tr>
                     </thead>
@@ -487,6 +521,11 @@ interface ItemGroup {
                                   }
                                 }
                               </div>
+                            </td>
+                          }
+                          @if (actions().length) {
+                            <td class="px-3 py-2">
+                              <ng-container *ngTemplateOutlet="actionsRow; context: { $implicit: item }"></ng-container>
                             </td>
                           }
                         </tr>
