@@ -1,0 +1,664 @@
+{
+ "name": "Books & Manga Backlog",
+ "icon": "📚",
+ "template": "poster",
+ "showImage": true,
+ "fields": [
+  {
+   "name": "Author",
+   "type": "TEXT"
+  },
+  {
+   "name": "Year",
+   "type": "NUMBER"
+  },
+  {
+   "name": "Type",
+   "type": "SELECT",
+   "options": [
+    "Libro",
+    "Manga"
+   ]
+  },
+  {
+   "name": "Cover",
+   "type": "IMAGE_URL"
+  }
+ ],
+ "visibleFields": [
+  "Author",
+  "Year"
+ ],
+ "items": [
+  {
+   "title": "La conjura de los necios",
+   "fields": {
+    "Author": "John Kennedy Toole",
+    "Type": "Libro",
+    "Cover": "https://covers.openlibrary.org/b/id/13756269-L.jpg",
+    "Year": 1980
+   }
+  },
+  {
+   "title": "Cometierra",
+   "fields": {
+    "Author": "Dolores Reyes",
+    "Type": "Libro",
+    "Cover": "https://covers.openlibrary.org/b/id/11287141-L.jpg",
+    "Year": 2019
+   }
+  },
+  {
+   "title": "La senda del perdedor",
+   "fields": {
+    "Author": "Charles Bukowski",
+    "Type": "Libro",
+    "Cover": "https://covers.openlibrary.org/b/id/7373211-L.jpg",
+    "Year": 1982
+   }
+  },
+  {
+   "title": "Así habló Zaratustra",
+   "fields": {
+    "Author": "Friedrich Nietzsche",
+    "Type": "Libro",
+    "Cover": "https://covers.openlibrary.org/b/id/2290835-L.jpg",
+    "Year": 1883
+   }
+  },
+  {
+   "title": "Ficciones",
+   "fields": {
+    "Author": "Jorge Luis Borges",
+    "Type": "Libro",
+    "Cover": "https://covers.openlibrary.org/b/id/10832290-L.jpg",
+    "Year": 1944
+   }
+  },
+  {
+   "title": "Demian",
+   "fields": {
+    "Author": "Hermann Hesse",
+    "Type": "Libro",
+    "Cover": "https://covers.openlibrary.org/b/id/12569297-L.jpg",
+    "Year": 1919
+   }
+  },
+  {
+   "title": "La náusea",
+   "fields": {
+    "Author": "Jean-Paul Sartre",
+    "Type": "Libro",
+    "Cover": "https://covers.openlibrary.org/b/id/13222534-L.jpg",
+    "Year": 1938
+   }
+  },
+  {
+   "title": "El mito de Sísifo",
+   "fields": {
+    "Author": "Albert Camus",
+    "Type": "Libro",
+    "Cover": "",
+    "Year": 1942
+   }
+  },
+  {
+   "title": "Las penas del joven Werther",
+   "fields": {
+    "Author": "Johann Wolfgang von Goethe",
+    "Type": "Libro",
+    "Cover": "",
+    "Year": 1774
+   }
+  },
+  {
+   "title": "El lobo estepario",
+   "fields": {
+    "Author": "Hermann Hesse",
+    "Type": "Libro",
+    "Cover": "https://covers.openlibrary.org/b/id/14592521-L.jpg",
+    "Year": 1927
+   }
+  },
+  {
+   "title": "Crimen y castigo",
+   "fields": {
+    "Author": "Fiódor Dostoyevski",
+    "Type": "Libro",
+    "Cover": "https://covers.openlibrary.org/b/id/12328823-L.jpg",
+    "Year": 1866
+   }
+  },
+  {
+   "title": "El extranjero",
+   "fields": {
+    "Author": "Albert Camus",
+    "Type": "Libro",
+    "Cover": "",
+    "Year": 1942
+   }
+  },
+  {
+   "title": "En busca del tiempo perdido",
+   "fields": {
+    "Author": "Marcel Proust",
+    "Type": "Libro",
+    "Cover": "",
+    "Year": 1913
+   }
+  },
+  {
+   "title": "El amor en los tiempos del cólera",
+   "fields": {
+    "Author": "Gabriel García Márquez",
+    "Type": "Libro",
+    "Cover": "https://covers.openlibrary.org/b/id/10096404-L.jpg",
+    "Year": 1985
+   }
+  },
+  {
+   "title": "Siddhartha",
+   "fields": {
+    "Author": "Hermann Hesse",
+    "Type": "Libro",
+    "Cover": "https://covers.openlibrary.org/b/id/6562535-L.jpg",
+    "Year": 1922
+   }
+  },
+  {
+   "title": "1984",
+   "fields": {
+    "Author": "George Orwell",
+    "Type": "Libro",
+    "Cover": "https://covers.openlibrary.org/b/id/8745958-L.jpg",
+    "Year": 1949
+   }
+  },
+  {
+   "title": "Rayuela",
+   "fields": {
+    "Author": "Julio Cortázar",
+    "Type": "Libro",
+    "Cover": "https://covers.openlibrary.org/b/id/1047466-L.jpg",
+    "Year": 1963
+   }
+  },
+  {
+   "title": "La muerte de Iván Ilich",
+   "fields": {
+    "Author": "León Tolstói",
+    "Type": "Libro",
+    "Cover": "https://covers.openlibrary.org/b/id/8039591-L.jpg",
+    "Year": 1886
+   }
+  },
+  {
+   "title": "Aku no Hana",
+   "fields": {
+    "Author": "Shuzo Oshimi",
+    "Type": "Manga",
+    "Cover": "https://covers.openlibrary.org/b/id/8432622-L.jpg",
+    "Year": 2009
+   }
+  },
+  {
+   "title": "Killing Stalking",
+   "fields": {
+    "Author": "Koogi",
+    "Type": "Manga",
+    "Cover": "https://covers.openlibrary.org/b/id/13813041-L.jpg",
+    "Year": 2016
+   }
+  },
+  {
+   "title": "JoJo's Bizarre Adventure",
+   "fields": {
+    "Author": "Hirohiko Araki",
+    "Type": "Manga",
+    "Cover": "https://covers.openlibrary.org/b/id/8804928-L.jpg",
+    "Year": 1987
+   }
+  },
+  {
+   "title": "Fate/stay night",
+   "fields": {
+    "Author": "Datto Nishiwaki / Kinoko Nasu",
+    "Type": "Manga",
+    "Cover": "",
+    "Year": 2005
+   }
+  },
+  {
+   "title": "Bakemonogatari",
+   "fields": {
+    "Author": "Nisio Isin",
+    "Type": "Manga",
+    "Cover": "https://covers.openlibrary.org/b/id/9104198-L.jpg",
+    "Year": 2006
+   }
+  },
+  {
+   "title": "Yokohama Kaidashi Kikō",
+   "fields": {
+    "Author": "Hitoshi Ashinano",
+    "Type": "Manga",
+    "Cover": "https://covers.openlibrary.org/b/id/4878541-L.jpg",
+    "Year": 1994
+   }
+  },
+  {
+   "title": "Nausicaä del Valle del Viento",
+   "fields": {
+    "Author": "Hayao Miyazaki",
+    "Type": "Manga",
+    "Cover": "",
+    "Year": 1982
+   }
+  },
+  {
+   "title": "Shiawase no Jikan",
+   "fields": {
+    "Author": "Yasuyuki Kunitomo",
+    "Type": "Manga",
+    "Cover": "",
+    "Year": 1998
+   }
+  },
+  {
+   "title": "Hajime no Ippo",
+   "fields": {
+    "Author": "George Morikawa",
+    "Type": "Manga",
+    "Cover": "",
+    "Year": 1989
+   }
+  },
+  {
+   "title": "Kingdom",
+   "fields": {
+    "Author": "Yasuhisa Hara",
+    "Type": "Manga",
+    "Cover": "https://covers.openlibrary.org/b/id/13830057-L.jpg",
+    "Year": 2006
+   }
+  },
+  {
+   "title": "Gintama",
+   "fields": {
+    "Author": "Hideaki Sorachi",
+    "Type": "Manga",
+    "Cover": "https://covers.openlibrary.org/b/id/13651888-L.jpg",
+    "Year": 2003
+   }
+  },
+  {
+   "title": "The Climber",
+   "fields": {
+    "Author": "Shin'ichi Sakamoto",
+    "Type": "Manga",
+    "Cover": "",
+    "Year": 2007
+   }
+  },
+  {
+   "title": "Innocent",
+   "fields": {
+    "Author": "Shin'ichi Sakamoto",
+    "Type": "Manga",
+    "Cover": "https://covers.openlibrary.org/b/id/13481112-L.jpg",
+    "Year": 2013
+   }
+  },
+  {
+   "title": "Yotsuba&!",
+   "fields": {
+    "Author": "Kiyohiko Azuma",
+    "Type": "Manga",
+    "Cover": "https://covers.openlibrary.org/b/id/12739782-L.jpg",
+    "Year": 2003
+   }
+  },
+  {
+   "title": "Slam Dunk",
+   "fields": {
+    "Author": "Takehiko Inoue",
+    "Type": "Manga",
+    "Cover": "https://covers.openlibrary.org/b/id/991930-L.jpg",
+    "Year": 1990
+   }
+  },
+  {
+   "title": "Oyasumi Punpun",
+   "fields": {
+    "Author": "Inio Asano",
+    "Type": "Manga",
+    "Cover": "",
+    "Year": 2007
+   }
+  },
+  {
+   "title": "Dead Dead Demon's Dededede Destruction",
+   "fields": {
+    "Author": "Inio Asano",
+    "Type": "Manga",
+    "Cover": "https://covers.openlibrary.org/b/id/11558308-L.jpg",
+    "Year": 2014
+   }
+  },
+  {
+   "title": "Solanin",
+   "fields": {
+    "Author": "Inio Asano",
+    "Type": "Manga",
+    "Cover": "https://covers.openlibrary.org/b/id/13749571-L.jpg",
+    "Year": 2005
+   }
+  },
+  {
+   "title": "Grand Blue",
+   "fields": {
+    "Author": "Kenji Inoue",
+    "Type": "Manga",
+    "Cover": "https://covers.openlibrary.org/b/id/10943268-L.jpg",
+    "Year": 2014
+   }
+  },
+  {
+   "title": "Fruits Basket",
+   "fields": {
+    "Author": "Natsuki Takaya",
+    "Type": "Manga",
+    "Cover": "https://covers.openlibrary.org/b/id/12880296-L.jpg",
+    "Year": 1998
+   }
+  },
+  {
+   "title": "Nana",
+   "fields": {
+    "Author": "Ai Yazawa",
+    "Type": "Manga",
+    "Cover": "https://covers.openlibrary.org/b/id/11461735-L.jpg",
+    "Year": 2000
+   }
+  },
+  {
+   "title": "Bocchi the Rock!",
+   "fields": {
+    "Author": "Aki Hamaji",
+    "Type": "Manga",
+    "Cover": "",
+    "Year": 2017
+   }
+  },
+  {
+   "title": "Vagabond",
+   "fields": {
+    "Author": "Takehiko Inoue",
+    "Type": "Manga",
+    "Cover": "https://covers.openlibrary.org/b/id/8211378-L.jpg",
+    "Year": 1998
+   }
+  },
+  {
+   "title": "Buzzer Beater",
+   "fields": {
+    "Author": "Takehiko Inoue",
+    "Type": "Manga",
+    "Cover": "",
+    "Year": 1996
+   }
+  },
+  {
+   "title": "Real",
+   "fields": {
+    "Author": "Takehiko Inoue",
+    "Type": "Manga",
+    "Cover": "",
+    "Year": 1999
+   }
+  },
+  {
+   "title": "Made in Abyss",
+   "fields": {
+    "Author": "Akihito Tsukushi",
+    "Type": "Manga",
+    "Cover": "https://covers.openlibrary.org/b/id/8750547-L.jpg",
+    "Year": 2012
+   }
+  },
+  {
+   "title": "Fullmetal Alchemist",
+   "fields": {
+    "Author": "Hiromu Arakawa",
+    "Type": "Manga",
+    "Cover": "https://covers.openlibrary.org/b/id/12818700-L.jpg",
+    "Year": 2001
+   }
+  },
+  {
+   "title": "Vinland Saga",
+   "fields": {
+    "Author": "Makoto Yukimura",
+    "Type": "Manga",
+    "Cover": "https://covers.openlibrary.org/b/id/10224206-L.jpg",
+    "Year": 2005
+   }
+  },
+  {
+   "title": "Death Note",
+   "fields": {
+    "Author": "Tsugumi Ohba",
+    "Type": "Manga",
+    "Cover": "https://covers.openlibrary.org/b/id/1041608-L.jpg",
+    "Year": 2003
+   }
+  },
+  {
+   "title": "Hunter x Hunter",
+   "fields": {
+    "Author": "Yoshihiro Togashi",
+    "Type": "Manga",
+    "Cover": "https://covers.openlibrary.org/b/id/764915-L.jpg",
+    "Year": 1998
+   }
+  },
+  {
+   "title": "Homunculus",
+   "fields": {
+    "Author": "Hideo Yamamoto",
+    "Type": "Manga",
+    "Cover": "https://covers.openlibrary.org/b/id/11159745-L.jpg",
+    "Year": 2003
+   }
+  },
+  {
+   "title": "Gantz",
+   "fields": {
+    "Author": "Hiroya Oku",
+    "Type": "Manga",
+    "Cover": "https://covers.openlibrary.org/b/id/10489138-L.jpg",
+    "Year": 2000
+   }
+  },
+  {
+   "title": "Zetman",
+   "fields": {
+    "Author": "Masakazu Katsura",
+    "Type": "Manga",
+    "Cover": "",
+    "Year": 2002
+   }
+  },
+  {
+   "title": "Rikudou",
+   "fields": {
+    "Author": "Toshimitsu Matsubara",
+    "Type": "Manga",
+    "Cover": "",
+    "Year": 2014
+   }
+  },
+  {
+   "title": "Shamo",
+   "fields": {
+    "Author": "Akio Tanaka",
+    "Type": "Manga",
+    "Cover": "",
+    "Year": 1998
+   }
+  },
+  {
+   "title": "Pluto",
+   "fields": {
+    "Author": "Naoki Urasawa",
+    "Type": "Manga",
+    "Cover": "https://covers.openlibrary.org/b/id/11297281-L.jpg",
+    "Year": 2003
+   }
+  },
+  {
+   "title": "Billy Bat",
+   "fields": {
+    "Author": "Naoki Urasawa",
+    "Type": "Manga",
+    "Cover": "https://covers.openlibrary.org/b/id/8432532-L.jpg",
+    "Year": 2008
+   }
+  },
+  {
+   "title": "Kiichi!!",
+   "fields": {
+    "Author": "Hideki Arai",
+    "Type": "Manga",
+    "Cover": "",
+    "Year": 2001
+   }
+  },
+  {
+   "title": "Eden: It's an Endless World!",
+   "fields": {
+    "Author": "Hiroki Endo",
+    "Type": "Manga",
+    "Cover": "https://covers.openlibrary.org/b/id/869401-L.jpg",
+    "Year": 1997
+   }
+  },
+  {
+   "title": "Blue Giant Supreme",
+   "fields": {
+    "Author": "Shinichi Ishizuka",
+    "Type": "Manga",
+    "Cover": "https://covers.openlibrary.org/b/id/11272642-L.jpg",
+    "Year": 2016
+   }
+  },
+  {
+   "title": "Beck",
+   "fields": {
+    "Author": "Harold Sakuishi",
+    "Type": "Manga",
+    "Cover": "https://covers.openlibrary.org/b/id/13128890-L.jpg",
+    "Year": 1999
+   }
+  },
+  {
+   "title": "Blade of the Immortal",
+   "fields": {
+    "Author": "Hiroaki Samura",
+    "Type": "Manga",
+    "Cover": "https://covers.openlibrary.org/b/id/814892-L.jpg",
+    "Year": 1993
+   }
+  },
+  {
+   "title": "Bibliomania",
+   "fields": {
+    "Author": "Obaru",
+    "Type": "Manga",
+    "Cover": "",
+    "Year": 2021
+   }
+  },
+  {
+   "title": "Suicide Island",
+   "fields": {
+    "Author": "Kouji Mori",
+    "Type": "Manga",
+    "Cover": "",
+    "Year": 2008
+   }
+  },
+  {
+   "title": "Lone Wolf and Cub",
+   "fields": {
+    "Author": "Kazuo Koike",
+    "Type": "Manga",
+    "Cover": "https://covers.openlibrary.org/b/id/8649978-L.jpg",
+    "Year": 1970
+   }
+  },
+  {
+   "title": "Barrio lejano",
+   "fields": {
+    "Author": "Jiro Taniguchi",
+    "Type": "Manga",
+    "Cover": "https://covers.openlibrary.org/b/id/14098955-L.jpg",
+    "Year": 1998
+   }
+  },
+  {
+   "title": "Blood on the Tracks",
+   "fields": {
+    "Author": "Shuzo Oshimi",
+    "Type": "Manga",
+    "Cover": "https://covers.openlibrary.org/b/id/10254499-L.jpg",
+    "Year": 2017
+   }
+  },
+  {
+   "title": "Battle Royale",
+   "fields": {
+    "Author": "Koushun Takami",
+    "Type": "Manga",
+    "Cover": "https://covers.openlibrary.org/b/id/813816-L.jpg",
+    "Year": 2000
+   }
+  },
+  {
+   "title": "Girls' Last Tour",
+   "fields": {
+    "Author": "Tsukumizu",
+    "Type": "Manga",
+    "Cover": "",
+    "Year": 2014
+   }
+  },
+  {
+   "title": "Pigpen",
+   "fields": {
+    "Author": "Carnby Kim",
+    "Type": "Manga",
+    "Cover": "",
+    "Year": 2019
+   }
+  },
+  {
+   "title": "Sweet Home",
+   "fields": {
+    "Author": "Carnby Kim",
+    "Type": "Manga",
+    "Cover": "",
+    "Year": 2017
+   }
+  },
+  {
+   "title": "Bastard",
+   "fields": {
+    "Author": "Carnby Kim",
+    "Type": "Manga",
+    "Cover": "",
+    "Year": 2014
+   }
+  }
+ ]
+}

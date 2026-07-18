@@ -1,0 +1,4899 @@
+{
+ "name": "Movies Backlog",
+ "icon": "🎬",
+ "template": "poster",
+ "showImage": true,
+ "fields": [
+  {
+   "name": "Director",
+   "type": "TEXT"
+  },
+  {
+   "name": "Year",
+   "type": "NUMBER"
+  },
+  {
+   "name": "Runtime",
+   "type": "NUMBER"
+  },
+  {
+   "name": "Cover",
+   "type": "IMAGE_URL"
+  }
+ ],
+ "visibleFields": [
+  "Director",
+  "Year"
+ ],
+ "actions": [
+  {
+   "label": "✓ Vista",
+   "color": "#22c55e",
+   "targetListName": "My Movies"
+  }
+ ],
+ "items": [
+  {
+   "title": "Enter the Void",
+   "fields": {
+    "Year": 2009,
+    "Director": "Gaspar Noé",
+    "Cover": "https://image.tmdb.org/t/p/w500/krKnsfvSJM1PL40tLicRhVQ6kuG.jpg",
+    "Runtime": 161
+   }
+  },
+  {
+   "title": "Climax",
+   "fields": {
+    "Year": 2018,
+    "Director": "Gaspar Noé",
+    "Cover": "https://image.tmdb.org/t/p/w500/47IXH2iEWwX0F7vIyGXaKQ0psBG.jpg",
+    "Runtime": 97
+   }
+  },
+  {
+   "title": "Billy Elliot",
+   "fields": {
+    "Year": 2000,
+    "Director": "Stephen Daldry",
+    "Cover": "https://image.tmdb.org/t/p/w500/mYtqgWCJiXpDeZwjVcC3OQGD8IR.jpg",
+    "Runtime": 111
+   }
+  },
+  {
+   "title": "Stalker",
+   "fields": {
+    "Year": 1979,
+    "Director": "Andrei Tarkovsky",
+    "Cover": "https://image.tmdb.org/t/p/w500/1qhOyf5C4s9ZdvY8d5JDx9DFMeT.jpg",
+    "Runtime": 162
+   }
+  },
+  {
+   "title": "Solaris",
+   "fields": {
+    "Year": 1972,
+    "Director": "Andrei Tarkovsky",
+    "Cover": "https://image.tmdb.org/t/p/w500/pgqj7QoBPWFLLKtLEpPmFYFRMgB.jpg",
+    "Runtime": 167
+   }
+  },
+  {
+   "title": "Nostalghia",
+   "fields": {
+    "Year": 1983,
+    "Director": "Andrei Tarkovsky",
+    "Cover": "https://image.tmdb.org/t/p/w500/fCYSidPXp3LpDa9wlLNv0gZvjyF.jpg",
+    "Runtime": 124
+   }
+  },
+  {
+   "title": "Andrei Rublev",
+   "fields": {
+    "Year": 1966,
+    "Director": "Andrei Tarkovsky",
+    "Cover": "https://image.tmdb.org/t/p/w500/jUihkn16SwPPIjuOyo6orHWUep6.jpg",
+    "Runtime": 183
+   }
+  },
+  {
+   "title": "The Sacrifice",
+   "fields": {
+    "Year": 1986,
+    "Director": "Andrei Tarkovsky",
+    "Cover": "https://image.tmdb.org/t/p/w500/8JMh27z075ZHbFE85XYkdXF2QkK.jpg",
+    "Runtime": 149
+   }
+  },
+  {
+   "title": "Ivan's Childhood",
+   "fields": {
+    "Year": 1962,
+    "Director": "Andrei Tarkovsky",
+    "Cover": "https://image.tmdb.org/t/p/w500/trY9ADhXgSExH3DLlFhV5C8aDtw.jpg",
+    "Runtime": 95
+   }
+  },
+  {
+   "title": "Mirror",
+   "fields": {
+    "Year": 1975,
+    "Director": "Andrei Tarkovsky",
+    "Cover": "https://image.tmdb.org/t/p/w500/AttDP5OEsMxtHPPN7Z92p2Ntnmd.jpg",
+    "Runtime": 107
+   }
+  },
+  {
+   "title": "Ran",
+   "fields": {
+    "Year": 1985,
+    "Director": "Akira Kurosawa",
+    "Cover": "https://image.tmdb.org/t/p/w500/dGgiXMWDcS5aJTBEFu7bmaQPNox.jpg",
+    "Runtime": 160
+   }
+  },
+  {
+   "title": "The Zone of Interest",
+   "fields": {
+    "Year": 2023,
+    "Director": "Jonathan Glazer",
+    "Cover": "https://image.tmdb.org/t/p/w500/hUu9zyZmDd8VZegKi1iK1Vk0RYS.jpg",
+    "Runtime": 105
+   }
+  },
+  {
+   "title": "Network",
+   "fields": {
+    "Year": 1976,
+    "Director": "Sidney Lumet",
+    "Cover": "https://image.tmdb.org/t/p/w500/qZomlHsaALUtkFeMDwdYmwS2Pbo.jpg",
+    "Runtime": 122
+   }
+  },
+  {
+   "title": "Seconds",
+   "fields": {
+    "Year": 1966,
+    "Director": "John Frankenheimer",
+    "Cover": "https://image.tmdb.org/t/p/w500/5G3q3OvulFTnFdiouaZdD8wjtIc.jpg",
+    "Runtime": 107
+   }
+  },
+  {
+   "title": "Splendor in the Grass",
+   "fields": {
+    "Year": 1961,
+    "Director": "Elia Kazan",
+    "Cover": "https://image.tmdb.org/t/p/w500/n6Kw8Ui93SMhrk1MupCFwUg04vq.jpg",
+    "Runtime": 124
+   }
+  },
+  {
+   "title": "Welcome to the Dollhouse",
+   "fields": {
+    "Year": 1995,
+    "Director": "Todd Solondz",
+    "Cover": "https://image.tmdb.org/t/p/w500/fsMMOVto87pvUQyozOF9CaT9aMR.jpg",
+    "Runtime": 88
+   }
+  },
+  {
+   "title": "L.I.E.",
+   "fields": {
+    "Year": 2001,
+    "Director": "Michael Cuesta",
+    "Cover": "https://image.tmdb.org/t/p/w500/ck5Tkq17M6khEN7JQlQznoYl37L.jpg",
+    "Runtime": 97
+   }
+  },
+  {
+   "title": "Elephant",
+   "fields": {
+    "Year": 2003,
+    "Director": "Gus Van Sant",
+    "Cover": "https://image.tmdb.org/t/p/w500/1a4VU9z2hxEvugHMK7VsobB9xTX.jpg",
+    "Runtime": 81
+   }
+  },
+  {
+   "title": "Bully",
+   "fields": {
+    "Year": 2001,
+    "Director": "Larry Clark",
+    "Cover": "https://image.tmdb.org/t/p/w500/vMJ2WHBbK4Jr3eDuF1e7O6lbC8m.jpg",
+    "Runtime": 113
+   }
+  },
+  {
+   "title": "Lilya 4-ever",
+   "fields": {
+    "Year": 2002,
+    "Director": "Lukas Moodysson",
+    "Cover": "https://image.tmdb.org/t/p/w500/5i1uhvcdv2Iogx0Bb1znvUmkCvN.jpg",
+    "Runtime": 109
+   }
+  },
+  {
+   "title": "Precious",
+   "fields": {
+    "Year": 2009,
+    "Director": "Lee Daniels",
+    "Cover": "https://image.tmdb.org/t/p/w500/d4ltLIDbvZskSwbzXqi0Hfv5ma4.jpg",
+    "Runtime": 110
+   }
+  },
+  {
+   "title": "Run Lola Run",
+   "fields": {
+    "Year": 1998,
+    "Director": "Tom Tykwer",
+    "Cover": "https://image.tmdb.org/t/p/w500/v0giIi4bTILVhNhJajet3WWY3FA.jpg",
+    "Runtime": 80
+   }
+  },
+  {
+   "title": "Knight of Cups",
+   "fields": {
+    "Year": 2015,
+    "Director": "Terrence Malick",
+    "Cover": "https://image.tmdb.org/t/p/w500/xejFBC19Nc7Xi1MiIvcf84ZCy2g.jpg",
+    "Runtime": 118
+   }
+  },
+  {
+   "title": "Kill Bill: Vol. 1",
+   "fields": {
+    "Year": 2003,
+    "Director": "Quentin Tarantino",
+    "Cover": "https://image.tmdb.org/t/p/w500/v7TaX8kXMXs5yFFGR41guUDNcnB.jpg",
+    "Runtime": 111
+   }
+  },
+  {
+   "title": "Kill Bill: Vol. 2",
+   "fields": {
+    "Year": 2004,
+    "Director": "Quentin Tarantino",
+    "Cover": "https://image.tmdb.org/t/p/w500/2yhg0mZQMhDyvUQ4rG1IZ4oIA8L.jpg",
+    "Runtime": 136
+   }
+  },
+  {
+   "title": "Carlito's Way",
+   "fields": {
+    "Year": 1993,
+    "Director": "Brian De Palma",
+    "Cover": "https://image.tmdb.org/t/p/w500/g6D7mjQtndu768cusGmoEQY9fTB.jpg",
+    "Runtime": 144
+   }
+  },
+  {
+   "title": "Patlabor: The Movie",
+   "fields": {
+    "Year": 1989,
+    "Director": "Mamoru Oshii",
+    "Cover": "https://image.tmdb.org/t/p/w500/dp3CNNo7Oj704cQKiwM4MJqlW0I.jpg",
+    "Runtime": 100
+   }
+  },
+  {
+   "title": "Patlabor 2: The Movie",
+   "fields": {
+    "Year": 1993,
+    "Director": "Mamoru Oshii",
+    "Cover": "https://image.tmdb.org/t/p/w500/aB7HCqsA3d2TkAoTkiy7sioJZJ9.jpg",
+    "Runtime": 116
+   }
+  },
+  {
+   "title": "Patlabor WXIII",
+   "fields": {
+    "Year": 2002,
+    "Director": "Fumihiko Takayama",
+    "Cover": "https://image.tmdb.org/t/p/w500/zgitZmF0cejES0dyuS7ZGvJ8NEQ.jpg",
+    "Runtime": 107
+   }
+  },
+  {
+   "title": "Belladonna of Sadness",
+   "fields": {
+    "Year": 1973,
+    "Director": "Eiichi Yamamoto",
+    "Cover": "https://image.tmdb.org/t/p/w500/2okYZVVw7RdMwlOKcAJsQ7Nsrpr.jpg",
+    "Runtime": 87
+   }
+  },
+  {
+   "title": "Parasite Dolls",
+   "fields": {
+    "Year": 2003,
+    "Director": "Kazuto Nakazawa",
+    "Cover": "https://image.tmdb.org/t/p/w500/bCDVdpjhqbfMsSg0TlNeGMdg2el.jpg",
+    "Runtime": 85
+   }
+  },
+  {
+   "title": "Night Head Genesis",
+   "fields": {
+    "Year": 2006,
+    "Director": "Joji Iida",
+    "Cover": ""
+   }
+  },
+  {
+   "title": "Texhnolyze",
+   "fields": {
+    "Year": 2003,
+    "Director": "Hiroshi Hamasaki",
+    "Cover": ""
+   }
+  },
+  {
+   "title": "Boogiepop Phantom",
+   "fields": {
+    "Year": 2000,
+    "Director": "Takashi Watanabe",
+    "Cover": ""
+   }
+  },
+  {
+   "title": "The Hunt",
+   "fields": {
+    "Year": 2012,
+    "Director": "Thomas Vinterberg",
+    "Cover": "https://image.tmdb.org/t/p/w500/jkixsXzRh28q3PCqFoWcf7unghT.jpg",
+    "Runtime": 116
+   }
+  },
+  {
+   "title": "Manchester by the Sea",
+   "fields": {
+    "Year": 2016,
+    "Director": "Kenneth Lonergan",
+    "Cover": "https://image.tmdb.org/t/p/w500/o9VXYOuaJxCEKOxbA86xqtwmqYn.jpg",
+    "Runtime": 138
+   }
+  },
+  {
+   "title": "Good Time",
+   "fields": {
+    "Year": 2017,
+    "Director": "Benny Safdie",
+    "Cover": "https://image.tmdb.org/t/p/w500/yE1c9hj5Hf8a9KplAdRdhADqUro.jpg",
+    "Runtime": 102
+   }
+  },
+  {
+   "title": "The Piano Teacher",
+   "fields": {
+    "Year": 2001,
+    "Director": "Michael Haneke",
+    "Cover": "https://image.tmdb.org/t/p/w500/gNHKYQnP1RnqEhkivHJzBPb4MOP.jpg",
+    "Runtime": 131
+   }
+  },
+  {
+   "title": "Millennium Mambo",
+   "fields": {
+    "Year": 2001,
+    "Director": "Hou Hsiao-hsien",
+    "Cover": "https://image.tmdb.org/t/p/w500/wSc6tOp1yoAFbZqxG5XVGHcFvRN.jpg",
+    "Runtime": 106
+   }
+  },
+  {
+   "title": "Audition",
+   "fields": {
+    "Year": 1999,
+    "Director": "Takashi Miike",
+    "Cover": "https://image.tmdb.org/t/p/w500/zwGaUMm0wAqi0wkO7LJDlwoA5LP.jpg",
+    "Runtime": 115
+   }
+  },
+  {
+   "title": "The Face of Another",
+   "fields": {
+    "Year": 1966,
+    "Director": "Hiroshi Teshigahara",
+    "Cover": "https://image.tmdb.org/t/p/w500/eUnFdf1Mf1b8AD3ChMPOCUfTBDQ.jpg",
+    "Runtime": 122
+   }
+  },
+  {
+   "title": "Midsommar",
+   "fields": {
+    "Year": 2019,
+    "Director": "Ari Aster",
+    "Cover": "https://image.tmdb.org/t/p/w500/7LEI8ulZzO5gy9Ww2NVCrKmHeDZ.jpg",
+    "Runtime": 147
+   }
+  },
+  {
+   "title": "Beau Is Afraid",
+   "fields": {
+    "Year": 2023,
+    "Director": "Ari Aster",
+    "Cover": "https://image.tmdb.org/t/p/w500/wgVkkjigF31r1nZV80uV0xNIoun.jpg",
+    "Runtime": 179
+   }
+  },
+  {
+   "title": "Eddington",
+   "fields": {
+    "Year": 2025,
+    "Director": "Ari Aster",
+    "Cover": "https://image.tmdb.org/t/p/w500/4GIqZUgPZ146BhibsPHMHef2nXX.jpg",
+    "Runtime": 148
+   }
+  },
+  {
+   "title": "Perfect Blue",
+   "fields": {
+    "Year": 1997,
+    "Director": "Satoshi Kon",
+    "Cover": "https://image.tmdb.org/t/p/w500/6WTiOCfDPP8XV4jqfloiVWf7KHq.jpg",
+    "Runtime": 81
+   }
+  },
+  {
+   "title": "Paprika",
+   "fields": {
+    "Year": 2006,
+    "Director": "Satoshi Kon",
+    "Cover": "https://image.tmdb.org/t/p/w500/bLUUr474Go1DfeN1HLjE3rnZXBq.jpg",
+    "Runtime": 90
+   }
+  },
+  {
+   "title": "Tokyo Godfathers",
+   "fields": {
+    "Year": 2003,
+    "Director": "Satoshi Kon",
+    "Cover": "https://image.tmdb.org/t/p/w500/sPC66btzQlzuRdPKiSDYZ5Hvxgc.jpg",
+    "Runtime": 92
+   }
+  },
+  {
+   "title": "Millennium Actress",
+   "fields": {
+    "Year": 2001,
+    "Director": "Satoshi Kon",
+    "Cover": "https://image.tmdb.org/t/p/w500/p44UXOFBCY5xbpCKEsWpi4filCD.jpg",
+    "Runtime": 87
+   }
+  },
+  {
+   "title": "Paranoia Agent",
+   "fields": {
+    "Year": 2004,
+    "Director": "Satoshi Kon",
+    "Cover": "https://image.tmdb.org/t/p/w500/3pDsE7HNa0Nb5TbM1Tv87dLCJxq.jpg",
+    "Runtime": 172
+   }
+  },
+  {
+   "title": "Chungking Express",
+   "fields": {
+    "Year": 1994,
+    "Director": "Wong Kar-Wai",
+    "Cover": "https://image.tmdb.org/t/p/w500/43I9DcNoCzpyzK8JCkJYpHqHqGG.jpg",
+    "Runtime": 103
+   }
+  },
+  {
+   "title": "Fallen Angels",
+   "fields": {
+    "Year": 1995,
+    "Director": "Wong Kar-Wai",
+    "Cover": "https://image.tmdb.org/t/p/w500/yyM9BPdwttK5LKZSLvHae7QPKo1.jpg",
+    "Runtime": 98
+   }
+  },
+  {
+   "title": "Happy Together",
+   "fields": {
+    "Year": 1997,
+    "Director": "Wong Kar-Wai",
+    "Cover": "https://image.tmdb.org/t/p/w500/kO4KjUkQOfWSBw06Bdl7m6AlEP7.jpg",
+    "Runtime": 96
+   }
+  },
+  {
+   "title": "In the Mood for Love",
+   "fields": {
+    "Year": 2000,
+    "Director": "Wong Kar-Wai",
+    "Cover": "https://image.tmdb.org/t/p/w500/iYypPT4bhqXfq1b6EnmxvRt6b2Y.jpg",
+    "Runtime": 99
+   }
+  },
+  {
+   "title": "Days of Being Wild",
+   "fields": {
+    "Year": 1990,
+    "Director": "Wong Kar-Wai",
+    "Cover": "https://image.tmdb.org/t/p/w500/g0nbZt1eFlL8FqG8r524iXnpoQV.jpg",
+    "Runtime": 94
+   }
+  },
+  {
+   "title": "As Tears Go By",
+   "fields": {
+    "Year": 1988,
+    "Director": "Wong Kar-Wai",
+    "Cover": "https://image.tmdb.org/t/p/w500/5xMtbxqRXOMO0ovvhAyU4y4JI1E.jpg",
+    "Runtime": 98
+   }
+  },
+  {
+   "title": "Ashes of Time",
+   "fields": {
+    "Year": 1994,
+    "Director": "Wong Kar-Wai",
+    "Cover": "https://image.tmdb.org/t/p/w500/ciyEwAbvoMHPP3281cgSnfslu43.jpg",
+    "Runtime": 100
+   }
+  },
+  {
+   "title": "2046",
+   "fields": {
+    "Year": 2004,
+    "Director": "Wong Kar-Wai",
+    "Cover": "https://image.tmdb.org/t/p/w500/jIN65qw0Giplo4CshzMrxz204Wn.jpg",
+    "Runtime": 128
+   }
+  },
+  {
+   "title": "Nueve Reinas",
+   "fields": {
+    "Year": 2000,
+    "Director": "Fabián Bielinsky",
+    "Cover": "https://image.tmdb.org/t/p/w500/u2L4Foderu7SCPci5c3jsUfEJPP.jpg",
+    "Runtime": 114
+   }
+  },
+  {
+   "title": "Shadows in Paradise",
+   "fields": {
+    "Year": 1986,
+    "Director": "Aki Kaurismäki",
+    "Cover": "https://image.tmdb.org/t/p/w500/nj01hspawPof0mJmlgfjuLyJuRN.jpg",
+    "Runtime": 74
+   }
+  },
+  {
+   "title": "Mistress America",
+   "fields": {
+    "Year": 2015,
+    "Director": "Noah Baumbach",
+    "Cover": "https://image.tmdb.org/t/p/w500/w0V4M9nY9bjsoTKdaAYzL9gRpWY.jpg",
+    "Runtime": 84
+   }
+  },
+  {
+   "title": "In the Soup",
+   "fields": {
+    "Year": 1992,
+    "Director": "Alexandre Rockwell",
+    "Cover": "https://image.tmdb.org/t/p/w500/kj7j6q8g3kptgqnpjpZlr5det2I.jpg",
+    "Runtime": 96
+   }
+  },
+  {
+   "title": "Lips of Blood",
+   "fields": {
+    "Year": 1975,
+    "Director": "Jean Rollin",
+    "Cover": "https://image.tmdb.org/t/p/w500/KpdGQiCQfBUpGqMRZ9RvOtCYw.jpg",
+    "Runtime": 88
+   }
+  },
+  {
+   "title": "Even Dwarfs Started Small",
+   "fields": {
+    "Year": 1970,
+    "Director": "Werner Herzog",
+    "Cover": "https://image.tmdb.org/t/p/w500/b0jmVC1a4LghH9BtzTPn1DELvBP.jpg",
+    "Runtime": 96
+   }
+  },
+  {
+   "title": "One Cut of the Dead",
+   "fields": {
+    "Year": 2017,
+    "Director": "Shinichiro Ueda",
+    "Cover": "https://image.tmdb.org/t/p/w500/rws34k2bqYVo2B5MkhKAbV8925j.jpg",
+    "Runtime": 96
+   }
+  },
+  {
+   "title": "Under the Silver Lake",
+   "fields": {
+    "Year": 2018,
+    "Director": "David Robert Mitchell",
+    "Cover": "https://image.tmdb.org/t/p/w500/6sq6fOb02zjhguNpi5VOklq6Nj.jpg",
+    "Runtime": 139
+   }
+  },
+  {
+   "title": "Festen",
+   "fields": {
+    "Year": 1998,
+    "Director": "Thomas Vinterberg",
+    "Cover": "https://image.tmdb.org/t/p/w500/2LRzNq41yrY8EjCnD1S8sCCPvKk.jpg",
+    "Runtime": 101
+   }
+  },
+  {
+   "title": "Dallas Buyers Club",
+   "fields": {
+    "Year": 2013,
+    "Director": "Jean-Marc Vallée",
+    "Cover": "https://image.tmdb.org/t/p/w500/7Fdh7gUq3plvQqxRbNYhWvDABXA.jpg",
+    "Runtime": 117
+   }
+  },
+  {
+   "title": "The Pianist",
+   "fields": {
+    "Year": 2002,
+    "Director": "Roman Polanski",
+    "Cover": "https://image.tmdb.org/t/p/w500/2hFvxCCWrTmCYwfy7yum0GKRi3Y.jpg",
+    "Runtime": 150
+   }
+  },
+  {
+   "title": "Rosemary's Baby",
+   "fields": {
+    "Year": 1968,
+    "Director": "Roman Polanski",
+    "Cover": "https://image.tmdb.org/t/p/w500/uYgvlHceRFjAFbsNeMInYcLZLUb.jpg",
+    "Runtime": 138
+   }
+  },
+  {
+   "title": "Chinatown",
+   "fields": {
+    "Year": 1974,
+    "Director": "Roman Polanski",
+    "Cover": "https://image.tmdb.org/t/p/w500/kZRSP3FmOcq0xnBulqpUQngJUXY.jpg",
+    "Runtime": 130
+   }
+  },
+  {
+   "title": "KonoSuba: God's Blessing on this Wonderful World!",
+   "fields": {
+    "Year": 2016,
+    "Director": "Takaomi Kanasaki",
+    "Cover": ""
+   }
+  },
+  {
+   "title": "Re:Zero - Starting Life in Another World",
+   "fields": {
+    "Year": 2016,
+    "Director": "Masaharu Watanabe",
+    "Cover": ""
+   }
+  },
+  {
+   "title": "Moonlight",
+   "fields": {
+    "Year": 2016,
+    "Director": "Barry Jenkins",
+    "Cover": "https://image.tmdb.org/t/p/w500/qLnfEmPrDjJfPyyddLJPkXmshkp.jpg",
+    "Runtime": 111
+   }
+  },
+  {
+   "title": "Prisoners",
+   "fields": {
+    "Year": 2013,
+    "Director": "Denis Villeneuve",
+    "Cover": "https://image.tmdb.org/t/p/w500/uhviyknTT5cEQXbn6vWIqfM4vGm.jpg",
+    "Runtime": 153
+   }
+  },
+  {
+   "title": "Forrest Gump",
+   "fields": {
+    "Year": 1994,
+    "Director": "Robert Zemeckis",
+    "Cover": "https://image.tmdb.org/t/p/w500/Cw4hIUIAmSYfK9QfaUW5igp9La.jpg",
+    "Runtime": 142
+   }
+  },
+  {
+   "title": "Oppenheimer",
+   "fields": {
+    "Year": 2023,
+    "Director": "Christopher Nolan",
+    "Cover": "https://image.tmdb.org/t/p/w500/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg",
+    "Runtime": 181
+   }
+  },
+  {
+   "title": "Day for Night",
+   "fields": {
+    "Year": 1973,
+    "Director": "François Truffaut",
+    "Cover": "https://image.tmdb.org/t/p/w500/e5xDrSx6zDEUlMe2dWKGhv88PDZ.jpg",
+    "Runtime": 116
+   }
+  },
+  {
+   "title": "Close-Up",
+   "fields": {
+    "Year": 1990,
+    "Director": "Abbas Kiarostami",
+    "Cover": "https://image.tmdb.org/t/p/w500/m9HG2N9ZKCmNN9qOHJTNyy18wn3.jpg",
+    "Runtime": 98
+   }
+  },
+  {
+   "title": "Babylon",
+   "fields": {
+    "Year": 2022,
+    "Director": "Damien Chazelle",
+    "Cover": "https://image.tmdb.org/t/p/w500/wjOHjWCUE0YzDiEzKv8AfqHj3ir.jpg",
+    "Runtime": 189
+   }
+  },
+  {
+   "title": "The Fabelmans",
+   "fields": {
+    "Year": 2022,
+    "Director": "Steven Spielberg",
+    "Cover": "https://image.tmdb.org/t/p/w500/h7llKkqkkJtJrTOaDLuVeUYDQ7I.jpg",
+    "Runtime": 151
+   }
+  },
+  {
+   "title": "The Player",
+   "fields": {
+    "Year": 1992,
+    "Director": "Robert Altman",
+    "Cover": "https://image.tmdb.org/t/p/w500/tZ3kDut2dhFVGkWNEn9xoCHCNAx.jpg",
+    "Runtime": 124
+   }
+  },
+  {
+   "title": "8½",
+   "fields": {
+    "Year": 1963,
+    "Director": "Federico Fellini",
+    "Cover": "https://image.tmdb.org/t/p/w500/23VIf7zNxAgaXwIlvzd3IvOd9sY.jpg",
+    "Runtime": 139
+   }
+  },
+  {
+   "title": "Camera Buff",
+   "fields": {
+    "Year": 1979,
+    "Director": "Krzysztof Kieślowski",
+    "Cover": "https://image.tmdb.org/t/p/w500/l4n9LXUanIKdlKTCfRqrhwQbtVe.jpg",
+    "Runtime": 112
+   }
+  },
+  {
+   "title": "All That Jazz",
+   "fields": {
+    "Year": 1979,
+    "Director": "Bob Fosse",
+    "Cover": "https://image.tmdb.org/t/p/w500/culCEdj4srLljefgn4XKd6k3C5t.jpg",
+    "Runtime": 123
+   }
+  },
+  {
+   "title": "Blue Valentine",
+   "fields": {
+    "Year": 2010,
+    "Director": "Derek Cianfrance",
+    "Cover": "https://image.tmdb.org/t/p/w500/dc8BdKnDY5Iy28KzUGtHIXuqqFK.jpg",
+    "Runtime": 112
+   }
+  },
+  {
+   "title": "The End of the Tour",
+   "fields": {
+    "Year": 2015,
+    "Director": "James Ponsoldt",
+    "Cover": "https://image.tmdb.org/t/p/w500/3fEuVd8Xorwtk5kFVvyiNlOtcIw.jpg",
+    "Runtime": 106
+   }
+  },
+  {
+   "title": "Warrior",
+   "fields": {
+    "Year": 2011,
+    "Director": "Gavin O'Connor",
+    "Cover": "https://image.tmdb.org/t/p/w500/iM8n4nZJPR2abpnyZ36FUgHiRjr.jpg",
+    "Runtime": 140
+   }
+  },
+  {
+   "title": "The Host",
+   "fields": {
+    "Year": 2006,
+    "Director": "Bong Joon Ho",
+    "Cover": "https://image.tmdb.org/t/p/w500/m3OE5bpcGHMWYlPkYvgIrncuuGN.jpg",
+    "Runtime": 120
+   }
+  },
+  {
+   "title": "Memories of Murder",
+   "fields": {
+    "Year": 2003,
+    "Director": "Bong Joon Ho",
+    "Cover": "https://image.tmdb.org/t/p/w500/jcgUjx1QcupGzjntTVlnQ15lHqy.jpg",
+    "Runtime": 131
+   }
+  },
+  {
+   "title": "Parasite",
+   "fields": {
+    "Year": 2019,
+    "Director": "Bong Joon Ho",
+    "Cover": "https://image.tmdb.org/t/p/w500/7IiTTgloJzvGI1TAYymCfbfl3vT.jpg",
+    "Runtime": 133
+   }
+  },
+  {
+   "title": "Okja",
+   "fields": {
+    "Year": 2017,
+    "Director": "Bong Joon Ho",
+    "Cover": "https://image.tmdb.org/t/p/w500/pHlRr2MfjK77VIIAO7p0R4jhsJI.jpg",
+    "Runtime": 120
+   }
+  },
+  {
+   "title": "Snowpiercer",
+   "fields": {
+    "Year": 2013,
+    "Director": "Bong Joon Ho",
+    "Cover": "https://image.tmdb.org/t/p/w500/kw6YQudA0TMcNmGUGy5XIw7zbnV.jpg",
+    "Runtime": 127
+   }
+  },
+  {
+   "title": "Mickey 17",
+   "fields": {
+    "Year": 2025,
+    "Director": "Bong Joon Ho",
+    "Cover": "https://image.tmdb.org/t/p/w500/edKpE9B5qN3e559OuMCLZdW1iBZ.jpg",
+    "Runtime": 137
+   }
+  },
+  {
+   "title": "Mother",
+   "fields": {
+    "Year": 2009,
+    "Director": "Bong Joon Ho",
+    "Cover": "https://image.tmdb.org/t/p/w500/8oBnSkZE6GDVugAbLPO6uJd4GcS.jpg",
+    "Runtime": 129
+   }
+  },
+  {
+   "title": "Barking Dogs Never Bite",
+   "fields": {
+    "Year": 2000,
+    "Director": "Bong Joon Ho",
+    "Cover": "https://image.tmdb.org/t/p/w500/msLr6T2RhqZNZtdCZScAA8nOWbU.jpg",
+    "Runtime": 110
+   }
+  },
+  {
+   "title": "Beanpole",
+   "fields": {
+    "Year": 2019,
+    "Director": "Kantemir Balagov",
+    "Cover": "https://image.tmdb.org/t/p/w500/nKVrJm1dOwALdr2KHxNFhkbTSZc.jpg",
+    "Runtime": 134
+   }
+  },
+  {
+   "title": "Dogville",
+   "fields": {
+    "Year": 2003,
+    "Director": "Lars von Trier",
+    "Cover": "https://image.tmdb.org/t/p/w500/lraVawavIXh5geMlVjpzCw9TGwR.jpg",
+    "Runtime": 178
+   }
+  },
+  {
+   "title": "Nymphomaniac: Vol. I",
+   "fields": {
+    "Year": 2013,
+    "Director": "Lars von Trier",
+    "Cover": "https://image.tmdb.org/t/p/w500/piikL8vRh3s1ysHGTIqaZpdjfNU.jpg",
+    "Runtime": 118
+   }
+  },
+  {
+   "title": "Melancholia",
+   "fields": {
+    "Year": 2011,
+    "Director": "Lars von Trier",
+    "Cover": "https://image.tmdb.org/t/p/w500/fMneszMiQuTKY8JUXrGGB5vwqJf.jpg",
+    "Runtime": 136
+   }
+  },
+  {
+   "title": "Europa",
+   "fields": {
+    "Year": 1991,
+    "Director": "Agnieszka Holland",
+    "Cover": "https://image.tmdb.org/t/p/w500/CCaA0tjLNjwFfi34XsouCy9Lm6.jpg",
+    "Runtime": 112
+   }
+  },
+  {
+   "title": "Breaking the Waves",
+   "fields": {
+    "Year": 1996,
+    "Director": "Lars von Trier",
+    "Cover": "https://image.tmdb.org/t/p/w500/dQWMcdHXUOSHtr7ypOCa5T79JMS.jpg",
+    "Runtime": 159
+   }
+  },
+  {
+   "title": "Dancer in the Dark",
+   "fields": {
+    "Year": 2000,
+    "Director": "Lars von Trier",
+    "Cover": "https://image.tmdb.org/t/p/w500/pWzOfTJRZHPNO1VNrMnNFqRcJwg.jpg",
+    "Runtime": 140
+   }
+  },
+  {
+   "title": "Antichrist",
+   "fields": {
+    "Year": 2009,
+    "Director": "Lars von Trier",
+    "Cover": "https://image.tmdb.org/t/p/w500/ge7zbYvpfsDP3luKi0iSpzOgncM.jpg",
+    "Runtime": 104
+   }
+  },
+  {
+   "title": "The House That Jack Built",
+   "fields": {
+    "Year": 2018,
+    "Director": "Lars von Trier",
+    "Cover": "https://image.tmdb.org/t/p/w500/bMUGNkPaHOurcBK9g3XpJx3fxuO.jpg",
+    "Runtime": 152
+   }
+  },
+  {
+   "title": "Ratcatcher",
+   "fields": {
+    "Year": 1999,
+    "Director": "Lynne Ramsay",
+    "Cover": "https://image.tmdb.org/t/p/w500/dvrN33jql75Bd0I0i75oSJ9pXzX.jpg",
+    "Runtime": 94
+   }
+  },
+  {
+   "title": "Naked",
+   "fields": {
+    "Year": 1993,
+    "Director": "Mike Leigh",
+    "Cover": "https://image.tmdb.org/t/p/w500/xMYP4uaNeyPmX4FQ2xxWk2eIN6K.jpg",
+    "Runtime": 131
+   }
+  },
+  {
+   "title": "Au Revoir les Enfants",
+   "fields": {
+    "Year": 1987,
+    "Director": "Louis Malle",
+    "Cover": "https://image.tmdb.org/t/p/w500/lXP90Vx7OcviBfbbokcaG6zVnPG.jpg",
+    "Runtime": 105
+   }
+  },
+  {
+   "title": "Zodiac",
+   "fields": {
+    "Year": 2007,
+    "Director": "David Fincher",
+    "Cover": "https://image.tmdb.org/t/p/w500/6YmeO4pB7XTh8P8F960O1uA14JO.jpg",
+    "Runtime": 157
+   }
+  },
+  {
+   "title": "Killing Them Softly",
+   "fields": {
+    "Year": 2012,
+    "Director": "Andrew Dominik",
+    "Cover": "https://image.tmdb.org/t/p/w500/heaz45kpFa4Oa7iLis0OBas68ls.jpg",
+    "Runtime": 97
+   }
+  },
+  {
+   "title": "The Killing of a Sacred Deer",
+   "fields": {
+    "Year": 2017,
+    "Director": "Yorgos Lanthimos",
+    "Cover": "https://image.tmdb.org/t/p/w500/e4DGlsc9g0h5AyoyvvAuIRnofN7.jpg",
+    "Runtime": 121
+   }
+  },
+  {
+   "title": "The Place Beyond the Pines",
+   "fields": {
+    "Year": 2012,
+    "Director": "Derek Cianfrance",
+    "Cover": "https://image.tmdb.org/t/p/w500/vY5j2xQzMGWmxBuhQo0HfA4Lxqb.jpg",
+    "Runtime": 140
+   }
+  },
+  {
+   "title": "Carrie",
+   "fields": {
+    "Year": 1976,
+    "Director": "Brian De Palma",
+    "Cover": "https://image.tmdb.org/t/p/w500/8tT1rqlsTguyfUBMrbHR9cv1rxM.jpg",
+    "Runtime": 98
+   }
+  },
+  {
+   "title": "A Nightmare on Elm Street",
+   "fields": {
+    "Year": 1984,
+    "Director": "Wes Craven",
+    "Cover": "https://image.tmdb.org/t/p/w500/b9rMHAAKISRmIonaQd9Cccx0S4X.jpg",
+    "Runtime": 91
+   }
+  },
+  {
+   "title": "Blue Velvet",
+   "fields": {
+    "Year": 1986,
+    "Director": "David Lynch",
+    "Cover": "https://image.tmdb.org/t/p/w500/6v1zYh2FKOYVddY5pCQhd4PO9uX.jpg",
+    "Runtime": 120
+   }
+  },
+  {
+   "title": "Edward Scissorhands",
+   "fields": {
+    "Year": 1990,
+    "Director": "Tim Burton",
+    "Cover": "https://image.tmdb.org/t/p/w500/e0FqKFvGPdQNWG8tF9cZBtev9Em.jpg",
+    "Runtime": 105
+   }
+  },
+  {
+   "title": "Donnie Darko",
+   "fields": {
+    "Year": 2001,
+    "Director": "Richard Kelly",
+    "Cover": "https://image.tmdb.org/t/p/w500/j2AtZFsflxiluaNtajMTI0Avm8C.jpg",
+    "Runtime": 114
+   }
+  },
+  {
+   "title": "Out of the Blue",
+   "fields": {
+    "Year": 1980,
+    "Director": "Dennis Hopper",
+    "Cover": "https://image.tmdb.org/t/p/w500/rEWfWQDbx2upk9CAPRDDjCjc9a8.jpg",
+    "Runtime": 94
+   }
+  },
+  {
+   "title": "Heat and Sunlight",
+   "fields": {
+    "Year": 1987,
+    "Director": "Rob Nilsson",
+    "Cover": "https://image.tmdb.org/t/p/w500/uDSEydctMYS03CeCcM9aRMxKexN.jpg",
+    "Runtime": 98
+   }
+  },
+  {
+   "title": "Harold and Maude",
+   "fields": {
+    "Year": 1971,
+    "Director": "Hal Ashby",
+    "Cover": "https://image.tmdb.org/t/p/w500/t7qEuGwDjcYu8ajaKZ68DeDnOxw.jpg",
+    "Runtime": 92
+   }
+  },
+  {
+   "title": "Eternal Sunshine of the Spotless Mind",
+   "fields": {
+    "Year": 2004,
+    "Director": "Michel Gondry",
+    "Cover": "https://image.tmdb.org/t/p/w500/5MwkWH9tYHv3mV9OdYTMR5qreIz.jpg",
+    "Runtime": 108
+   }
+  },
+  {
+   "title": "Angelo My Love",
+   "fields": {
+    "Year": 1983,
+    "Director": "Robert Duvall",
+    "Cover": "https://image.tmdb.org/t/p/w500/jYMQHkplOMC6g9yQKeBHWn7nR9o.jpg",
+    "Runtime": 115
+   }
+  },
+  {
+   "title": "Something's Gotta Give",
+   "fields": {
+    "Year": 2003,
+    "Director": "Nancy Meyers",
+    "Cover": "https://image.tmdb.org/t/p/w500/1cpdqe0SpiHzzbOLq9GDUUlZdSl.jpg",
+    "Runtime": 128
+   }
+  },
+  {
+   "title": "Bridesmaids",
+   "fields": {
+    "Year": 2011,
+    "Director": "Paul Feig",
+    "Cover": "https://image.tmdb.org/t/p/w500/gJtA7hYsBMQ7EM3sPBMUdBfU7a0.jpg",
+    "Runtime": 125
+   }
+  },
+  {
+   "title": "The Offence",
+   "fields": {
+    "Year": 1973,
+    "Director": "Sidney Lumet",
+    "Cover": "https://image.tmdb.org/t/p/w500/cmuvg6tGCKayTFidJgg1iYhrOop.jpg",
+    "Runtime": 113
+   }
+  },
+  {
+   "title": "The Fugitive Kind",
+   "fields": {
+    "Year": 1960,
+    "Director": "Sidney Lumet",
+    "Cover": "https://image.tmdb.org/t/p/w500/ta2ircBtQs8EZXe6QznCI5J6N3i.jpg",
+    "Runtime": 119
+   }
+  },
+  {
+   "title": "The Pawnbroker",
+   "fields": {
+    "Year": 1964,
+    "Director": "Sidney Lumet",
+    "Cover": "https://image.tmdb.org/t/p/w500/o4CT5WPqmOLF2QfodAuGT7jQNn1.jpg",
+    "Runtime": 116
+   }
+  },
+  {
+   "title": "Stranger Than Paradise",
+   "fields": {
+    "Year": 1984,
+    "Director": "Jim Jarmusch",
+    "Cover": "https://image.tmdb.org/t/p/w500/Q9wdlNjBOti4JhAjAQXphzShw3.jpg",
+    "Runtime": 90
+   }
+  },
+  {
+   "title": "Night on Earth",
+   "fields": {
+    "Year": 1991,
+    "Director": "Jim Jarmusch",
+    "Cover": "https://image.tmdb.org/t/p/w500/ktejUHCo6c8DekpOtR3uSb6oDXr.jpg",
+    "Runtime": 129
+   }
+  },
+  {
+   "title": "Down by Law",
+   "fields": {
+    "Year": 1986,
+    "Director": "Jim Jarmusch",
+    "Cover": "https://image.tmdb.org/t/p/w500/4IyxoUQ7BB5kcSd7gASe2dTyWu7.jpg",
+    "Runtime": 106
+   }
+  },
+  {
+   "title": "The Idiot",
+   "fields": {
+    "Year": 1951,
+    "Director": "Akira Kurosawa",
+    "Cover": "https://image.tmdb.org/t/p/w500/4a6zhVb9a9KEnxNevKrJLfuGhm4.jpg",
+    "Runtime": 166
+   }
+  },
+  {
+   "title": "Scandal",
+   "fields": {
+    "Year": 1950,
+    "Director": "Akira Kurosawa",
+    "Cover": "https://image.tmdb.org/t/p/w500/nIpDB30mVA37o7ezno4vaiYpJ88.jpg",
+    "Runtime": 104
+   }
+  },
+  {
+   "title": "Seven Samurai",
+   "fields": {
+    "Year": 1954,
+    "Director": "Akira Kurosawa",
+    "Cover": "https://image.tmdb.org/t/p/w500/lOMGc8bnSwQhS4XyE1S99uH8NXf.jpg",
+    "Runtime": 207
+   }
+  },
+  {
+   "title": "Aguirre, the Wrath of God",
+   "fields": {
+    "Year": 1972,
+    "Director": "Werner Herzog",
+    "Cover": "https://image.tmdb.org/t/p/w500/zU1FLiGJw3m3iFrakwA0SzFvIPV.jpg",
+    "Runtime": 95
+   }
+  },
+  {
+   "title": "Fitzcarraldo",
+   "fields": {
+    "Year": 1982,
+    "Director": "Werner Herzog",
+    "Cover": "https://image.tmdb.org/t/p/w500/oBCnYEKcg1rMhr5JjDnrRpilvDd.jpg",
+    "Runtime": 157
+   }
+  },
+  {
+   "title": "Cobra Verde",
+   "fields": {
+    "Year": 1987,
+    "Director": "Werner Herzog",
+    "Cover": "https://image.tmdb.org/t/p/w500/5Cce5ZgJ9yyDqCmwAi6mcULfIop.jpg",
+    "Runtime": 111
+   }
+  },
+  {
+   "title": "Eraserhead",
+   "fields": {
+    "Year": 1977,
+    "Director": "David Lynch",
+    "Cover": "https://image.tmdb.org/t/p/w500/mxveW3mGVc0DzLdOmtkZsgd7c3B.jpg",
+    "Runtime": 89
+   }
+  },
+  {
+   "title": "Mulholland Drive",
+   "fields": {
+    "Year": 2001,
+    "Director": "David Lynch",
+    "Cover": "https://image.tmdb.org/t/p/w500/x7A59t6ySylr1L7aubOQEA480vM.jpg",
+    "Runtime": 147
+   }
+  },
+  {
+   "title": "Fando y Lis",
+   "fields": {
+    "Year": 1968,
+    "Director": "Alejandro Jodorowsky",
+    "Cover": "https://image.tmdb.org/t/p/w500/3GBjyujvyLEOtKL5WIm4UN9WHh5.jpg",
+    "Runtime": 97
+   }
+  },
+  {
+   "title": "El Topo",
+   "fields": {
+    "Year": 1970,
+    "Director": "Alejandro Jodorowsky",
+    "Cover": "https://image.tmdb.org/t/p/w500/fKoNBTATc94rUYLq8VyypS24LUw.jpg",
+    "Runtime": 125
+   }
+  },
+  {
+   "title": "The Holy Mountain",
+   "fields": {
+    "Year": 1973,
+    "Director": "Alejandro Jodorowsky",
+    "Cover": "https://image.tmdb.org/t/p/w500/mP5FGQbNjFkrjcZ6AVHrvokPRe5.jpg",
+    "Runtime": 113
+   }
+  },
+  {
+   "title": "Repulsion",
+   "fields": {
+    "Year": 1965,
+    "Director": "Roman Polanski",
+    "Cover": "https://image.tmdb.org/t/p/w500/dtyCKEPLqv9wxyVazL4b843vtUb.jpg",
+    "Runtime": 105
+   }
+  },
+  {
+   "title": "Cul-de-sac",
+   "fields": {
+    "Year": 1966,
+    "Director": "Roman Polanski",
+    "Cover": "https://image.tmdb.org/t/p/w500/5YmxgiY8Pi9D1kawwzQUE7nCQQM.jpg",
+    "Runtime": 112
+   }
+  },
+  {
+   "title": "Knife in the Water",
+   "fields": {
+    "Year": 1962,
+    "Director": "Roman Polanski",
+    "Cover": "https://image.tmdb.org/t/p/w500/tkdeCwZhy9hzzVjZFjw0RPGWUIg.jpg",
+    "Runtime": 94
+   }
+  },
+  {
+   "title": "Johnny Guitar",
+   "fields": {
+    "Year": 1954,
+    "Director": "Nicholas Ray",
+    "Cover": "https://image.tmdb.org/t/p/w500/bap37yOCwcR9x4YDsNUaSo9nIp9.jpg",
+    "Runtime": 110
+   }
+  },
+  {
+   "title": "Sin City",
+   "fields": {
+    "Year": 2005,
+    "Director": "Robert Rodriguez",
+    "Cover": "https://image.tmdb.org/t/p/w500/i66G50wATMmPrvpP95f0XP6ZdVS.jpg",
+    "Runtime": 124
+   }
+  },
+  {
+   "title": "The Red Shoes",
+   "fields": {
+    "Year": 1948,
+    "Director": "Emeric Pressburger",
+    "Cover": "https://image.tmdb.org/t/p/w500/vPvpBWFWDvEXuQBkoYgA6A89GVp.jpg",
+    "Runtime": 133
+   }
+  },
+  {
+   "title": "Homeboy",
+   "fields": {
+    "Year": 1988,
+    "Director": "Michael Seresin",
+    "Cover": "https://image.tmdb.org/t/p/w500/kBgj9y1mrzFCxtnktsnZeVWRgVC.jpg",
+    "Runtime": 116
+   }
+  },
+  {
+   "title": "Protozoa",
+   "fields": {
+    "Year": 1992,
+    "Director": "Darren Aronofsky",
+    "Cover": ""
+   }
+  },
+  {
+   "title": "Pi",
+   "fields": {
+    "Year": 1998,
+    "Director": "Darren Aronofsky",
+    "Cover": "https://image.tmdb.org/t/p/w500/fJA22FjlAW8rzrOw9Mwanl6oTc9.jpg",
+    "Runtime": 84
+   }
+  },
+  {
+   "title": "Requiem for a Dream",
+   "fields": {
+    "Year": 2000,
+    "Director": "Darren Aronofsky",
+    "Cover": "https://image.tmdb.org/t/p/w500/9BTwsLaMVHOGFlmsSlx5QYCaXb.jpg",
+    "Runtime": 102
+   }
+  },
+  {
+   "title": "The Fountain",
+   "fields": {
+    "Year": 2006,
+    "Director": "Darren Aronofsky",
+    "Cover": "https://image.tmdb.org/t/p/w500/4XTf8GuCVLWolubANaKkpk62YPq.jpg",
+    "Runtime": 96
+   }
+  },
+  {
+   "title": "The Wrestler",
+   "fields": {
+    "Year": 2008,
+    "Director": "Darren Aronofsky",
+    "Cover": "https://image.tmdb.org/t/p/w500/6OTR8dSoNGjWohJNo3UhIGd3Tj.jpg",
+    "Runtime": 109
+   }
+  },
+  {
+   "title": "Black Swan",
+   "fields": {
+    "Year": 2010,
+    "Director": "Darren Aronofsky",
+    "Cover": "https://image.tmdb.org/t/p/w500/viWheBd44bouiLCHgNMvahLThqx.jpg",
+    "Runtime": 108
+   }
+  },
+  {
+   "title": "Noah",
+   "fields": {
+    "Year": 2014,
+    "Director": "Darren Aronofsky",
+    "Cover": "https://image.tmdb.org/t/p/w500/vVLkHabnF5lVpCpqyhZBI5iCYMA.jpg",
+    "Runtime": 138
+   }
+  },
+  {
+   "title": "mother!",
+   "fields": {
+    "Year": 2017,
+    "Director": "Darren Aronofsky",
+    "Cover": "https://image.tmdb.org/t/p/w500/fjny9chXPx69ln1LMJxbwi5yHMt.jpg",
+    "Runtime": 121
+   }
+  },
+  {
+   "title": "The Whale",
+   "fields": {
+    "Year": 2022,
+    "Director": "Darren Aronofsky",
+    "Cover": "https://image.tmdb.org/t/p/w500/jQ0gylJMxWSL490sy0RrPj1Lj7e.jpg",
+    "Runtime": 117
+   }
+  },
+  {
+   "title": "Caught Stealing",
+   "fields": {
+    "Year": 2025,
+    "Director": "Darren Aronofsky",
+    "Cover": "https://image.tmdb.org/t/p/w500/cvda8s5J8YaHjTyEyXQpvD6f3iV.jpg",
+    "Runtime": 107
+   }
+  },
+  {
+   "title": "The Lord of the Rings: The Fellowship of the Ring",
+   "fields": {
+    "Year": 2001,
+    "Director": "Peter Jackson",
+    "Cover": "https://image.tmdb.org/t/p/w500/6oom5QYQ2yQTMJIbnvbkBL9cHo6.jpg",
+    "Runtime": 179
+   }
+  },
+  {
+   "title": "The Lord of the Rings: The Two Towers",
+   "fields": {
+    "Year": 2002,
+    "Director": "Peter Jackson",
+    "Cover": "https://image.tmdb.org/t/p/w500/5VTN0pR8gcqV3EPUHHfMGnJYN9L.jpg",
+    "Runtime": 179
+   }
+  },
+  {
+   "title": "The Lord of the Rings: The Return of the King",
+   "fields": {
+    "Year": 2003,
+    "Director": "Peter Jackson",
+    "Cover": "https://image.tmdb.org/t/p/w500/rCzpDGLbOoPwLjy3OAm5NUPOTrC.jpg",
+    "Runtime": 201
+   }
+  },
+  {
+   "title": "It's a Wonderful Life",
+   "fields": {
+    "Year": 1946,
+    "Director": "Frank Capra",
+    "Cover": "https://image.tmdb.org/t/p/w500/bSqt9rhDZx1Q7UZ86dBPKdNomp2.jpg",
+    "Runtime": 131
+   }
+  },
+  {
+   "title": "Jojo Rabbit",
+   "fields": {
+    "Year": 2019,
+    "Director": "Taika Waititi",
+    "Cover": "https://image.tmdb.org/t/p/w500/1mqL7VG4Ix8wmxwypmCA1HTHBky.jpg",
+    "Runtime": 108
+   }
+  },
+  {
+   "title": "Demolition",
+   "fields": {
+    "Year": 2015,
+    "Director": "Jean-Marc Vallée",
+    "Cover": "https://image.tmdb.org/t/p/w500/4t56LZ1KbOOxgKfqMKN6truBDVc.jpg",
+    "Runtime": 101
+   }
+  },
+  {
+   "title": "Amélie",
+   "fields": {
+    "Year": 2001,
+    "Director": "Jean-Pierre Jeunet",
+    "Cover": "https://image.tmdb.org/t/p/w500/nSxDa3M9aMvGVLoItzWTepQ5h5d.jpg",
+    "Runtime": 122
+   }
+  },
+  {
+   "title": "Thelma & Louise",
+   "fields": {
+    "Year": 1991,
+    "Director": "Ridley Scott",
+    "Cover": "https://image.tmdb.org/t/p/w500/vbRAGLzbC75QfiKD1lKjmnQGuph.jpg",
+    "Runtime": 130
+   }
+  },
+  {
+   "title": "The Intouchables",
+   "fields": {
+    "Year": 2011,
+    "Director": "Éric Toledano",
+    "Cover": "https://image.tmdb.org/t/p/w500/1QU7HKgsQbGpzsJbJK4pAVQV9F5.jpg",
+    "Runtime": 113
+   }
+  },
+  {
+   "title": "The Usual Suspects",
+   "fields": {
+    "Year": 1995,
+    "Director": "Bryan Singer",
+    "Cover": "https://image.tmdb.org/t/p/w500/99X2SgyFunJFXGAYnDv3sb9pnUD.jpg",
+    "Runtime": 106
+   }
+  },
+  {
+   "title": "Before Sunrise",
+   "fields": {
+    "Year": 1995,
+    "Director": "Richard Linklater",
+    "Cover": "https://image.tmdb.org/t/p/w500/kf1Jb1c2JAOqjuzA3H4oDM263uB.jpg",
+    "Runtime": 101
+   }
+  },
+  {
+   "title": "Before Sunset",
+   "fields": {
+    "Year": 2004,
+    "Director": "Richard Linklater",
+    "Cover": "https://image.tmdb.org/t/p/w500/4sW5XH9ZfYXpvFzev00S1IGAEbg.jpg",
+    "Runtime": 80
+   }
+  },
+  {
+   "title": "Before Midnight",
+   "fields": {
+    "Year": 2013,
+    "Director": "Richard Linklater",
+    "Cover": "https://image.tmdb.org/t/p/w500/qbGKJmNUroDz75kh5Oafoall89e.jpg",
+    "Runtime": 109
+   }
+  },
+  {
+   "title": "The Pursuit of Happyness",
+   "fields": {
+    "Year": 2006,
+    "Director": "Gabriele Muccino",
+    "Cover": "https://image.tmdb.org/t/p/w500/lBYOKAMcxIvuk9s9hMuecB9dPBV.jpg",
+    "Runtime": 117
+   }
+  },
+  {
+   "title": "Scent of a Woman",
+   "fields": {
+    "Year": 1992,
+    "Director": "Martin Brest",
+    "Cover": "https://image.tmdb.org/t/p/w500/4adI7IaveWb7EidYXfLb3MK3CgO.jpg",
+    "Runtime": 156
+   }
+  },
+  {
+   "title": "City of God",
+   "fields": {
+    "Year": 2002,
+    "Director": "Fernando Meirelles",
+    "Cover": "https://image.tmdb.org/t/p/w500/k7eYdWvhYQyRQoU2TB2A2Xu2TfD.jpg",
+    "Runtime": 129
+   }
+  },
+  {
+   "title": "La Haine",
+   "fields": {
+    "Year": 1995,
+    "Director": "Mathieu Kassovitz",
+    "Cover": "https://image.tmdb.org/t/p/w500/hY4exng4s29RzDbtQInjx9MA3PZ.jpg",
+    "Runtime": 98
+   }
+  },
+  {
+   "title": "Blow",
+   "fields": {
+    "Year": 2001,
+    "Director": "Ted Demme",
+    "Cover": "https://image.tmdb.org/t/p/w500/yYZFVfk8aeMP4GxBSU9MTvqs9mJ.jpg",
+    "Runtime": 124
+   }
+  },
+  {
+   "title": "Gomorrah",
+   "fields": {
+    "Year": 2008,
+    "Director": "Matteo Garrone",
+    "Cover": "https://image.tmdb.org/t/p/w500/3XcCTqSovFZE5GRebJmh1kHwziw.jpg",
+    "Runtime": 137
+   }
+  },
+  {
+   "title": "L'Immortale",
+   "fields": {
+    "Year": 2019,
+    "Director": "Marco D'Amore",
+    "Cover": "https://image.tmdb.org/t/p/w500/kWLsOI2CPpdCBiAxpAXPdoE9435.jpg",
+    "Runtime": 115
+   }
+  },
+  {
+   "title": "Azumi",
+   "fields": {
+    "Year": 2003,
+    "Director": "Ryuhei Kitamura",
+    "Cover": "https://image.tmdb.org/t/p/w500/3pnMViIDP6whWXnTBq7ibQipSyS.jpg",
+    "Runtime": 128
+   }
+  },
+  {
+   "title": "Ichi the Killer",
+   "fields": {
+    "Year": 2001,
+    "Director": "Takashi Miike",
+    "Cover": "https://image.tmdb.org/t/p/w500/k8j4YLZlda98dqp9ErymKzjYowG.jpg",
+    "Runtime": 129
+   }
+  },
+  {
+   "title": "When Harry Met Sally...",
+   "fields": {
+    "Year": 1989,
+    "Director": "Rob Reiner",
+    "Cover": "https://image.tmdb.org/t/p/w500/rFOiFUhTMtDetqCGClC9PIgnC1P.jpg",
+    "Runtime": 96
+   }
+  },
+  {
+   "title": "East of Eden",
+   "fields": {
+    "Year": 1955,
+    "Director": "Elia Kazan",
+    "Cover": "https://image.tmdb.org/t/p/w500/xv1MZVIop0SQqwLUymgE5eb2LFl.jpg",
+    "Runtime": 115
+   }
+  },
+  {
+   "title": "Bicycle Thieves",
+   "fields": {
+    "Year": 1948,
+    "Director": "Vittorio De Sica",
+    "Cover": "https://image.tmdb.org/t/p/w500/iPdVqIpmR3bRvOQJPrn4pr2KR3q.jpg",
+    "Runtime": 89
+   }
+  },
+  {
+   "title": "Lawrence of Arabia",
+   "fields": {
+    "Year": 1962,
+    "Director": "David Lean",
+    "Cover": "https://image.tmdb.org/t/p/w500/AiAm0EtDvyGqNpVoieRw4u65vD1.jpg",
+    "Runtime": 228
+   }
+  },
+  {
+   "title": "Yojimbo",
+   "fields": {
+    "Year": 1961,
+    "Director": "Akira Kurosawa",
+    "Cover": "https://image.tmdb.org/t/p/w500/tN7kYPjRhDolpui9sc9Eq9n5b2O.jpg",
+    "Runtime": 110
+   }
+  },
+  {
+   "title": "The Third Man",
+   "fields": {
+    "Year": 1949,
+    "Director": "Carol Reed",
+    "Cover": "https://image.tmdb.org/t/p/w500/rO2Fq0AZZx9obs52KJdx4mRE8p5.jpg",
+    "Runtime": 105
+   }
+  },
+  {
+   "title": "Sunset Boulevard",
+   "fields": {
+    "Year": 1950,
+    "Director": "Billy Wilder",
+    "Cover": "https://image.tmdb.org/t/p/w500/zt8aQ6ksqK6p1AopC5zVTDS9pKT.jpg",
+    "Runtime": 110
+   }
+  },
+  {
+   "title": "Groundhog Day",
+   "fields": {
+    "Year": 1993,
+    "Director": "Harold Ramis",
+    "Cover": "https://image.tmdb.org/t/p/w500/gCgt1WARPZaXnq523ySQEUKinCs.jpg",
+    "Runtime": 101
+   }
+  },
+  {
+   "title": "Auntie Mame",
+   "fields": {
+    "Year": 1958,
+    "Director": "Morton DaCosta",
+    "Cover": "https://image.tmdb.org/t/p/w500/uH810rwkYEbUaV6IlwTaAExbXUm.jpg",
+    "Runtime": 143
+   }
+  },
+  {
+   "title": "Terminator 2: Judgment Day",
+   "fields": {
+    "Year": 1991,
+    "Director": "James Cameron",
+    "Cover": "https://image.tmdb.org/t/p/w500/jFTVD4XoWQTcg7wdyJKa8PEds5q.jpg",
+    "Runtime": 137
+   }
+  },
+  {
+   "title": "The Adventures of Priscilla, Queen of the Desert",
+   "fields": {
+    "Year": 1994,
+    "Director": "Stephan Elliott",
+    "Cover": "https://image.tmdb.org/t/p/w500/kJ7syYXEJgSBmBfSnF3Can9cK1J.jpg",
+    "Runtime": 103
+   }
+  },
+  {
+   "title": "Roman Holiday",
+   "fields": {
+    "Year": 1953,
+    "Director": "William Wyler",
+    "Cover": "https://image.tmdb.org/t/p/w500/8lI9dmz1RH20FAqltkGelY1v4BE.jpg",
+    "Runtime": 119
+   }
+  },
+  {
+   "title": "Hobson's Choice",
+   "fields": {
+    "Year": 1954,
+    "Director": "David Lean",
+    "Cover": "https://image.tmdb.org/t/p/w500/kbP7EgoiOw2bIypai50JWRsqP7p.jpg",
+    "Runtime": 108
+   }
+  },
+  {
+   "title": "High Noon",
+   "fields": {
+    "Year": 1952,
+    "Director": "Fred Zinnemann",
+    "Cover": "https://image.tmdb.org/t/p/w500/qETSMQ4IXBSAS409Z9OL0ppXWTW.jpg",
+    "Runtime": 85
+   }
+  },
+  {
+   "title": "Sabrina",
+   "fields": {
+    "Year": 1954,
+    "Director": "Billy Wilder",
+    "Cover": "https://image.tmdb.org/t/p/w500/e1Po9NDrH7IJZhv89467gJH5FS0.jpg",
+    "Runtime": 114
+   }
+  },
+  {
+   "title": "From Here to Eternity",
+   "fields": {
+    "Year": 1953,
+    "Director": "Fred Zinnemann",
+    "Cover": "https://image.tmdb.org/t/p/w500/25Rm1YJSyhXAEu8abonZvW83aPL.jpg",
+    "Runtime": 118
+   }
+  },
+  {
+   "title": "Mean Streets",
+   "fields": {
+    "Year": 1973,
+    "Director": "Martin Scorsese",
+    "Cover": "https://image.tmdb.org/t/p/w500/9msfwOeGc9uL1iRRTBdEf15XonC.jpg",
+    "Runtime": 112
+   }
+  },
+  {
+   "title": "On the Waterfront",
+   "fields": {
+    "Year": 1954,
+    "Director": "Elia Kazan",
+    "Cover": "https://image.tmdb.org/t/p/w500/v1RtJ1qR4v9nrnfoBVBl6hjTW9.jpg",
+    "Runtime": 108
+   }
+  },
+  {
+   "title": "Apocalypse Now",
+   "fields": {
+    "Year": 1979,
+    "Director": "Francis Ford Coppola",
+    "Cover": "https://image.tmdb.org/t/p/w500/gQB8Y5RCMkv2zwzFHbUJX3kAhvA.jpg",
+    "Runtime": 147
+   }
+  },
+  {
+   "title": "The Big Lebowski",
+   "fields": {
+    "Year": 1998,
+    "Director": "Joel Coen",
+    "Cover": "https://image.tmdb.org/t/p/w500/3bv6WAp6BSxxYvB5ozKFUYuRA8C.jpg",
+    "Runtime": 117
+   }
+  },
+  {
+   "title": "All the President's Men",
+   "fields": {
+    "Year": 1976,
+    "Director": "Alan J. Pakula",
+    "Cover": "https://image.tmdb.org/t/p/w500/pCe6lfLxt1B58zPD4lgQrlnDS2j.jpg",
+    "Runtime": 138
+   }
+  },
+  {
+   "title": "One Flew Over the Cuckoo's Nest",
+   "fields": {
+    "Year": 1975,
+    "Director": "Miloš Forman",
+    "Cover": "https://image.tmdb.org/t/p/w500/kjWsMh72V6d8KRLV4EOoSJLT1H7.jpg",
+    "Runtime": 135
+   }
+  },
+  {
+   "title": "Saturday Night Fever",
+   "fields": {
+    "Year": 1977,
+    "Director": "John Badham",
+    "Cover": "https://image.tmdb.org/t/p/w500/ylA7E5Md21aqgzxbwa2dFxX8LKV.jpg",
+    "Runtime": 118
+   }
+  },
+  {
+   "title": "Dog Day Afternoon",
+   "fields": {
+    "Year": 1975,
+    "Director": "Sidney Lumet",
+    "Cover": "https://image.tmdb.org/t/p/w500/mavrhr0ig2aCRR8d48yaxtD5aMQ.jpg",
+    "Runtime": 125
+   }
+  },
+  {
+   "title": "The Education of Sonny Carson",
+   "fields": {
+    "Year": 1974,
+    "Director": "Michael Campus",
+    "Cover": "https://image.tmdb.org/t/p/w500/8dfRfzdqfrPD99cpdni69h3rx5r.jpg",
+    "Runtime": 104
+   }
+  },
+  {
+   "title": "Rebel Without a Cause",
+   "fields": {
+    "Year": 1955,
+    "Director": "Nicholas Ray",
+    "Cover": "https://image.tmdb.org/t/p/w500/yHStsC8rRRfIjqRN38BQsLh6S7k.jpg",
+    "Runtime": 111
+   }
+  },
+  {
+   "title": "The Leopard",
+   "fields": {
+    "Year": 1963,
+    "Director": "Luchino Visconti",
+    "Cover": "https://image.tmdb.org/t/p/w500/riSUxwoK3xjkOgy6YJSvPhi7cO6.jpg",
+    "Runtime": 186
+   }
+  },
+  {
+   "title": "Ugetsu",
+   "fields": {
+    "Year": 1953,
+    "Director": "Kenji Mizoguchi",
+    "Cover": "https://image.tmdb.org/t/p/w500/r8RiuKTIYIJBjczBVsfeP5C00CJ.jpg",
+    "Runtime": 96
+   }
+  },
+  {
+   "title": "The Searchers",
+   "fields": {
+    "Year": 1956,
+    "Director": "John Ford",
+    "Cover": "https://image.tmdb.org/t/p/w500/jLBmgW0epNzJ1N9uzaVCjbyT94v.jpg",
+    "Runtime": 119
+   }
+  },
+  {
+   "title": "Salvatore Giuliano",
+   "fields": {
+    "Year": 1962,
+    "Director": "Francesco Rosi",
+    "Cover": "https://image.tmdb.org/t/p/w500/uaFTCD0y2MEccTFyHOHj6IrwyZ.jpg",
+    "Runtime": 119
+   }
+  },
+  {
+   "title": "Ashes and Diamonds",
+   "fields": {
+    "Year": 1958,
+    "Director": "Andrzej Wajda",
+    "Cover": "https://image.tmdb.org/t/p/w500/nE8aqRvVnRQEqskiarnFhdJdk8g.jpg",
+    "Runtime": 103
+   }
+  },
+  {
+   "title": "The Changeling",
+   "fields": {
+    "Year": 1980,
+    "Director": "Peter Medak",
+    "Cover": "https://image.tmdb.org/t/p/w500/z4nTYj3JZ5jWAhDgrmEhW2GRAzb.jpg",
+    "Runtime": 107
+   }
+  },
+  {
+   "title": "Contempt",
+   "fields": {
+    "Year": 1963,
+    "Director": "Jean-Luc Godard",
+    "Cover": "https://image.tmdb.org/t/p/w500/kNElbRcp4Qz6wmJ9kH5vdY004Hq.jpg",
+    "Runtime": 103
+   }
+  },
+  {
+   "title": "Dead of Night",
+   "fields": {
+    "Year": 1945,
+    "Director": "Charles Crichton",
+    "Cover": "https://image.tmdb.org/t/p/w500/6bpPtLRMbfSkH0k6sLdJRIcEeq3.jpg",
+    "Runtime": 103
+   }
+  },
+  {
+   "title": "The Cabinet of Dr. Caligari",
+   "fields": {
+    "Year": 1920,
+    "Director": "Robert Wiene",
+    "Cover": "https://image.tmdb.org/t/p/w500/myK9DeIsXWGKgUTZyGXg2IfFk0W.jpg",
+    "Runtime": 77
+   }
+  },
+  {
+   "title": "The Brain That Wouldn't Die",
+   "fields": {
+    "Year": 1962,
+    "Director": "Joseph Green",
+    "Cover": "https://image.tmdb.org/t/p/w500/npg6NH4maZ4NTTWzA71KNCTvQNG.jpg",
+    "Runtime": 82
+   }
+  },
+  {
+   "title": "Dick Tracy",
+   "fields": {
+    "Year": 1990,
+    "Director": "Warren Beatty",
+    "Cover": "https://image.tmdb.org/t/p/w500/sjeP4bpgsUvAGE8oFcICy2GaHxw.jpg",
+    "Runtime": 105
+   }
+  },
+  {
+   "title": "When Dinosaurs Ruled the Earth",
+   "fields": {
+    "Year": 1970,
+    "Director": "Val Guest",
+    "Cover": "https://image.tmdb.org/t/p/w500/jrqwwOfeGQSlRIOvn2zOE9oYHyh.jpg",
+    "Runtime": 100
+   }
+  },
+  {
+   "title": "Where Eagles Dare",
+   "fields": {
+    "Year": 1968,
+    "Director": "Brian G. Hutton",
+    "Cover": "https://image.tmdb.org/t/p/w500/dnyiVS4Ad4w4rfS4Bm1YalEdonx.jpg",
+    "Runtime": 155
+   }
+  },
+  {
+   "title": "20 Million Miles to Earth",
+   "fields": {
+    "Year": 1957,
+    "Director": "Nathan Juran",
+    "Cover": "https://image.tmdb.org/t/p/w500/wozerDO9kpVBN63sq3wiM5zYmSo.jpg",
+    "Runtime": 82
+   }
+  },
+  {
+   "title": "Horror of Dracula",
+   "fields": {
+    "Year": 1958,
+    "Director": "Terence Fisher",
+    "Cover": "https://image.tmdb.org/t/p/w500/9UHOATvzXQWbElSGygOY1ar3vpp.jpg",
+    "Runtime": 82
+   }
+  },
+  {
+   "title": "The Golden Voyage of Sinbad",
+   "fields": {
+    "Year": 1973,
+    "Director": "Gordon Hessler",
+    "Cover": "https://image.tmdb.org/t/p/w500/2DQPnuAjD7H4ae6BeBAVhu9RLWa.jpg",
+    "Runtime": 105
+   }
+  },
+  {
+   "title": "Mothra",
+   "fields": {
+    "Year": 1961,
+    "Director": "Ishirō Honda",
+    "Cover": "https://image.tmdb.org/t/p/w500/u6Xuovau8elLM6hGc5g1gMzjmWK.jpg",
+    "Runtime": 101
+   }
+  },
+  {
+   "title": "Godzilla",
+   "fields": {
+    "Year": 1954,
+    "Director": "Ishirō Honda",
+    "Cover": "https://image.tmdb.org/t/p/w500/2W0Yw0qrgVMgdsSCZRKtfvaAh0i.jpg",
+    "Runtime": 96
+   }
+  },
+  {
+   "title": "Frankenstein",
+   "fields": {
+    "Year": 1931,
+    "Director": "James Whale",
+    "Cover": "https://image.tmdb.org/t/p/w500/mu6wHwH0IwCCaEYtpqujuPJYat1.jpg",
+    "Runtime": 70
+   }
+  },
+  {
+   "title": "The Omega Man",
+   "fields": {
+    "Year": 1971,
+    "Director": "Boris Sagal",
+    "Cover": "https://image.tmdb.org/t/p/w500/qlt65C43HeoDm5K5gYBtT20OeA1.jpg",
+    "Runtime": 98
+   }
+  },
+  {
+   "title": "Black Sunday",
+   "fields": {
+    "Year": 1960,
+    "Director": "Mario Bava",
+    "Cover": "https://image.tmdb.org/t/p/w500/x41Zx8GeZhducquhOq9nE7z1GBG.jpg",
+    "Runtime": 86
+   }
+  },
+  {
+   "title": "Journey to the Center of the Earth",
+   "fields": {
+    "Year": 1959,
+    "Director": "Henry Levin",
+    "Cover": "https://image.tmdb.org/t/p/w500/nWn9MRFkC1M13hVf17mT0BfYKbg.jpg",
+    "Runtime": 132
+   }
+  },
+  {
+   "title": "The Thing from Another World",
+   "fields": {
+    "Year": 1951,
+    "Director": "Christian Nyby",
+    "Cover": "https://image.tmdb.org/t/p/w500/rm2w8dEhOGDuckB6i0Spz9lTzpR.jpg",
+    "Runtime": 87
+   }
+  },
+  {
+   "title": "The War of the Gargantuas",
+   "fields": {
+    "Year": 1966,
+    "Director": "Ishirō Honda",
+    "Cover": "https://image.tmdb.org/t/p/w500/q8EH0y601mhYJmchoTRoo92Q0FS.jpg",
+    "Runtime": 88
+   }
+  },
+  {
+   "title": "The Wizard of Oz",
+   "fields": {
+    "Year": 1939,
+    "Director": "Victor Fleming",
+    "Cover": "https://image.tmdb.org/t/p/w500/uCC3j4pV9eOZwzDUWp2ilbcTf1f.jpg",
+    "Runtime": 102
+   }
+  },
+  {
+   "title": "The 7th Voyage of Sinbad",
+   "fields": {
+    "Year": 1958,
+    "Director": "Nathan Juran",
+    "Cover": "https://image.tmdb.org/t/p/w500/wZKfMySjut6QxLNTyMkzrCBZyxP.jpg",
+    "Runtime": 88
+   }
+  },
+  {
+   "title": "Dracula A.D. 1972",
+   "fields": {
+    "Year": 1972,
+    "Director": "Alan Gibson",
+    "Cover": "https://image.tmdb.org/t/p/w500/rUgVTCBLnXngVlpOaVWZupxwmHZ.jpg",
+    "Runtime": 96
+   }
+  },
+  {
+   "title": "Jason and the Argonauts",
+   "fields": {
+    "Year": 1963,
+    "Director": "Don Chaffey",
+    "Cover": "https://image.tmdb.org/t/p/w500/xHVxIgqD5CxlOI5GHxvVSt5Zh5Y.jpg",
+    "Runtime": 104
+   }
+  },
+  {
+   "title": "The Wicker Man",
+   "fields": {
+    "Year": 1973,
+    "Director": "Robin Hardy",
+    "Cover": "https://image.tmdb.org/t/p/w500/wwtrXRL8SiOWxhwLEvw7iBgYh0g.jpg",
+    "Runtime": 93
+   }
+  },
+  {
+   "title": "Vengeance Is Mine",
+   "fields": {
+    "Year": 1979,
+    "Director": "Shōhei Imamura",
+    "Cover": "https://image.tmdb.org/t/p/w500/7mzlay0miUkplT0EsKdR8znOVpe.jpg",
+    "Runtime": 140
+   }
+  },
+  {
+   "title": "Terror's Advocate",
+   "fields": {
+    "Year": 2007,
+    "Director": "Barbet Schroeder",
+    "Cover": "https://image.tmdb.org/t/p/w500/10HlzNT0pqblQKgfo8fe7vPNxvG.jpg",
+    "Runtime": 135
+   }
+  },
+  {
+   "title": "The Plot Against Harry",
+   "fields": {
+    "Year": 1989,
+    "Director": "Michael Roemer",
+    "Cover": "https://image.tmdb.org/t/p/w500/fh4A5kBDWgK9utwvJRCzgvlHGBD.jpg",
+    "Runtime": 81
+   }
+  },
+  {
+   "title": "Next Stop, Greenwich Village",
+   "fields": {
+    "Year": 1976,
+    "Director": "Paul Mazursky",
+    "Cover": "https://image.tmdb.org/t/p/w500/qYMvsrCG6qjIoJYPIdgeceDlhDR.jpg",
+    "Runtime": 111
+   }
+  },
+  {
+   "title": "New York Stories",
+   "fields": {
+    "Year": 1989,
+    "Director": "Martin Scorsese",
+    "Cover": "https://image.tmdb.org/t/p/w500/mViGEH5dfsAnUgJmce1RJkFycAi.jpg",
+    "Runtime": 124
+   }
+  },
+  {
+   "title": "Toni",
+   "fields": {
+    "Year": 1935,
+    "Director": "Jean Renoir",
+    "Cover": "https://image.tmdb.org/t/p/w500/ubrZ3WugUofh5P1km5m05UtZOwK.jpg",
+    "Runtime": 84
+   }
+  },
+  {
+   "title": "Moonstruck",
+   "fields": {
+    "Year": 1987,
+    "Director": "Norman Jewison",
+    "Cover": "https://image.tmdb.org/t/p/w500/2mnVWpvsHEHHnfvLn1NXYVvBGl5.jpg",
+    "Runtime": 102
+   }
+  },
+  {
+   "title": "Missing",
+   "fields": {
+    "Year": 1982,
+    "Director": "Costa-Gavras",
+    "Cover": "https://image.tmdb.org/t/p/w500/fAAhC4RkpXu7SJgIESWQwVxcelo.jpg",
+    "Runtime": 123
+   }
+  },
+  {
+   "title": "Mishima: A Life in Four Chapters",
+   "fields": {
+    "Year": 1985,
+    "Director": "Paul Schrader",
+    "Cover": "https://image.tmdb.org/t/p/w500/4kIXsE4SwUjO0eUqpolsHNO5GLH.jpg",
+    "Runtime": 121
+   }
+  },
+  {
+   "title": "L'Enfance Nue",
+   "fields": {
+    "Year": 1968,
+    "Director": "Maurice Pialat",
+    "Cover": "https://image.tmdb.org/t/p/w500/2cD6WpamMeCdMoinljqnj5c6YrF.jpg",
+    "Runtime": 83
+   }
+  },
+  {
+   "title": "Hannah and Her Sisters",
+   "fields": {
+    "Year": 1986,
+    "Director": "Woody Allen",
+    "Cover": "https://image.tmdb.org/t/p/w500/gARgIRb2QFRFVrsziwWE389u1pK.jpg",
+    "Runtime": 107
+   }
+  },
+  {
+   "title": "From the Life of the Marionettes",
+   "fields": {
+    "Year": 1980,
+    "Director": "Ingmar Bergman",
+    "Cover": "https://image.tmdb.org/t/p/w500/w4wPV7AqX3IebvW1cElyP098El2.jpg",
+    "Runtime": 104
+   }
+  },
+  {
+   "title": "The Friends of Eddie Coyle",
+   "fields": {
+    "Year": 1973,
+    "Director": "Peter Yates",
+    "Cover": "https://image.tmdb.org/t/p/w500/tyV8Bgf2huCIbGUxTdGgnzdIRKZ.jpg",
+    "Runtime": 102
+   }
+  },
+  {
+   "title": "Au Hasard Balthazar",
+   "fields": {
+    "Year": 1966,
+    "Director": "Robert Bresson",
+    "Cover": "https://image.tmdb.org/t/p/w500/lkLO1HDzzaXpTXtAgnGpVqIQkvF.jpg",
+    "Runtime": 96
+   }
+  },
+  {
+   "title": "The Taking of Power by Louis XIV",
+   "fields": {
+    "Year": 1966,
+    "Director": "Roberto Rossellini",
+    "Cover": "https://image.tmdb.org/t/p/w500/1cwIWZFiJc10CSb8aElC9FtpTx7.jpg",
+    "Runtime": 95
+   }
+  },
+  {
+   "title": "The Spy Who Came in from the Cold",
+   "fields": {
+    "Year": 1965,
+    "Director": "Martin Ritt",
+    "Cover": "https://image.tmdb.org/t/p/w500/lN3PWv6cW22mqXDcgGZgK1Aa2gh.jpg",
+    "Runtime": 112
+   }
+  },
+  {
+   "title": "Drunken Angel",
+   "fields": {
+    "Year": 1948,
+    "Director": "Akira Kurosawa",
+    "Cover": "https://image.tmdb.org/t/p/w500/9kETXBSr6kawvtWJioacJjOofF2.jpg",
+    "Runtime": 98
+   }
+  },
+  {
+   "title": "The Apartment",
+   "fields": {
+    "Year": 1960,
+    "Director": "Billy Wilder",
+    "Cover": "https://image.tmdb.org/t/p/w500/hhSRt1KKfRT0yEhEtRW3qp31JFU.jpg",
+    "Runtime": 126
+   }
+  },
+  {
+   "title": "Who's Afraid of Virginia Woolf?",
+   "fields": {
+    "Year": 1966,
+    "Director": "Mike Nichols",
+    "Cover": "https://image.tmdb.org/t/p/w500/wF7ihB5V5gSm6zxjv3ZhHOpgREI.jpg",
+    "Runtime": 131
+   }
+  },
+  {
+   "title": "Trouble in Paradise",
+   "fields": {
+    "Year": 1932,
+    "Director": "Ernst Lubitsch",
+    "Cover": "https://image.tmdb.org/t/p/w500/FBxuoLRD3Biyul14unT5m3PYNS.jpg",
+    "Runtime": 83
+   }
+  },
+  {
+   "title": "The 400 Blows",
+   "fields": {
+    "Year": 1959,
+    "Director": "François Truffaut",
+    "Cover": "https://image.tmdb.org/t/p/w500/12PuU23kkDLvTd0nb8hMlE3oShB.jpg",
+    "Runtime": 99
+   }
+  },
+  {
+   "title": "The Earrings of Madame de...",
+   "fields": {
+    "Year": 1953,
+    "Director": "Max Ophüls",
+    "Cover": "https://image.tmdb.org/t/p/w500/3eJIw86taD84NkpuZaORf5k2DsH.jpg",
+    "Runtime": 105
+   }
+  },
+  {
+   "title": "Classe Tous Risques",
+   "fields": {
+    "Year": 1960,
+    "Director": "Claude Sautet",
+    "Cover": "https://image.tmdb.org/t/p/w500/uMiuUAlPwiWDKSgu4SoShpzvMR.jpg",
+    "Runtime": 110
+   }
+  },
+  {
+   "title": "Stray Dog",
+   "fields": {
+    "Year": 1949,
+    "Director": "Akira Kurosawa",
+    "Cover": "https://image.tmdb.org/t/p/w500/riBzUgeYawBDi2q9PjARjHrQM7Z.jpg",
+    "Runtime": 122
+   }
+  },
+  {
+   "title": "The Exterminating Angel",
+   "fields": {
+    "Year": 1962,
+    "Director": "Luis Buñuel",
+    "Cover": "https://image.tmdb.org/t/p/w500/qqZXHvBFxUpo8Pfbyvgh4SYMiWm.jpg",
+    "Runtime": 93
+   }
+  },
+  {
+   "title": "The Saragossa Manuscript",
+   "fields": {
+    "Year": 1965,
+    "Director": "Wojciech Has",
+    "Cover": "https://image.tmdb.org/t/p/w500/aFqDycFgEt1ko80mcj3wFWGQS1O.jpg",
+    "Runtime": 183
+   }
+  },
+  {
+   "title": "I Vitelloni",
+   "fields": {
+    "Year": 1953,
+    "Director": "Federico Fellini",
+    "Cover": "https://image.tmdb.org/t/p/w500/boqcM6bhQICnNue4pkgmauj9JN3.jpg",
+    "Runtime": 103
+   }
+  },
+  {
+   "title": "Stroszek",
+   "fields": {
+    "Year": 1977,
+    "Director": "Werner Herzog",
+    "Cover": "https://image.tmdb.org/t/p/w500/wDq9ytRxoVpICRcx1BvagmXhd4t.jpg",
+    "Runtime": 108
+   }
+  },
+  {
+   "title": "Hour of the Wolf",
+   "fields": {
+    "Year": 1968,
+    "Director": "Ingmar Bergman",
+    "Cover": "https://image.tmdb.org/t/p/w500/jSqTnEP1x1OcOglqrInYvGSF1tL.jpg",
+    "Runtime": 88
+   }
+  },
+  {
+   "title": "Lolita",
+   "fields": {
+    "Year": 1962,
+    "Director": "Stanley Kubrick",
+    "Cover": "https://image.tmdb.org/t/p/w500/8Puqbeh0D95DpXFWep1rmH78btu.jpg",
+    "Runtime": 154
+   }
+  },
+  {
+   "title": "La Strada",
+   "fields": {
+    "Year": 1954,
+    "Director": "Federico Fellini",
+    "Cover": "https://image.tmdb.org/t/p/w500/rwjbT0zlsUDMztaCcWjlWuxaEL1.jpg",
+    "Runtime": 115
+   }
+  },
+  {
+   "title": "It's a Gift",
+   "fields": {
+    "Year": 1934,
+    "Director": "Norman Z. McLeod",
+    "Cover": "https://image.tmdb.org/t/p/w500/3DlYiSh3S7A9GO15gUu7zg92bD0.jpg",
+    "Runtime": 68
+   }
+  },
+  {
+   "title": "Les Vacances de Monsieur Hulot",
+   "fields": {
+    "Year": 1953,
+    "Director": "Jacques Tati",
+    "Cover": "https://image.tmdb.org/t/p/w500/r4F4tsU0Ajeh9ZYUkWOJSYmioj7.jpg",
+    "Runtime": 87
+   }
+  },
+  {
+   "title": "Downsizing",
+   "fields": {
+    "Year": 2017,
+    "Director": "Alexander Payne",
+    "Cover": "https://image.tmdb.org/t/p/w500/5bNzInSSAXfr0MFlHfb4IoQePVx.jpg",
+    "Runtime": 135
+   }
+  },
+  {
+   "title": "Amores Perros",
+   "fields": {
+    "Year": 2000,
+    "Director": "Alejandro G. Iñárritu",
+    "Cover": "https://image.tmdb.org/t/p/w500/A4lH22nlFF7MdalGfcvSrlC1ttt.jpg",
+    "Runtime": 154
+   }
+  },
+  {
+   "title": "There Will Be Blood",
+   "fields": {
+    "Year": 2007,
+    "Director": "Paul Thomas Anderson",
+    "Cover": "https://image.tmdb.org/t/p/w500/fa0RDkAlCec0STeMNAhPaF89q6U.jpg",
+    "Runtime": 158
+   }
+  },
+  {
+   "title": "A Prophet",
+   "fields": {
+    "Year": 2009,
+    "Director": "Jacques Audiard",
+    "Cover": "https://image.tmdb.org/t/p/w500/x9Jb8kewBHPzjTtgCQvoQoDsy4d.jpg",
+    "Runtime": 155
+   }
+  },
+  {
+   "title": "The Beguiled",
+   "fields": {
+    "Year": 2017,
+    "Director": "Sofia Coppola",
+    "Cover": "https://image.tmdb.org/t/p/w500/x4R9jyiZhJzevASus5n6WyHQTdR.jpg",
+    "Runtime": 93
+   }
+  },
+  {
+   "title": "The Square",
+   "fields": {
+    "Year": 2017,
+    "Director": "Ruben Östlund",
+    "Cover": "https://image.tmdb.org/t/p/w500/pefcv5VNspSK4Dt8doei5bJmmln.jpg",
+    "Runtime": 151
+   }
+  },
+  {
+   "title": "A Star Is Born",
+   "fields": {
+    "Year": 2018,
+    "Director": "Bradley Cooper",
+    "Cover": "https://image.tmdb.org/t/p/w500/wrFpXMNBRj2PBiN4Z5kix51XaIZ.jpg",
+    "Runtime": 136
+   }
+  },
+  {
+   "title": "Children of Men",
+   "fields": {
+    "Year": 2006,
+    "Director": "Alfonso Cuarón",
+    "Cover": "https://image.tmdb.org/t/p/w500/k9IAS4TehZFcKi4HVByxZNPfqex.jpg",
+    "Runtime": 109
+   }
+  },
+  {
+   "title": "Dogtooth",
+   "fields": {
+    "Year": 2009,
+    "Director": "Yorgos Lanthimos",
+    "Cover": "https://image.tmdb.org/t/p/w500/cBrhzHcOxXclTItkPzsJUCTSFyl.jpg",
+    "Runtime": 98
+   }
+  },
+  {
+   "title": "Under the Skin",
+   "fields": {
+    "Year": 2013,
+    "Director": "Jonathan Glazer",
+    "Cover": "https://image.tmdb.org/t/p/w500/55wmcXJIDYITr7JDijJTdvwSaAv.jpg",
+    "Runtime": 108
+   }
+  },
+  {
+   "title": "Three Billboards Outside Ebbing, Missouri",
+   "fields": {
+    "Year": 2017,
+    "Director": "Martin McDonagh",
+    "Cover": "https://image.tmdb.org/t/p/w500/bRYLt8fV82tdVoDppSFTZIcJiLN.jpg",
+    "Runtime": 115
+   }
+  },
+  {
+   "title": "No Country for Old Men",
+   "fields": {
+    "Year": 2007,
+    "Director": "Joel Coen",
+    "Cover": "https://image.tmdb.org/t/p/w500/uB7RDZby43Wvu8SKGHHTwGyTDBX.jpg",
+    "Runtime": 122
+   }
+  },
+  {
+   "title": "Mon Oncle",
+   "fields": {
+    "Year": 1958,
+    "Director": "Jacques Tati",
+    "Cover": "https://image.tmdb.org/t/p/w500/wH6RyPiXFy8INLbViVkchLVOmBc.jpg",
+    "Runtime": 118
+   }
+  },
+  {
+   "title": "The Exorcist",
+   "fields": {
+    "Year": 1973,
+    "Director": "William Friedkin",
+    "Cover": "https://image.tmdb.org/t/p/w500/5x0CeVHJI8tcDx8tUUwYHQSNILq.jpg",
+    "Runtime": 122
+   }
+  },
+  {
+   "title": "Cabaret",
+   "fields": {
+    "Year": 1972,
+    "Director": "Bob Fosse",
+    "Cover": "https://image.tmdb.org/t/p/w500/fMhOeJ2TvuY46iYGmsowhgRXfnr.jpg",
+    "Runtime": 124
+   }
+  },
+  {
+   "title": "American Graffiti",
+   "fields": {
+    "Year": 1973,
+    "Director": "George Lucas",
+    "Cover": "https://image.tmdb.org/t/p/w500/1tjLivPad2PX8FAzWko7FPIb8d2.jpg",
+    "Runtime": 112
+   }
+  },
+  {
+   "title": "The Year of Living Dangerously",
+   "fields": {
+    "Year": 1982,
+    "Director": "Peter Weir",
+    "Cover": "https://image.tmdb.org/t/p/w500/y9GIM95xWWU4urqqu0kziby0Ykg.jpg",
+    "Runtime": 114
+   }
+  },
+  {
+   "title": "Monty Python and the Holy Grail",
+   "fields": {
+    "Year": 1975,
+    "Director": "Terry Jones",
+    "Cover": "https://image.tmdb.org/t/p/w500/7nTkHjETdGMYK1phHwDbPsrzbYl.jpg",
+    "Runtime": 91
+   }
+  },
+  {
+   "title": "Mad Max 2: The Road Warrior",
+   "fields": {
+    "Year": 1981,
+    "Director": "George Miller",
+    "Cover": "https://image.tmdb.org/t/p/w500/l1KVEhkGDpWRzQ0VqIhZqDDuOim.jpg",
+    "Runtime": 96
+   }
+  },
+  {
+   "title": "National Lampoon's Animal House",
+   "fields": {
+    "Year": 1978,
+    "Director": "John Landis",
+    "Cover": "https://image.tmdb.org/t/p/w500/fWooBbipMRIKeSRhEzmeaDV0T8H.jpg",
+    "Runtime": 109
+   }
+  },
+  {
+   "title": "Days of Heaven",
+   "fields": {
+    "Year": 1978,
+    "Director": "Terrence Malick",
+    "Cover": "https://image.tmdb.org/t/p/w500/rwxTYjOZmX2rGhz7avLe1qsjNqe.jpg",
+    "Runtime": 94
+   }
+  },
+  {
+   "title": "The Graduate",
+   "fields": {
+    "Year": 1967,
+    "Director": "Mike Nichols",
+    "Cover": "https://image.tmdb.org/t/p/w500/8XaDpF0COV1MLsDirJMnxmYc1Wp.jpg",
+    "Runtime": 107
+   }
+  },
+  {
+   "title": "Alien",
+   "fields": {
+    "Year": 1979,
+    "Director": "Ridley Scott",
+    "Cover": "https://image.tmdb.org/t/p/w500/vfrQk5IPloGg1v9Rzbh2Eg3VGyM.jpg",
+    "Runtime": 117
+   }
+  },
+  {
+   "title": "Paper Moon",
+   "fields": {
+    "Year": 1973,
+    "Director": "Peter Bogdanovich",
+    "Cover": "https://image.tmdb.org/t/p/w500/3GHG0kTcBWHKdXjj3RdK8GjBCd6.jpg",
+    "Runtime": 102
+   }
+  },
+  {
+   "title": "Being There",
+   "fields": {
+    "Year": 1979,
+    "Director": "Hal Ashby",
+    "Cover": "https://image.tmdb.org/t/p/w500/2eZTUGNYijOoeq4829P6HNqyZui.jpg",
+    "Runtime": 130
+   }
+  },
+  {
+   "title": "Zelig",
+   "fields": {
+    "Year": 1983,
+    "Director": "Woody Allen",
+    "Cover": "https://image.tmdb.org/t/p/w500/bfs67JaV4B5xVBvtXd3O4R7nk9G.jpg",
+    "Runtime": 79
+   }
+  },
+  {
+   "title": "Butch Cassidy and the Sundance Kid",
+   "fields": {
+    "Year": 1969,
+    "Director": "George Roy Hill",
+    "Cover": "https://image.tmdb.org/t/p/w500/gFmmykF1Ym3OGzENo50nZQaD1dx.jpg",
+    "Runtime": 111
+   }
+  },
+  {
+   "title": "Frances Ha",
+   "fields": {
+    "Year": 2012,
+    "Director": "Noah Baumbach",
+    "Cover": "https://image.tmdb.org/t/p/w500/jrq1NoKvsxWCcffVOjegiYwloFN.jpg",
+    "Runtime": 86
+   }
+  },
+  {
+   "title": "The Great Escape",
+   "fields": {
+    "Year": 1963,
+    "Director": "John Sturges",
+    "Cover": "https://image.tmdb.org/t/p/w500/gBH4H8UMFxl139HaLz6lRuvsel8.jpg",
+    "Runtime": 173
+   }
+  },
+  {
+   "title": "Sorcerer",
+   "fields": {
+    "Year": 1977,
+    "Director": "William Friedkin",
+    "Cover": "https://image.tmdb.org/t/p/w500/2b7oexm173SF1FSEq0DdgxZZNRH.jpg",
+    "Runtime": 122
+   }
+  },
+  {
+   "title": "The Skin I Live In",
+   "fields": {
+    "Year": 2011,
+    "Director": "Pedro Almodóvar",
+    "Cover": "https://image.tmdb.org/t/p/w500/xa7uCwGYykrf8MMI8iF5dZvNlrG.jpg",
+    "Runtime": 120
+   }
+  },
+  {
+   "title": "Mad Max: Fury Road",
+   "fields": {
+    "Year": 2015,
+    "Director": "George Miller",
+    "Cover": "https://image.tmdb.org/t/p/w500/hA2ple9q4qnwxp3hKVNhroipsir.jpg",
+    "Runtime": 121
+   }
+  },
+  {
+   "title": "The Bad News Bears",
+   "fields": {
+    "Year": 1976,
+    "Director": "Michael Ritchie",
+    "Cover": "https://image.tmdb.org/t/p/w500/kJNXMni0ObOXLth6v9xpUhWbtrp.jpg",
+    "Runtime": 102
+   }
+  },
+  {
+   "title": "Unbreakable",
+   "fields": {
+    "Year": 2000,
+    "Director": "M. Night Shyamalan",
+    "Cover": "https://image.tmdb.org/t/p/w500/mLuehrGLiK5zFCyRmDDOH6gbfPf.jpg",
+    "Runtime": 106
+   }
+  },
+  {
+   "title": "Team America: World Police",
+   "fields": {
+    "Year": 2004,
+    "Director": "Trey Parker",
+    "Cover": "https://image.tmdb.org/t/p/w500/m1Q2VFe1DVVbjfu1LDZe7tlp9yb.jpg",
+    "Runtime": 98
+   }
+  },
+  {
+   "title": "Friday",
+   "fields": {
+    "Year": 1995,
+    "Director": "F. Gary Gray",
+    "Cover": "https://image.tmdb.org/t/p/w500/3Ya1RurP2NqaYoiok4DmfO41rCC.jpg",
+    "Runtime": 91
+   }
+  },
+  {
+   "title": "Speed",
+   "fields": {
+    "Year": 1994,
+    "Director": "Jan de Bont",
+    "Cover": "https://image.tmdb.org/t/p/w500/82PkCE4R95KhHICUDF7G4Ly2z3l.jpg",
+    "Runtime": 116
+   }
+  },
+  {
+   "title": "The Blade",
+   "fields": {
+    "Year": 1995,
+    "Director": "Tsui Hark",
+    "Cover": "https://image.tmdb.org/t/p/w500/jLH5MxiYXtGiS96rl13Rz8TIPaG.jpg",
+    "Runtime": 106
+   }
+  },
+  {
+   "title": "Shaun of the Dead",
+   "fields": {
+    "Year": 2004,
+    "Director": "Edgar Wright",
+    "Cover": "https://image.tmdb.org/t/p/w500/dgXPhzNJH8HFTBjXPB177yNx6RI.jpg",
+    "Runtime": 99
+   }
+  },
+  {
+   "title": "Anything Else",
+   "fields": {
+    "Year": 2003,
+    "Director": "Woody Allen",
+    "Cover": "https://image.tmdb.org/t/p/w500/bvyoWDh60R31ZE5L8TjZ8Qpv5xM.jpg",
+    "Runtime": 108
+   }
+  },
+  {
+   "title": "The Insider",
+   "fields": {
+    "Year": 1999,
+    "Director": "Michael Mann",
+    "Cover": "https://image.tmdb.org/t/p/w500/w695X0FvTlBCS7GSLHNILnrfqPm.jpg",
+    "Runtime": 158
+   }
+  },
+  {
+   "title": "Boogie Nights",
+   "fields": {
+    "Year": 1997,
+    "Director": "Paul Thomas Anderson",
+    "Cover": "https://image.tmdb.org/t/p/w500/wnE24UPCPQsQnbBOu4zVE2qaDNm.jpg",
+    "Runtime": 156
+   }
+  },
+  {
+   "title": "Five Graves to Cairo",
+   "fields": {
+    "Year": 1943,
+    "Director": "Billy Wilder",
+    "Cover": "https://image.tmdb.org/t/p/w500/sZuSO4VcIzsGWuoQoM6oEyfp1HV.jpg",
+    "Runtime": 96
+   }
+  },
+  {
+   "title": "Unfaithfully Yours",
+   "fields": {
+    "Year": 1948,
+    "Director": "Preston Sturges",
+    "Cover": "https://image.tmdb.org/t/p/w500/kJ5lV3SuD1yHgBPOfKQaJcoR09z.jpg",
+    "Runtime": 105
+   }
+  },
+  {
+   "title": "Pandora's Box",
+   "fields": {
+    "Year": 1929,
+    "Director": "G.W. Pabst",
+    "Cover": "https://image.tmdb.org/t/p/w500/3B2A5g8t3HZltKp1fplNn2xW4us.jpg",
+    "Runtime": 141
+   }
+  },
+  {
+   "title": "Five Fingers of Death",
+   "fields": {
+    "Year": 1972,
+    "Director": "Jeong Chang-hwa",
+    "Cover": "https://image.tmdb.org/t/p/w500/iAEd4aorPPLwbMNTYsQXLelHclo.jpg",
+    "Runtime": 106
+   }
+  },
+  {
+   "title": "Lost in Translation",
+   "fields": {
+    "Year": 2003,
+    "Director": "Sofia Coppola",
+    "Cover": "https://image.tmdb.org/t/p/w500/3jCLmYDIIiSMPujbwygNpqdpM8N.jpg",
+    "Runtime": 102
+   }
+  },
+  {
+   "title": "Police Story 3: Super Cop",
+   "fields": {
+    "Year": 1992,
+    "Director": "Stanley Tong Gwai-Lai",
+    "Cover": "https://image.tmdb.org/t/p/w500/mUJOyCd4g0pNsU8thYI7UGrIpkl.jpg",
+    "Runtime": 95
+   }
+  },
+  {
+   "title": "Dazed and Confused",
+   "fields": {
+    "Year": 1993,
+    "Director": "Richard Linklater",
+    "Cover": "https://image.tmdb.org/t/p/w500/msG9awbLhVZwv1Eh9Ge7SofMexW.jpg",
+    "Runtime": 102
+   }
+  },
+  {
+   "title": "Joint Security Area",
+   "fields": {
+    "Year": 2000,
+    "Director": "Park Chan-wook",
+    "Cover": "https://image.tmdb.org/t/p/w500/lTpdrei4eWsEsCi4tYYKwdYCFxw.jpg",
+    "Runtime": 108
+   }
+  },
+  {
+   "title": "His Girl Friday",
+   "fields": {
+    "Year": 1940,
+    "Director": "Howard Hawks",
+    "Cover": "https://image.tmdb.org/t/p/w500/lu86Y9zTPH3neCiUzLzHCEFHf7f.jpg",
+    "Runtime": 92
+   }
+  },
+  {
+   "title": "Blow Out",
+   "fields": {
+    "Year": 1981,
+    "Director": "Brian De Palma",
+    "Cover": "https://image.tmdb.org/t/p/w500/uFzMscVLDrTaYd6KXOXlr6dly7w.jpg",
+    "Runtime": 108
+   }
+  },
+  {
+   "title": "Rio Bravo",
+   "fields": {
+    "Year": 1959,
+    "Director": "Howard Hawks",
+    "Cover": "https://image.tmdb.org/t/p/w500/4gI4KKmoi0d3yfsF71YU3S0I5t8.jpg",
+    "Runtime": 141
+   }
+  },
+  {
+   "title": "The Good, the Bad and the Ugly",
+   "fields": {
+    "Year": 1966,
+    "Director": "Sergio Leone",
+    "Cover": "https://image.tmdb.org/t/p/w500/bX2xnavhMYjWDoZp1VM6VnU1xwe.jpg",
+    "Runtime": 161
+   }
+  },
+  {
+   "title": "Battle Royale",
+   "fields": {
+    "Year": 2000,
+    "Director": "Kinji Fukasaku",
+    "Cover": "https://image.tmdb.org/t/p/w500/aLGKAQKgzWpJ6egyWzzC11jXBRJ.jpg",
+    "Runtime": 113
+   }
+  },
+  {
+   "title": "The Thin Red Line",
+   "fields": {
+    "Year": 1998,
+    "Director": "Terrence Malick",
+    "Cover": "https://image.tmdb.org/t/p/w500/seMydAaoxQP6F0xbE1jOcTmn5Jr.jpg",
+    "Runtime": 171
+   }
+  },
+  {
+   "title": "The Testament of Dr. Mabuse",
+   "fields": {
+    "Year": 1933,
+    "Director": "Fritz Lang",
+    "Cover": "https://image.tmdb.org/t/p/w500/tc2ET7j6X066VCjdHblSwLr8sEz.jpg",
+    "Runtime": 122
+   }
+  },
+  {
+   "title": "Sunrise: A Song of Two Humans",
+   "fields": {
+    "Year": 1927,
+    "Director": "F. W. Murnau",
+    "Cover": "https://image.tmdb.org/t/p/w500/5V9jDm4u2QemGHbqjUyP5HmFmzf.jpg",
+    "Runtime": 94
+   }
+  },
+  {
+   "title": "Street of Crocodiles",
+   "fields": {
+    "Year": 1986,
+    "Director": "Stephen Quay",
+    "Cover": "https://image.tmdb.org/t/p/w500/dbHs6pwSDuuX3n17ARz5Shps3ZU.jpg",
+    "Runtime": 21
+   }
+  },
+  {
+   "title": "Ryan's Daughter",
+   "fields": {
+    "Year": 1970,
+    "Director": "David Lean",
+    "Cover": "https://image.tmdb.org/t/p/w500/g5NAbtEK5bEAkBdXq6YM7a7tkZO.jpg",
+    "Runtime": 206
+   }
+  },
+  {
+   "title": "The Spy Who Loved Me",
+   "fields": {
+    "Year": 1977,
+    "Director": "Lewis Gilbert",
+    "Cover": "https://image.tmdb.org/t/p/w500/3ZxHKFxMYvAko680DsRgAZKWcLi.jpg",
+    "Runtime": 125
+   }
+  },
+  {
+   "title": "The Right Stuff",
+   "fields": {
+    "Year": 1983,
+    "Director": "Philip Kaufman",
+    "Cover": "https://image.tmdb.org/t/p/w500/btqTjNRxecYgQ1FGfVlLqSSNjz.jpg",
+    "Runtime": 193
+   }
+  },
+  {
+   "title": "Mr. Arkadin",
+   "fields": {
+    "Year": 1955,
+    "Director": "Orson Welles",
+    "Cover": "https://image.tmdb.org/t/p/w500/hoBfh3jmA3XDDx9tGgMwdGd37GE.jpg",
+    "Runtime": 107
+   }
+  },
+  {
+   "title": "Merry Christmas, Mr. Lawrence",
+   "fields": {
+    "Year": 1983,
+    "Director": "Nagisa Ōshima",
+    "Cover": "https://image.tmdb.org/t/p/w500/sKeZzN7sXPLRe5rRlOuoXsh1qPA.jpg",
+    "Runtime": 124
+   }
+  },
+  {
+   "title": "First Man",
+   "fields": {
+    "Year": 2018,
+    "Director": "Damien Chazelle",
+    "Cover": "https://image.tmdb.org/t/p/w500/i91mfvFcPPlaegcbOyjGgiWfZzh.jpg",
+    "Runtime": 141
+   }
+  },
+  {
+   "title": "Topkapi",
+   "fields": {
+    "Year": 1964,
+    "Director": "Jules Dassin",
+    "Cover": "https://image.tmdb.org/t/p/w500/3Q5psd2bvCMWFdQp4RvRDgxSiwg.jpg",
+    "Runtime": 119
+   }
+  },
+  {
+   "title": "Close Encounters of the Third Kind",
+   "fields": {
+    "Year": 1977,
+    "Director": "Steven Spielberg",
+    "Cover": "https://image.tmdb.org/t/p/w500/yaPx3cK9zGFX3SbcKwxWM1QIbUh.jpg",
+    "Runtime": 137
+   }
+  },
+  {
+   "title": "The Battle of Algiers",
+   "fields": {
+    "Year": 1966,
+    "Director": "Gillo Pontecorvo",
+    "Cover": "https://image.tmdb.org/t/p/w500/2p3AFtOHFvP6OeVMqlnL1zLKOqL.jpg",
+    "Runtime": 122
+   }
+  },
+  {
+   "title": "All Quiet on the Western Front",
+   "fields": {
+    "Year": 1930,
+    "Director": "Lewis Milestone",
+    "Cover": "https://image.tmdb.org/t/p/w500/1wZUB08igw8iLUgF1r4T6aJD65b.jpg",
+    "Runtime": 133
+   }
+  },
+  {
+   "title": "The Tree of Life",
+   "fields": {
+    "Year": 2011,
+    "Director": "Terrence Malick",
+    "Cover": "https://image.tmdb.org/t/p/w500/l8cwuB5WJSoj4uMAsnzuHBOMaSJ.jpg",
+    "Runtime": 139
+   }
+  },
+  {
+   "title": "For All Mankind",
+   "fields": {
+    "Year": 1989,
+    "Director": "Al Reinert",
+    "Cover": "https://image.tmdb.org/t/p/w500/7k8ylisWiEGxdRSlAf6v4PWiAjH.jpg",
+    "Runtime": 80
+   }
+  },
+  {
+   "title": "Koyaanisqatsi",
+   "fields": {
+    "Year": 1982,
+    "Director": "Godfrey Reggio",
+    "Cover": "https://image.tmdb.org/t/p/w500/6zCNciRcob8lwuydVXgq0esla8L.jpg",
+    "Runtime": 86
+   }
+  },
+  {
+   "title": "Metropolis",
+   "fields": {
+    "Year": 1927,
+    "Director": "Fritz Lang",
+    "Cover": "https://image.tmdb.org/t/p/w500/kr9wXRN23zLuWJIelahas1mtnYj.jpg",
+    "Runtime": 148
+   }
+  },
+  {
+   "title": "Greed",
+   "fields": {
+    "Year": 1924,
+    "Director": "Erich von Stroheim",
+    "Cover": "https://image.tmdb.org/t/p/w500/eur2vc2BGiOocBuBLVPXySO7lRh.jpg",
+    "Runtime": 140
+   }
+  },
+  {
+   "title": "Saving Private Ryan",
+   "fields": {
+    "Year": 1998,
+    "Director": "Steven Spielberg",
+    "Cover": "https://image.tmdb.org/t/p/w500/uqx37cS8cpHg8U35f9U5IBlrCV3.jpg",
+    "Runtime": 169
+   }
+  },
+  {
+   "title": "Foreign Correspondent",
+   "fields": {
+    "Year": 1940,
+    "Director": "Alfred Hitchcock",
+    "Cover": "https://image.tmdb.org/t/p/w500/n0WX6eIdIliKB66MI2MWZ3wHsoJ.jpg",
+    "Runtime": 120
+   }
+  },
+  {
+   "title": "Bad Timing",
+   "fields": {
+    "Year": 1980,
+    "Director": "Nicolas Roeg",
+    "Cover": "https://image.tmdb.org/t/p/w500/raLS93dykOabizFuguWZ9KeCKAS.jpg",
+    "Runtime": 123
+   }
+  },
+  {
+   "title": "The Hit",
+   "fields": {
+    "Year": 1984,
+    "Director": "Stephen Frears",
+    "Cover": "https://image.tmdb.org/t/p/w500/hKNIz9iids9uPyEpmJjLFM96KXI.jpg",
+    "Runtime": 98
+   }
+  },
+  {
+   "title": "Peppermint Frappé",
+   "fields": {
+    "Year": 1967,
+    "Director": "Carlos Saura",
+    "Cover": "https://image.tmdb.org/t/p/w500/vBoDIvqSU88rWLcpzNmnstc8FBV.jpg",
+    "Runtime": 90
+   }
+  },
+  {
+   "title": "Platoon",
+   "fields": {
+    "Year": 1986,
+    "Director": "Oliver Stone",
+    "Cover": "https://image.tmdb.org/t/p/w500/m3mmFkPQKvPZq5exmh0bDuXlD9T.jpg",
+    "Runtime": 120
+   }
+  },
+  {
+   "title": "House of Games",
+   "fields": {
+    "Year": 1987,
+    "Director": "David Mamet",
+    "Cover": "https://image.tmdb.org/t/p/w500/4i27Ut4cIoLbcNpW7aeuUQErEPE.jpg",
+    "Runtime": 102
+   }
+  },
+  {
+   "title": "The Treasure of the Sierra Madre",
+   "fields": {
+    "Year": 1948,
+    "Director": "John Huston",
+    "Cover": "https://image.tmdb.org/t/p/w500/pWcst7zVbi8Z8W6GFrdNE7HHRxL.jpg",
+    "Runtime": 126
+   }
+  },
+  {
+   "title": "Mary Poppins",
+   "fields": {
+    "Year": 1964,
+    "Director": "Robert Stevenson",
+    "Cover": "https://image.tmdb.org/t/p/w500/o4Wsby4ydIXhWmtmfvb451D5Np1.jpg",
+    "Runtime": 139
+   }
+  },
+  {
+   "title": "Dekalog",
+   "fields": {
+    "Year": 1989,
+    "Director": "Krzysztof Kieślowski",
+    "Cover": "https://image.tmdb.org/t/p/w500/tZktBR66C8WIJHJkqMlj6MgowDK.jpg",
+    "Runtime": 57
+   }
+  },
+  {
+   "title": "The Spirit of the Beehive",
+   "fields": {
+    "Year": 1973,
+    "Director": "Víctor Erice",
+    "Cover": "https://image.tmdb.org/t/p/w500/o6pUTkoCh4r6EA2dHNFKA40OmH2.jpg",
+    "Runtime": 98
+   }
+  },
+  {
+   "title": "Children of Paradise",
+   "fields": {
+    "Year": 1945,
+    "Director": "Marcel Carné",
+    "Cover": "https://image.tmdb.org/t/p/w500/yiy9stl1jjVhW44ypkWMFDT8Ix3.jpg",
+    "Runtime": 190
+   }
+  },
+  {
+   "title": "Henry V",
+   "fields": {
+    "Year": 1989,
+    "Director": "Kenneth Branagh",
+    "Cover": "https://image.tmdb.org/t/p/w500/w9R2HsYNnfF3m9uEo2UAmPNJr8a.jpg",
+    "Runtime": 137
+   }
+  },
+  {
+   "title": "Wild Strawberries",
+   "fields": {
+    "Year": 1957,
+    "Director": "Ingmar Bergman",
+    "Cover": "https://image.tmdb.org/t/p/w500/iyTD2QnySNMPUPE3IedZQipSWfz.jpg",
+    "Runtime": 91
+   }
+  },
+  {
+   "title": "Pelle the Conqueror",
+   "fields": {
+    "Year": 1987,
+    "Director": "Bille August",
+    "Cover": "https://image.tmdb.org/t/p/w500/oSsu4khg459yTR1sw4qjEC4LO5J.jpg",
+    "Runtime": 157
+   }
+  },
+  {
+   "title": "Casque d'Or",
+   "fields": {
+    "Year": 1952,
+    "Director": "Jacques Becker",
+    "Cover": "https://image.tmdb.org/t/p/w500/c7VHPq0FxlvDiwMCvb8VOxeg8ub.jpg",
+    "Runtime": 99
+   }
+  },
+  {
+   "title": "La Notte",
+   "fields": {
+    "Year": 1961,
+    "Director": "Michelangelo Antonioni",
+    "Cover": "https://image.tmdb.org/t/p/w500/xkd7wPJSIC76scBRHCFZ85uOH5d.jpg",
+    "Runtime": 122
+   }
+  },
+  {
+   "title": "McCabe & Mrs. Miller",
+   "fields": {
+    "Year": 1971,
+    "Director": "Robert Altman",
+    "Cover": "https://image.tmdb.org/t/p/w500/oR839yRsFAiQHwJ78hdKZYjEBg8.jpg",
+    "Runtime": 120
+   }
+  },
+  {
+   "title": "Manhattan",
+   "fields": {
+    "Year": 1979,
+    "Director": "Woody Allen",
+    "Cover": "https://image.tmdb.org/t/p/w500/k4eT3EvfxW1L9Wmt04UqJqCvCR6.jpg",
+    "Runtime": 96
+   }
+  },
+  {
+   "title": "If....",
+   "fields": {
+    "Year": 1968,
+    "Director": "Lindsay Anderson",
+    "Cover": "https://image.tmdb.org/t/p/w500/oqlpAGq4aXhc6ODtxBcGM1SEoIp.jpg",
+    "Runtime": 112
+   }
+  },
+  {
+   "title": "Annie Hall",
+   "fields": {
+    "Year": 1977,
+    "Director": "Woody Allen",
+    "Cover": "https://image.tmdb.org/t/p/w500/dEtjPywhDbAXYjoFfhBC4U9unU7.jpg",
+    "Runtime": 93
+   }
+  },
+  {
+   "title": "Rashomon",
+   "fields": {
+    "Year": 1950,
+    "Director": "Akira Kurosawa",
+    "Cover": "https://image.tmdb.org/t/p/w500/ijWibsAU1iBcCD8tuIZfTmDzMVE.jpg",
+    "Runtime": 88
+   }
+  },
+  {
+   "title": "La Belle et la Bête",
+   "fields": {
+    "Year": 1946,
+    "Director": "Jean Cocteau",
+    "Cover": "https://image.tmdb.org/t/p/w500/iYSe3yrkma0e1B0wWPXgr8w5sDN.jpg",
+    "Runtime": 96
+   }
+  },
+  {
+   "title": "Cries and Whispers",
+   "fields": {
+    "Year": 1972,
+    "Director": "Ingmar Bergman",
+    "Cover": "https://image.tmdb.org/t/p/w500/a1bMgB09YDvvRN9SitCclUYragr.jpg",
+    "Runtime": 95
+   }
+  },
+  {
+   "title": "Once Upon a Time in the West",
+   "fields": {
+    "Year": 1968,
+    "Director": "Sergio Leone",
+    "Cover": "https://image.tmdb.org/t/p/w500/qbYgqOczabWNn2XKwgMtVrntD6P.jpg",
+    "Runtime": 166
+   }
+  },
+  {
+   "title": "BlacKkKlansman",
+   "fields": {
+    "Year": 2018,
+    "Director": "Spike Lee",
+    "Cover": "https://image.tmdb.org/t/p/w500/8jxqAvSDoneSKRczaK8v9X5gqBp.jpg",
+    "Runtime": 136
+   }
+  },
+  {
+   "title": "The Chess Players",
+   "fields": {
+    "Year": 1977,
+    "Director": "Satyajit Ray",
+    "Cover": "https://image.tmdb.org/t/p/w500/fb0gA6K2xyWBuxMOweUmEHTjt6.jpg",
+    "Runtime": 129
+   }
+  },
+  {
+   "title": "The Entity",
+   "fields": {
+    "Year": 1982,
+    "Director": "Sidney J. Furie",
+    "Cover": "https://image.tmdb.org/t/p/w500/e6fsd6zSJDPaFP4xWAtMkHJOkXU.jpg",
+    "Runtime": 125
+   }
+  },
+  {
+   "title": "The Haunting",
+   "fields": {
+    "Year": 1963,
+    "Director": "Robert Wise",
+    "Cover": "https://image.tmdb.org/t/p/w500/fmpTnUKTcrpuxLSY23gQMUf9qu7.jpg",
+    "Runtime": 112
+   }
+  },
+  {
+   "title": "Isle of the Dead",
+   "fields": {
+    "Year": 1945,
+    "Director": "Mark Robson",
+    "Cover": "https://image.tmdb.org/t/p/w500/eHnxz2K8fuUR5qwmkhdurBpZ5z0.jpg",
+    "Runtime": 72
+   }
+  },
+  {
+   "title": "The Innocents",
+   "fields": {
+    "Year": 1961,
+    "Director": "Jack Clayton",
+    "Cover": "https://image.tmdb.org/t/p/w500/idqvLBmlEHUITMnQ0EJ6Yb5TpVw.jpg",
+    "Runtime": 100
+   }
+  },
+  {
+   "title": "L'Atalante",
+   "fields": {
+    "Year": 1934,
+    "Director": "Jean Vigo",
+    "Cover": "https://image.tmdb.org/t/p/w500/yDTHSZGk1G33Q3nBNqhnpgmkyk7.jpg",
+    "Runtime": 88
+   }
+  },
+  {
+   "title": "L'Avventura",
+   "fields": {
+    "Year": 1960,
+    "Director": "Michelangelo Antonioni",
+    "Cover": "https://image.tmdb.org/t/p/w500/7kUXAS8K7Ihw1T1mhARjnLuMVk3.jpg",
+    "Runtime": 144
+   }
+  },
+  {
+   "title": "The Life and Death of Colonel Blimp",
+   "fields": {
+    "Year": 1943,
+    "Director": "Michael Powell",
+    "Cover": "https://image.tmdb.org/t/p/w500/kgyd5uyndsXiLYKlVgH0sm7Jfkv.jpg",
+    "Runtime": 163
+   }
+  },
+  {
+   "title": "Moonrise",
+   "fields": {
+    "Year": 1948,
+    "Director": "Frank Borzage",
+    "Cover": "https://image.tmdb.org/t/p/w500/9U0WHjNGNDipkl11Qlcg4NA9aHz.jpg",
+    "Runtime": 90
+   }
+  },
+  {
+   "title": "Night of the Demon",
+   "fields": {
+    "Year": 1957,
+    "Director": "Jacques Tourneur",
+    "Cover": "https://image.tmdb.org/t/p/w500/ePAjGAhynpwEI5HbpIrB28ML6lg.jpg",
+    "Runtime": 96
+   }
+  },
+  {
+   "title": "One-Eyed Jacks",
+   "fields": {
+    "Year": 1961,
+    "Director": "Marlon Brando",
+    "Cover": "https://image.tmdb.org/t/p/w500/xal47bRKVIxErB7h2CScY3GBnoT.jpg",
+    "Runtime": 141
+   }
+  },
+  {
+   "title": "Paisan",
+   "fields": {
+    "Year": 1946,
+    "Director": "Roberto Rossellini",
+    "Cover": "https://image.tmdb.org/t/p/w500/r5IGAFASCXmp8m51vUbER3WwVcB.jpg",
+    "Runtime": 125
+   }
+  },
+  {
+   "title": "Touki Bouki",
+   "fields": {
+    "Year": 1973,
+    "Director": "Djibril Diop Mambéty",
+    "Cover": "https://image.tmdb.org/t/p/w500/kcBYKHyg9GcQqa6DWq0AuQDhtPI.jpg",
+    "Runtime": 91
+   }
+  },
+  {
+   "title": "Woman Is the Future of Man",
+   "fields": {
+    "Year": 2004,
+    "Director": "Hong Sang-soo",
+    "Cover": "https://image.tmdb.org/t/p/w500/3bovtjGw5XB3aDKaWkfYnCupBbI.jpg",
+    "Runtime": 88
+   }
+  },
+  {
+   "title": "The Plague Dogs",
+   "fields": {
+    "Year": 1982,
+    "Director": "Martin Rosen",
+    "Cover": "https://image.tmdb.org/t/p/w500/gLKf3C4O1ZlkWrz0awUfgRneumL.jpg",
+    "Runtime": 103
+   }
+  },
+  {
+   "title": "Umberto D.",
+   "fields": {
+    "Year": 1952,
+    "Director": "Vittorio De Sica",
+    "Cover": "https://image.tmdb.org/t/p/w500/5I7SYsNQmZRZpQ2MAarIQYU9vaX.jpg",
+    "Runtime": 91
+   }
+  },
+  {
+   "title": "Primer",
+   "fields": {
+    "Year": 2004,
+    "Director": "Shane Carruth",
+    "Cover": "https://image.tmdb.org/t/p/w500/xEoq2WmDzpzxhkHEsmOYOg6BPg6.jpg",
+    "Runtime": 77
+   }
+  },
+  {
+   "title": "Predestination",
+   "fields": {
+    "Year": 2014,
+    "Director": "Peter Spierig",
+    "Cover": "https://image.tmdb.org/t/p/w500/38Xr1JnV1ZcLQ55zmdSp6n475cZ.jpg",
+    "Runtime": 98
+   }
+  },
+  {
+   "title": "Synecdoche, New York",
+   "fields": {
+    "Year": 2008,
+    "Director": "Charlie Kaufman",
+    "Cover": "https://image.tmdb.org/t/p/w500/5UwdhrjXhUgsiDhe1dpS9z4yj7q.jpg",
+    "Runtime": 124
+   }
+  },
+  {
+   "title": "Possession",
+   "fields": {
+    "Year": 1981,
+    "Director": "Andrzej Żuławski",
+    "Cover": "https://image.tmdb.org/t/p/w500/A9bnRn05riOKWftvQlLKa2gl51n.jpg",
+    "Runtime": 124
+   }
+  },
+  {
+   "title": "Y Tu Mamá También",
+   "fields": {
+    "Year": 2001,
+    "Director": "Alfonso Cuarón",
+    "Cover": "https://image.tmdb.org/t/p/w500/aj3rqjab8jfc2fWmcS3H3c5qbur.jpg",
+    "Runtime": 106
+   }
+  },
+  {
+   "title": "The Handmaiden",
+   "fields": {
+    "Year": 2016,
+    "Director": "Park Chan-wook",
+    "Cover": "https://image.tmdb.org/t/p/w500/dLlH4aNHdnmf62umnInL8xPlPzw.jpg",
+    "Runtime": 145
+   }
+  },
+  {
+   "title": "Love",
+   "fields": {
+    "Year": 2015,
+    "Director": "Gaspar Noé",
+    "Cover": "https://image.tmdb.org/t/p/w500/yz6lmOmsmYuj6AOLG4LIwK5eJZF.jpg",
+    "Runtime": 134
+   }
+  },
+  {
+   "title": "El Infierno",
+   "fields": {
+    "Year": 2010,
+    "Director": "Luis Estrada",
+    "Cover": "https://image.tmdb.org/t/p/w500/ar8BpJ5xAzTIw9bqD9Sra6TjBvw.jpg",
+    "Runtime": 148
+   }
+  },
+  {
+   "title": "Güeros",
+   "fields": {
+    "Year": 2014,
+    "Director": "Alonso Ruizpalacios",
+    "Cover": "https://image.tmdb.org/t/p/w500/rHyeILjVAejwMKiTHkxk6kaY2kV.jpg",
+    "Runtime": 111
+   }
+  },
+  {
+   "title": "I'm No Longer Here",
+   "fields": {
+    "Year": 2019,
+    "Director": "Luis Fernando Frías de la Parra",
+    "Cover": "https://image.tmdb.org/t/p/w500/AtfK71xkVaaHTZwU5mgfDgBqg9Y.jpg",
+    "Runtime": 112
+   }
+  },
+  {
+   "title": "The Ascent",
+   "fields": {
+    "Year": 1977,
+    "Director": "Larisa Shepitko",
+    "Cover": "https://image.tmdb.org/t/p/w500/hJOju5XZfmq4Lg5dPa8IPVY3mDt.jpg",
+    "Runtime": 110
+   }
+  },
+  {
+   "title": "Oldboy",
+   "fields": {
+    "Year": 2003,
+    "Director": "Park Chan-wook",
+    "Cover": "https://image.tmdb.org/t/p/w500/pWDtjs568ZfOTMbURQBYuT4Qxka.jpg",
+    "Runtime": 120
+   }
+  },
+  {
+   "title": "Incendies",
+   "fields": {
+    "Year": 2010,
+    "Director": "Denis Villeneuve",
+    "Cover": "https://image.tmdb.org/t/p/w500/yH6DAQVgbyj72S66gN4WWVoTjuf.jpg",
+    "Runtime": 131
+   }
+  },
+  {
+   "title": "Buffalo '66",
+   "fields": {
+    "Year": 1998,
+    "Director": "Vincent Gallo",
+    "Cover": "https://image.tmdb.org/t/p/w500/fxzXFzbSGNA52NHQCMqQiwzMIQw.jpg",
+    "Runtime": 110
+   }
+  },
+  {
+   "title": "Punch-Drunk Love",
+   "fields": {
+    "Year": 2002,
+    "Director": "Paul Thomas Anderson",
+    "Cover": "https://image.tmdb.org/t/p/w500/htYp4yqFu4rzBEIa6j9jP8miDm3.jpg",
+    "Runtime": 96
+   }
+  },
+  {
+   "title": "Cool Hand Luke",
+   "fields": {
+    "Year": 1967,
+    "Director": "Stuart Rosenberg",
+    "Cover": "https://image.tmdb.org/t/p/w500/4ykzTiHKLamh3eZJ8orVICtU2Jp.jpg",
+    "Runtime": 127
+   }
+  },
+  {
+   "title": "Dirty Harry",
+   "fields": {
+    "Year": 1971,
+    "Director": "Don Siegel",
+    "Cover": "https://image.tmdb.org/t/p/w500/scl2JDHzYoIEs5xyYy5ITCfyY0G.jpg",
+    "Runtime": 102
+   }
+  },
+  {
+   "title": "The Secret Life of Walter Mitty",
+   "fields": {
+    "Year": 2013,
+    "Director": "Ben Stiller",
+    "Cover": "https://image.tmdb.org/t/p/w500/iAo1hlzsPV9XpYcLQp6Ud065tGO.jpg",
+    "Runtime": 114
+   }
+  },
+  {
+   "title": "Tampopo",
+   "fields": {
+    "Year": 1985,
+    "Director": "Jūzō Itami",
+    "Cover": "https://image.tmdb.org/t/p/w500/ArYdSuX3zY9fMsE4LqmBl7xJq5R.jpg",
+    "Runtime": 115
+   }
+  },
+  {
+   "title": "Magnolia",
+   "fields": {
+    "Year": 1999,
+    "Director": "Paul Thomas Anderson",
+    "Cover": "https://image.tmdb.org/t/p/w500/tpfC325Jk6S38VTe5dDWjWtoyxr.jpg",
+    "Runtime": 189
+   }
+  },
+  {
+   "title": "The Lighthouse",
+   "fields": {
+    "Year": 2019,
+    "Director": "Robert Eggers",
+    "Cover": "https://image.tmdb.org/t/p/w500/yAKNmpcUweGH6WMCEWenwU9PsbE.jpg",
+    "Runtime": 109
+   }
+  },
+  {
+   "title": "Top Gun",
+   "fields": {
+    "Year": 1986,
+    "Director": "Tony Scott",
+    "Cover": "https://image.tmdb.org/t/p/w500/xUuHj3CgmZQ9P2cMaqQs4J0d4Zc.jpg",
+    "Runtime": 110
+   }
+  },
+  {
+   "title": "Point Break",
+   "fields": {
+    "Year": 1991,
+    "Director": "Kathryn Bigelow",
+    "Cover": "https://image.tmdb.org/t/p/w500/tlbERIghrQ4oofqlbF7H0K0EYnx.jpg",
+    "Runtime": 122
+   }
+  },
+  {
+   "title": "Mikey and Nicky",
+   "fields": {
+    "Year": 1976,
+    "Director": "Elaine May",
+    "Cover": "https://image.tmdb.org/t/p/w500/fnHC1OJ1EbdOX97nmXVYrXFgiQT.jpg",
+    "Runtime": 106
+   }
+  },
+  {
+   "title": "The Long Goodbye",
+   "fields": {
+    "Year": 1973,
+    "Director": "Robert Altman",
+    "Cover": "https://image.tmdb.org/t/p/w500/16Gu0Vg7tBdoRxg1NJDwlTKx1hG.jpg",
+    "Runtime": 112
+   }
+  },
+  {
+   "title": "Coffee and Cigarettes",
+   "fields": {
+    "Year": 2003,
+    "Director": "Jim Jarmusch",
+    "Cover": "https://image.tmdb.org/t/p/w500/pfG02QCsutx3PIxFS8UY4iM9AsS.jpg",
+    "Runtime": 97
+   }
+  },
+  {
+   "title": "The Prestige",
+   "fields": {
+    "Year": 2006,
+    "Director": "Christopher Nolan",
+    "Cover": "https://image.tmdb.org/t/p/w500/Ag2B2KHKQPukjH7WutmgnnSNurZ.jpg",
+    "Runtime": 130
+   }
+  },
+  {
+   "title": "American Beauty",
+   "fields": {
+    "Year": 1999,
+    "Director": "Sam Mendes",
+    "Cover": "https://image.tmdb.org/t/p/w500/wby9315QzVKdW9BonAefg8jGTTb.jpg",
+    "Runtime": 122
+   }
+  },
+  {
+   "title": "Red Rocket",
+   "fields": {
+    "Year": 2021,
+    "Director": "Sean Baker",
+    "Cover": "https://image.tmdb.org/t/p/w500/345gLhiNpItU1ICx8OxJQwjgPmH.jpg",
+    "Runtime": 130
+   }
+  },
+  {
+   "title": "Kung Fu Master!",
+   "fields": {
+    "Year": 1988,
+    "Director": "Agnès Varda",
+    "Cover": "https://image.tmdb.org/t/p/w500/ymnlN8fhRDx0dmkqmZW4mQCbLXs.jpg",
+    "Runtime": 80
+   }
+  },
+  {
+   "title": "Licorice Pizza",
+   "fields": {
+    "Year": 2021,
+    "Director": "Paul Thomas Anderson",
+    "Cover": "https://image.tmdb.org/t/p/w500/ivXtvzfliGvoJ1DhSHIGyYBToWe.jpg",
+    "Runtime": 133
+   }
+  },
+  {
+   "title": "The Kindergarten Teacher",
+   "fields": {
+    "Year": 2018,
+    "Director": "Sara Colangelo",
+    "Cover": "https://image.tmdb.org/t/p/w500/pwavkdZb2xNRh5Y9MHhkZJ2UaHT.jpg",
+    "Runtime": 96
+   }
+  },
+  {
+   "title": "Secretary",
+   "fields": {
+    "Year": 2002,
+    "Director": "Steven Shainberg",
+    "Cover": "https://image.tmdb.org/t/p/w500/8mHdYNKCmvjB1r87waCtEi9nvTt.jpg",
+    "Runtime": 111
+   }
+  },
+  {
+   "title": "Vagabond",
+   "fields": {
+    "Year": 1985,
+    "Director": "Agnès Varda",
+    "Cover": "https://image.tmdb.org/t/p/w500/2KFfwiPct1hwqi9dkKqoom0BenC.jpg",
+    "Runtime": 106
+   }
+  },
+  {
+   "title": "Wetlands",
+   "fields": {
+    "Year": 2013,
+    "Director": "David Wnendt",
+    "Cover": "https://image.tmdb.org/t/p/w500/6hfZij2Nd8rCT1tezRkbzm7xWkl.jpg",
+    "Runtime": 109
+   }
+  },
+  {
+   "title": "The Shape of Water",
+   "fields": {
+    "Year": 2017,
+    "Director": "Guillermo del Toro",
+    "Cover": "https://image.tmdb.org/t/p/w500/9zfwPffUXpBrEP26yp0q1ckXDcj.jpg",
+    "Runtime": 123
+   }
+  },
+  {
+   "title": "Raw",
+   "fields": {
+    "Year": 2016,
+    "Director": "Julia Ducournau",
+    "Cover": "https://image.tmdb.org/t/p/w500/kc8jT1MAiKM0iwdjAwC5lQrTNry.jpg",
+    "Runtime": 98
+   }
+  },
+  {
+   "title": "Ms. .45",
+   "fields": {
+    "Year": 1981,
+    "Director": "Abel Ferrara",
+    "Cover": "https://image.tmdb.org/t/p/w500/9ulPP8hcBjIrWRqeXsZVjL0uX3E.jpg",
+    "Runtime": 81
+   }
+  },
+  {
+   "title": "In the Realm of the Senses",
+   "fields": {
+    "Year": 1976,
+    "Director": "Nagisa Ōshima",
+    "Cover": "https://image.tmdb.org/t/p/w500/AiFQbgjgSXWPfbi9iIYT39iXWMW.jpg",
+    "Runtime": 105
+   }
+  },
+  {
+   "title": "The Wages of Fear",
+   "fields": {
+    "Year": 1953,
+    "Director": "Henri-Georges Clouzot",
+    "Cover": "https://image.tmdb.org/t/p/w500/sNOvIp4X0fmCMfgEs2ww5IyMgFm.jpg",
+    "Runtime": 154
+   }
+  },
+  {
+   "title": "4 Months, 3 Weeks and 2 Days",
+   "fields": {
+    "Year": 2007,
+    "Director": "Cristian Mungiu",
+    "Cover": "https://image.tmdb.org/t/p/w500/acEtvzFPeOQwbzRWncjRLenhnKV.jpg",
+    "Runtime": 114
+   }
+  },
+  {
+   "title": "Fear and Loathing in Las Vegas",
+   "fields": {
+    "Year": 1998,
+    "Director": "Terry Gilliam",
+    "Cover": "https://image.tmdb.org/t/p/w500/tisNLcMkxryU2zxhi0PiyDFqhm0.jpg",
+    "Runtime": 118
+   }
+  },
+  {
+   "title": "The Untouchables",
+   "fields": {
+    "Year": 1987,
+    "Director": "Brian De Palma",
+    "Cover": "https://image.tmdb.org/t/p/w500/tPq0R4jTO4Ey8ZspFaWK9wGA4Ls.jpg",
+    "Runtime": 119
+   }
+  },
+  {
+   "title": "Daisies",
+   "fields": {
+    "Year": 1966,
+    "Director": "Věra Chytilová",
+    "Cover": "https://image.tmdb.org/t/p/w500/8sxMhdn3i1Pn8OlGCBBjr9rjP1y.jpg",
+    "Runtime": 76
+   }
+  },
+  {
+   "title": "Masculin Féminin",
+   "fields": {
+    "Year": 1966,
+    "Director": "Jean-Luc Godard",
+    "Cover": "https://image.tmdb.org/t/p/w500/AroNQnZiqjJOWf32lLNZUzWlGvd.jpg",
+    "Runtime": 105
+   }
+  },
+  {
+   "title": "A Ghost Story",
+   "fields": {
+    "Year": 2017,
+    "Director": "David Lowery",
+    "Cover": "https://image.tmdb.org/t/p/w500/rp5JPIyZi9sMob15l46zNQLe5cO.jpg",
+    "Runtime": 93
+   }
+  },
+  {
+   "title": "Wings of Desire",
+   "fields": {
+    "Year": 1987,
+    "Director": "Wim Wenders",
+    "Cover": "https://image.tmdb.org/t/p/w500/iZQs2vUeCzvS1KfZJ6uYNCGJBBV.jpg",
+    "Runtime": 128
+   }
+  },
+  {
+   "title": "Ordet",
+   "fields": {
+    "Year": 1955,
+    "Director": "Carl Theodor Dreyer",
+    "Cover": "https://image.tmdb.org/t/p/w500/c9Oef9uQEuadZlnvv8hphRmTIgx.jpg",
+    "Runtime": 125
+   }
+  },
+  {
+   "title": "Sátántangó",
+   "fields": {
+    "Year": 1994,
+    "Director": "Béla Tarr",
+    "Cover": "https://image.tmdb.org/t/p/w500/y38z0v4HJ12MHiKddLEoFlvPiBt.jpg",
+    "Runtime": 432
+   }
+  },
+  {
+   "title": "Evolution of a Filipino Family",
+   "fields": {
+    "Year": 2004,
+    "Director": "Lav Diaz",
+    "Cover": "https://image.tmdb.org/t/p/w500/3Y5fOWPfjuKvjagRuIIF2fC1EGS.jpg",
+    "Runtime": 625
+   }
+  },
+  {
+   "title": "La Flor",
+   "fields": {
+    "Year": 2018,
+    "Director": "Mariano Llinás",
+    "Cover": "https://image.tmdb.org/t/p/w500/cO1WPAYnrjunr1HjqFCMdl9et3A.jpg",
+    "Runtime": 803
+   }
+  },
+  {
+   "title": "As I Was Moving Ahead Occasionally I Saw Brief Glimpses of Beauty",
+   "fields": {
+    "Year": 2000,
+    "Director": "Jonas Mekas",
+    "Cover": "https://image.tmdb.org/t/p/w500/tDaxB5juEGwXD7oZwh8IXsnisar.jpg",
+    "Runtime": 288
+   }
+  },
+  {
+   "title": "Everything Everywhere All at Once",
+   "fields": {
+    "Year": 2022,
+    "Director": "Daniel Scheinert",
+    "Cover": "https://image.tmdb.org/t/p/w500/u68AjlvlutfEIcpmbYpKcdi09ut.jpg",
+    "Runtime": 140
+   }
+  },
+  {
+   "title": "Coherence",
+   "fields": {
+    "Year": 2013,
+    "Director": "James Ward Byrkit",
+    "Cover": "https://image.tmdb.org/t/p/w500/ezUtb9m5DeLwL2gxi4gktzNCvQv.jpg",
+    "Runtime": 89
+   }
+  },
+  {
+   "title": "Kids on the Slope",
+   "fields": {
+    "Year": 2018,
+    "Director": "Takahiro Miki",
+    "Cover": "https://image.tmdb.org/t/p/w500/kuYhUxClXUGDChQEPEdPcyE7jBW.jpg",
+    "Runtime": 120
+   }
+  },
+  {
+   "title": "Rodrigo D. No Future",
+   "fields": {
+    "Year": 1990,
+    "Director": "Víctor Gaviria",
+    "Cover": "https://image.tmdb.org/t/p/w500/AqsLzU6AQUIHuDsQnqHT1qy0HVV.jpg",
+    "Runtime": 92
+   }
+  },
+  {
+   "title": "Bad Lieutenant",
+   "fields": {
+    "Year": 1992,
+    "Director": "Abel Ferrara",
+    "Cover": "https://image.tmdb.org/t/p/w500/mVJ2mXykqq3t2v1nuouf1P10g0d.jpg",
+    "Runtime": 96
+   }
+  },
+  {
+   "title": "Mississippi Grind",
+   "fields": {
+    "Year": 2015,
+    "Director": "Ryan Fleck",
+    "Cover": "https://image.tmdb.org/t/p/w500/vS3Bc6BiuZtAbSQpKhhRzPa7c2d.jpg",
+    "Runtime": 108
+   }
+  },
+  {
+   "title": "The Killing of a Chinese Bookie",
+   "fields": {
+    "Year": 1976,
+    "Director": "John Cassavetes",
+    "Cover": "https://image.tmdb.org/t/p/w500/lShPFOAbQ6y6oFYUfecmrj7BUu6.jpg",
+    "Runtime": 135
+   }
+  },
+  {
+   "title": "Limitless",
+   "fields": {
+    "Year": 2011,
+    "Director": "Neil Burger",
+    "Cover": "https://image.tmdb.org/t/p/w500/kCokPP4WCQRrrAuZ7FcpIyHr8b2.jpg",
+    "Runtime": 106
+   }
+  },
+  {
+   "title": "The Founder",
+   "fields": {
+    "Year": 2016,
+    "Director": "John Lee Hancock",
+    "Cover": "https://image.tmdb.org/t/p/w500/8gLIksu5ggdfBL1UbeTeonHquxl.jpg",
+    "Runtime": 115
+   }
+  },
+  {
+   "title": "Tony Manero",
+   "fields": {
+    "Year": 2008,
+    "Director": "Pablo Larraín",
+    "Cover": "https://image.tmdb.org/t/p/w500/moNodAj8wcthRY6jqhyIz99KBvB.jpg",
+    "Runtime": 97
+   }
+  },
+  {
+   "title": "Jennifer's Body",
+   "fields": {
+    "Year": 2009,
+    "Director": "Karyn Kusama",
+    "Cover": "https://image.tmdb.org/t/p/w500/wrkjsGcFJxcQqR56kJUYAEKKg2T.jpg",
+    "Runtime": 107
+   }
+  },
+  {
+   "title": "The Garden of Words",
+   "fields": {
+    "Year": 2013,
+    "Director": "Makoto Shinkai",
+    "Cover": "https://image.tmdb.org/t/p/w500/mXUCVq3HMtS4Y9IQ8vmEOPyN0vH.jpg",
+    "Runtime": 46
+   }
+  },
+  {
+   "title": "Thirst",
+   "fields": {
+    "Year": 2009,
+    "Director": "Park Chan-wook",
+    "Cover": "https://image.tmdb.org/t/p/w500/sBnFQwOcmL3dAIYfiQ9nLvLSW7B.jpg",
+    "Runtime": 134
+   }
+  },
+  {
+   "title": "The Wayward Cloud",
+   "fields": {
+    "Year": 2005,
+    "Director": "Tsai Ming-liang",
+    "Cover": "https://image.tmdb.org/t/p/w500/9982mkMphAfTGrXbCiOkCwTGVug.jpg",
+    "Runtime": 114
+   }
+  },
+  {
+   "title": "Lady Bird",
+   "fields": {
+    "Year": 2017,
+    "Director": "Greta Gerwig",
+    "Cover": "https://image.tmdb.org/t/p/w500/gl66K7zRdtNYGrxyS2YDUP5ASZd.jpg",
+    "Runtime": 94
+   }
+  },
+  {
+   "title": "Rosetta",
+   "fields": {
+    "Year": 1999,
+    "Director": "Jean-Pierre Dardenne",
+    "Cover": "https://image.tmdb.org/t/p/w500/buwLjQPPA9FaATvKzeAppLXiGMB.jpg",
+    "Runtime": 95
+   }
+  },
+  {
+   "title": "Tall Girl",
+   "fields": {
+    "Year": 2019,
+    "Director": "Nzingha Stewart",
+    "Cover": "https://image.tmdb.org/t/p/w500/m0clsFEXidLVJ0TueqWOvvImOMh.jpg",
+    "Runtime": 101
+   }
+  },
+  {
+   "title": "Another Round",
+   "fields": {
+    "Year": 2020,
+    "Director": "Thomas Vinterberg",
+    "Cover": "https://image.tmdb.org/t/p/w500/aDcIt4NHURLKnAEu7gow51Yd00Q.jpg",
+    "Runtime": 117
+   }
+  },
+  {
+   "title": "White Chicks",
+   "fields": {
+    "Year": 2004,
+    "Director": "Keenen Ivory Wayans",
+    "Cover": "https://image.tmdb.org/t/p/w500/aHTUpo45qy9QYIOnVITGGqLoVcA.jpg",
+    "Runtime": 109
+   }
+  },
+  {
+   "title": "Project X",
+   "fields": {
+    "Year": 2012,
+    "Director": "Nima Nourizadeh",
+    "Cover": "https://image.tmdb.org/t/p/w500/lUPDGT3lyRrq8SvWuNWG2DP64bR.jpg",
+    "Runtime": 88
+   }
+  },
+  {
+   "title": "Cosas Imposibles",
+   "fields": {
+    "Year": 2021,
+    "Director": "Ernesto Contreras",
+    "Cover": "https://image.tmdb.org/t/p/w500/t2Ew8NZ8Ci2kqmoecZUNQUFDJnQ.jpg",
+    "Runtime": 88
+   }
+  },
+  {
+   "title": "Clean, Shaven",
+   "fields": {
+    "Year": 1993,
+    "Director": "Lodge Kerrigan",
+    "Cover": "https://image.tmdb.org/t/p/w500/kpMXYy0L2GHrIVyDF0HkEiDK1Wd.jpg",
+    "Runtime": 79
+   }
+  },
+  {
+   "title": "Die Hard",
+   "fields": {
+    "Year": 1988,
+    "Director": "John McTiernan",
+    "Cover": "https://image.tmdb.org/t/p/w500/7Bjd8kfmDSOzpmhySpEhkUyK2oH.jpg",
+    "Runtime": 132
+   }
+  },
+  {
+   "title": "Fargo",
+   "fields": {
+    "Year": 1996,
+    "Director": "Joel Coen",
+    "Cover": "https://image.tmdb.org/t/p/w500/rt7cpEr1uP6RTZykBFhBTcRaKvG.jpg",
+    "Runtime": 98
+   }
+  },
+  {
+   "title": "Once Upon a Time in Anatolia",
+   "fields": {
+    "Year": 2011,
+    "Director": "Nuri Bilge Ceylan",
+    "Cover": "https://image.tmdb.org/t/p/w500/bN84guFndgvtWIvFC7sTD8AAJDE.jpg",
+    "Runtime": 163
+   }
+  },
+  {
+   "title": "Decision to Leave",
+   "fields": {
+    "Year": 2022,
+    "Director": "Park Chan-wook",
+    "Cover": "https://image.tmdb.org/t/p/w500/zI8KZ4EdLUymWKX1YEkpZ0gtPUa.jpg",
+    "Runtime": 139
+   }
+  },
+  {
+   "title": "Gosford Park",
+   "fields": {
+    "Year": 2001,
+    "Director": "Robert Altman",
+    "Cover": "https://image.tmdb.org/t/p/w500/7r8DeZuaaHCiOEbkqZC6MFmwJ69.jpg",
+    "Runtime": 137
+   }
+  },
+  {
+   "title": "Holy Spider",
+   "fields": {
+    "Year": 2022,
+    "Director": "Ali Abbasi",
+    "Cover": "https://image.tmdb.org/t/p/w500/6ObJ4x7m1F5QRY06WzOxNJQHwGb.jpg",
+    "Runtime": 118
+   }
+  },
+  {
+   "title": "Brazil",
+   "fields": {
+    "Year": 1985,
+    "Director": "Terry Gilliam",
+    "Cover": "https://image.tmdb.org/t/p/w500/aewan59WcFThBimkTVVoNf2o5Vb.jpg",
+    "Runtime": 143
+   }
+  },
+  {
+   "title": "The Day of the Dolphin",
+   "fields": {
+    "Year": 1973,
+    "Director": "Mike Nichols",
+    "Cover": "https://image.tmdb.org/t/p/w500/vLztqesi2Dj5Ny74u33GufVzKR6.jpg",
+    "Runtime": 105
+   }
+  },
+  {
+   "title": "Restrepo",
+   "fields": {
+    "Year": 2010,
+    "Director": "Tim Hetherington",
+    "Cover": "https://image.tmdb.org/t/p/w500/62DCMBMJU1ZVezVEawyatpFoJwI.jpg",
+    "Runtime": 93
+   }
+  },
+  {
+   "title": "High Fidelity",
+   "fields": {
+    "Year": 2000,
+    "Director": "Stephen Frears",
+    "Cover": "https://image.tmdb.org/t/p/w500/e2LZGB62GMhv3Fo8tDZjY87I81a.jpg",
+    "Runtime": 113
+   }
+  },
+  {
+   "title": "Thief",
+   "fields": {
+    "Year": 1981,
+    "Director": "Michael Mann",
+    "Cover": "https://image.tmdb.org/t/p/w500/bpjRGwfYJ71bU0hNhLIz7g3t6Oy.jpg",
+    "Runtime": 123
+   }
+  },
+  {
+   "title": "The Nice Guys",
+   "fields": {
+    "Year": 2016,
+    "Director": "Shane Black",
+    "Cover": "https://image.tmdb.org/t/p/w500/clq4So9spa9cXk3MZy2iMdqkxP2.jpg",
+    "Runtime": 116
+   }
+  },
+  {
+   "title": "Collateral",
+   "fields": {
+    "Year": 2004,
+    "Director": "Michael Mann",
+    "Cover": "https://image.tmdb.org/t/p/w500/nV5316WUsVij8sVXLCF1g7TFitg.jpg",
+    "Runtime": 120
+   }
+  },
+  {
+   "title": "Who Framed Roger Rabbit",
+   "fields": {
+    "Year": 1988,
+    "Director": "Robert Zemeckis",
+    "Cover": "https://image.tmdb.org/t/p/w500/lYfRc57Kx9VgLZ48iulu0HKnM15.jpg",
+    "Runtime": 104
+   }
+  },
+  {
+   "title": "Arrival",
+   "fields": {
+    "Year": 2016,
+    "Director": "Denis Villeneuve",
+    "Cover": "https://image.tmdb.org/t/p/w500/x2FJsf1ElAgr63Y3PNPtJrcmpoe.jpg",
+    "Runtime": 116
+   }
+  },
+  {
+   "title": "Gladiator",
+   "fields": {
+    "Year": 2000,
+    "Director": "Ridley Scott",
+    "Cover": "https://image.tmdb.org/t/p/w500/wN2xWp1eIwCKOD0BHTcErTBv1Uq.jpg",
+    "Runtime": 155
+   }
+  },
+  {
+   "title": "Ray",
+   "fields": {
+    "Year": 2004,
+    "Director": "Taylor Hackford",
+    "Cover": "https://image.tmdb.org/t/p/w500/tSPC7sO2XYNL9QcMmK88tuUALL5.jpg",
+    "Runtime": 152
+   }
+  },
+  {
+   "title": "Spencer",
+   "fields": {
+    "Year": 2021,
+    "Director": "Pablo Larraín",
+    "Cover": "https://image.tmdb.org/t/p/w500/7GcqdBKaMM9BWXWN07BirBMkcBF.jpg",
+    "Runtime": 116
+   }
+  },
+  {
+   "title": "Malcolm X",
+   "fields": {
+    "Year": 1992,
+    "Director": "Spike Lee",
+    "Cover": "https://image.tmdb.org/t/p/w500/o2s9ow0uRRm1BcF3teznk5twd90.jpg",
+    "Runtime": 202
+   }
+  },
+  {
+   "title": "Walk the Line",
+   "fields": {
+    "Year": 2005,
+    "Director": "James Mangold",
+    "Cover": "https://image.tmdb.org/t/p/w500/p8lPTjvjOjTfvC1E9pmMwcF9vkn.jpg",
+    "Runtime": 136
+   }
+  },
+  {
+   "title": "La Dolce Vita",
+   "fields": {
+    "Year": 1960,
+    "Director": "Federico Fellini",
+    "Cover": "https://image.tmdb.org/t/p/w500/dZ2v0DAX4aCZartCzZdg4ZinSW2.jpg",
+    "Runtime": 174
+   }
+  },
+  {
+   "title": "Toto the Hero",
+   "fields": {
+    "Year": 1991,
+    "Director": "Jaco Van Dormael",
+    "Cover": "https://image.tmdb.org/t/p/w500/fxIzSyOMrOFxwCIWIW4bwtgMpds.jpg",
+    "Runtime": 91
+   }
+  },
+  {
+   "title": "The Favourite",
+   "fields": {
+    "Year": 2018,
+    "Director": "Yorgos Lanthimos",
+    "Cover": "https://image.tmdb.org/t/p/w500/cwBq0onfmeilU5xgqNNjJAMPfpw.jpg",
+    "Runtime": 120
+   }
+  },
+  {
+   "title": "Raising Arizona",
+   "fields": {
+    "Year": 1987,
+    "Director": "Joel Coen",
+    "Cover": "https://image.tmdb.org/t/p/w500/niKyjOqiB4XVl0BqgKTHIlHOCeF.jpg",
+    "Runtime": 94
+   }
+  },
+  {
+   "title": "O Brother, Where Art Thou?",
+   "fields": {
+    "Year": 2000,
+    "Director": "Joel Coen",
+    "Cover": "https://image.tmdb.org/t/p/w500/s9foMAcLg8GEzzQzer04qOGdD1k.jpg",
+    "Runtime": 107
+   }
+  },
+  {
+   "title": "The Magician",
+   "fields": {
+    "Year": 1958,
+    "Director": "Ingmar Bergman",
+    "Cover": "https://image.tmdb.org/t/p/w500/46DEYkr96MxzUmdwgmj2U7gWokZ.jpg",
+    "Runtime": 102
+   }
+  },
+  {
+   "title": "Onibaba",
+   "fields": {
+    "Year": 1964,
+    "Director": "Kaneto Shindō",
+    "Cover": "https://image.tmdb.org/t/p/w500/xyPLG53OodhJtvfQEfcmC43l16O.jpg",
+    "Runtime": 105
+   }
+  },
+  {
+   "title": "Poor Things",
+   "fields": {
+    "Year": 2023,
+    "Director": "Yorgos Lanthimos",
+    "Cover": "https://image.tmdb.org/t/p/w500/kCGlIMHnOm8JPXq3rXM6c5wMxcT.jpg",
+    "Runtime": 141
+   }
+  },
+  {
+   "title": "The Discreet Charm of the Bourgeoisie",
+   "fields": {
+    "Year": 1972,
+    "Director": "Luis Buñuel",
+    "Cover": "https://image.tmdb.org/t/p/w500/zN4ILX2x64PvT2jIOAHXxCOi5WA.jpg",
+    "Runtime": 101
+   }
+  },
+  {
+   "title": "Husbands",
+   "fields": {
+    "Year": 1970,
+    "Director": "John Cassavetes",
+    "Cover": "https://image.tmdb.org/t/p/w500/482OpzSoSeAVx7KDJlWupLNIf0r.jpg",
+    "Runtime": 131
+   }
+  },
+  {
+   "title": "The Red and the White",
+   "fields": {
+    "Year": 1967,
+    "Director": "Miklós Jancsó",
+    "Cover": "https://image.tmdb.org/t/p/w500/ksoCAQDpcQl4gmkL9IGdtFCQGnv.jpg",
+    "Runtime": 90
+   }
+  },
+  {
+   "title": "The Cook, the Thief, His Wife & Her Lover",
+   "fields": {
+    "Year": 1989,
+    "Director": "Peter Greenaway",
+    "Cover": "https://image.tmdb.org/t/p/w500/15xMqAnFsROopAT66zdRyu2Dtek.jpg",
+    "Runtime": 124
+   }
+  },
+  {
+   "title": "The Firemen's Ball",
+   "fields": {
+    "Year": 1967,
+    "Director": "Miloš Forman",
+    "Cover": "https://image.tmdb.org/t/p/w500/yylEjPttmTDar0o92StlrO5ghmw.jpg",
+    "Runtime": 73
+   }
+  },
+  {
+   "title": "Aftersun",
+   "fields": {
+    "Year": 2022,
+    "Director": "Charlotte Wells",
+    "Cover": "https://image.tmdb.org/t/p/w500/evKz85EKouVbIr51zy5fOtpNRPg.jpg",
+    "Runtime": 101
+   }
+  },
+  {
+   "title": "Fallen Leaves",
+   "fields": {
+    "Year": 2023,
+    "Director": "Aki Kaurismäki",
+    "Cover": "https://image.tmdb.org/t/p/w500/9ayYOpeqHhxfHHUoyt3kXzznECO.jpg",
+    "Runtime": 81
+   }
+  },
+  {
+   "title": "Anatomy of a Fall",
+   "fields": {
+    "Year": 2023,
+    "Director": "Justine Triet",
+    "Cover": "https://image.tmdb.org/t/p/w500/1ho0d4LNZw3Y0voeKmSvPSgJOJ2.jpg",
+    "Runtime": 151
+   }
+  },
+  {
+   "title": "Perfect Days",
+   "fields": {
+    "Year": 2023,
+    "Director": "Wim Wenders",
+    "Cover": "https://image.tmdb.org/t/p/w500/mjEk5Wwx6TYVqw29zSaUHclMIgp.jpg",
+    "Runtime": 124
+   }
+  },
+  {
+   "title": "Past Lives",
+   "fields": {
+    "Year": 2023,
+    "Director": "Celine Song",
+    "Cover": "https://image.tmdb.org/t/p/w500/k3waqVXSnvCZWfJYNtdamTgTtTA.jpg",
+    "Runtime": 106
+   }
+  },
+  {
+   "title": "Tesis",
+   "fields": {
+    "Year": 1996,
+    "Director": "Alejandro Amenábar",
+    "Cover": "https://image.tmdb.org/t/p/w500/dPyONW7fyb3iQ5s4WieNaHSX2id.jpg",
+    "Runtime": 125
+   }
+  },
+  {
+   "title": "On Becoming a Guinea Fowl",
+   "fields": {
+    "Year": 2024,
+    "Director": "Rungano Nyoni",
+    "Cover": "https://image.tmdb.org/t/p/w500/6lMOpD8XVLKaB5uCsJXt1Fo7XNh.jpg",
+    "Runtime": 99
+   }
+  },
+  {
+   "title": "Eighth Grade",
+   "fields": {
+    "Year": 2018,
+    "Director": "Bo Burnham",
+    "Cover": "https://image.tmdb.org/t/p/w500/xTa9cLhGHfQ7084UvoPQ2bBXKqd.jpg",
+    "Runtime": 94
+   }
+  },
+  {
+   "title": "Pillion",
+   "fields": {
+    "Year": 2024,
+    "Director": "Harry Lighton",
+    "Cover": ""
+   }
+  },
+  {
+   "title": "Moonlight",
+   "fields": {
+    "Year": 2016,
+    "Director": "Barry Jenkins",
+    "Cover": "https://image.tmdb.org/t/p/w500/qLnfEmPrDjJfPyyddLJPkXmshkp.jpg",
+    "Runtime": 111
+   }
+  },
+  {
+   "title": "Minari",
+   "fields": {
+    "Year": 2020,
+    "Director": "Lee Isaac Chung",
+    "Cover": "https://image.tmdb.org/t/p/w500/6mPNdmjdbVKPITv3LLCmQoKs9Zw.jpg",
+    "Runtime": 115
+   }
+  },
+  {
+   "title": "Marcel the Shell with Shoes On",
+   "fields": {
+    "Year": 2021,
+    "Director": "Dean Fleischer Camp",
+    "Cover": "https://image.tmdb.org/t/p/w500/jaYmP4Ct8YLnxWAW2oYkUjeXtzm.jpg",
+    "Runtime": 90
+   }
+  },
+  {
+   "title": "The Farewell",
+   "fields": {
+    "Year": 2019,
+    "Director": "Lulu Wang",
+    "Cover": "https://image.tmdb.org/t/p/w500/7ht2IMGynDSVQGvAXhAb83DLET8.jpg",
+    "Runtime": 100
+   }
+  },
+  {
+   "title": "Sorry Baby",
+   "fields": {
+    "Year": 1999,
+    "Director": "Feng Xiaogang",
+    "Cover": "https://image.tmdb.org/t/p/w500/p5fNcoCcBBCdpaFTvGjerV1wXtg.jpg",
+    "Runtime": 95
+   }
+  },
+  {
+   "title": "Earth Mama",
+   "fields": {
+    "Year": 2023,
+    "Director": "Savanah Leaf",
+    "Cover": "https://image.tmdb.org/t/p/w500/pA20kQaKxPvUbPeXyyc6ENJEEuN.jpg",
+    "Runtime": 101
+   }
+  },
+  {
+   "title": "Close",
+   "fields": {
+    "Year": 2022,
+    "Director": "Lukas Dhont",
+    "Cover": "https://image.tmdb.org/t/p/w500/dlMNnWs7Mz8Nk5AC447Ew1tD5pn.jpg",
+    "Runtime": 104
+   }
+  },
+  {
+   "title": "Talk to Me",
+   "fields": {
+    "Year": 2022,
+    "Director": "Michael Philippou",
+    "Cover": "https://image.tmdb.org/t/p/w500/kdPMUMJzyYAc4roD52qavX0nLIC.jpg",
+    "Runtime": 95
+   }
+  },
+  {
+   "title": "The Florida Project",
+   "fields": {
+    "Year": 2017,
+    "Director": "Sean Baker",
+    "Cover": "https://image.tmdb.org/t/p/w500/5QnDxdJg1fi6uMSkSi4x8tHsltm.jpg",
+    "Runtime": 112
+   }
+  },
+  {
+   "title": "Waves",
+   "fields": {
+    "Year": 2019,
+    "Director": "Trey Edward Shults",
+    "Cover": "https://image.tmdb.org/t/p/w500/3xbjL0z8iH8e8L3USyeKGQrBfuZ.jpg",
+    "Runtime": 136
+   }
+  },
+  {
+   "title": "Babygirl",
+   "fields": {
+    "Year": 2024,
+    "Director": "Halina Reijn",
+    "Cover": "https://image.tmdb.org/t/p/w500/ilwO6elz3mLV9CToT7C8pjVeKX0.jpg",
+    "Runtime": 115
+   }
+  },
+  {
+   "title": "The Lobster",
+   "fields": {
+    "Year": 2015,
+    "Director": "Yorgos Lanthimos",
+    "Cover": "https://image.tmdb.org/t/p/w500/7Y9ILV1unpW9mLpGcqyGQU72LUy.jpg",
+    "Runtime": 119
+   }
+  },
+  {
+   "title": "Red Rocket",
+   "fields": {
+    "Year": 2021,
+    "Director": "Sean Baker",
+    "Cover": "https://image.tmdb.org/t/p/w500/345gLhiNpItU1ICx8OxJQwjgPmH.jpg",
+    "Runtime": 130
+   }
+  },
+  {
+   "title": "The Substance",
+   "fields": {
+    "Year": 2024,
+    "Director": "Coralie Fargeat",
+    "Cover": "https://image.tmdb.org/t/p/w500/uYJvxMWMb9W4zIY3cbM50sj3dpC.jpg",
+    "Runtime": 141
+   }
+  },
+  {
+   "title": "The Witch",
+   "fields": {
+    "Year": 2015,
+    "Director": "Robert Eggers",
+    "Cover": "https://image.tmdb.org/t/p/w500/zap5hpFCWSvdWSuPGAQyjUv2wAC.jpg",
+    "Runtime": 92
+   }
+  },
+  {
+   "title": "The Iron Claw",
+   "fields": {
+    "Year": 2023,
+    "Director": "Sean Durkin",
+    "Cover": "https://image.tmdb.org/t/p/w500/s2VLjcykJfwplJNGT5iEeCA0mRx.jpg",
+    "Runtime": 133
+   }
+  },
+  {
+   "title": "20th Century Women",
+   "fields": {
+    "Year": 2016,
+    "Director": "Mike Mills",
+    "Cover": "https://image.tmdb.org/t/p/w500/mso2rEr9i0MilRIOao5HaWFipS9.jpg",
+    "Runtime": 119
+   }
+  },
+  {
+   "title": "Swiss Army Man",
+   "fields": {
+    "Year": 2016,
+    "Director": "Daniel Kwan",
+    "Cover": "https://image.tmdb.org/t/p/w500/xE2QfqvAGI8n8ckIiy9FzS9XF94.jpg",
+    "Runtime": 97
+   }
+  },
+  {
+   "title": "Heretic",
+   "fields": {
+    "Year": 2024,
+    "Director": "Scott Beck",
+    "Cover": "https://image.tmdb.org/t/p/w500/fr96XzlzsONrQrGfdLMiwtQjott.jpg",
+    "Runtime": 111
+   }
+  },
+  {
+   "title": "Room",
+   "fields": {
+    "Year": 2015,
+    "Director": "Lenny Abrahamson",
+    "Cover": "https://image.tmdb.org/t/p/w500/2hHDMeYyZjbGWn0BeNH1cTMxuM7.jpg",
+    "Runtime": 118
+   }
+  },
+  {
+   "title": "Civil War",
+   "fields": {
+    "Year": 2024,
+    "Director": "Alex Garland",
+    "Cover": "https://image.tmdb.org/t/p/w500/sh7Rg8Er3tFcN9BpKIPOMvALgZd.jpg",
+    "Runtime": 109
+   }
+  },
+  {
+   "title": "We Live in Time",
+   "fields": {
+    "Year": 2024,
+    "Director": "John Crowley",
+    "Cover": "https://image.tmdb.org/t/p/w500/oeDNBgnlGF6rnyX1P1K8Vl2f3lW.jpg",
+    "Runtime": 108
+   }
+  },
+  {
+   "title": "Pearl",
+   "fields": {
+    "Year": 2022,
+    "Director": "Ti West",
+    "Cover": "https://image.tmdb.org/t/p/w500/z5uIG81pXyHKg7cUFIu84Wjn4NS.jpg",
+    "Runtime": 102
+   }
+  },
+  {
+   "title": "The Green Knight",
+   "fields": {
+    "Year": 2021,
+    "Director": "David Lowery",
+    "Cover": "https://image.tmdb.org/t/p/w500/if4hw3Ou5Sav9Em7WWHj66mnywp.jpg",
+    "Runtime": 130
+   }
+  },
+  {
+   "title": "Enemy",
+   "fields": {
+    "Year": 2013,
+    "Director": "Denis Villeneuve",
+    "Cover": "https://image.tmdb.org/t/p/w500/vf40tyDRKZsBmaLsYeopzfFLzLx.jpg",
+    "Runtime": 91
+   }
+  },
+  {
+   "title": "The End of the Tour",
+   "fields": {
+    "Year": 2015,
+    "Director": "James Ponsoldt",
+    "Cover": "https://image.tmdb.org/t/p/w500/3fEuVd8Xorwtk5kFVvyiNlOtcIw.jpg",
+    "Runtime": 106
+   }
+  },
+  {
+   "title": "The Last Black Man in San Francisco",
+   "fields": {
+    "Year": 2019,
+    "Director": "Joe Talbot",
+    "Cover": "https://image.tmdb.org/t/p/w500/ow9zjibNrz5TYVZ6cqwmvCR1YX1.jpg",
+    "Runtime": 121
+   }
+  },
+  {
+   "title": "Green Room",
+   "fields": {
+    "Year": 2015,
+    "Director": "Jeremy Saulnier",
+    "Cover": "https://image.tmdb.org/t/p/w500/evZicaR7nXe4LiD9G6QYTorcJGO.jpg",
+    "Runtime": 95
+   }
+  },
+  {
+   "title": "Showing Up",
+   "fields": {
+    "Year": 2022,
+    "Director": "Kelly Reichardt",
+    "Cover": "https://image.tmdb.org/t/p/w500/iJw55oTb2MlG4NWjq3sbIFUVU76.jpg",
+    "Runtime": 107
+   }
+  },
+  {
+   "title": "Lean on Pete",
+   "fields": {
+    "Year": 2017,
+    "Director": "Andrew Haigh",
+    "Cover": "https://image.tmdb.org/t/p/w500/7SuPHSo9Uw8GACkP2oPst512Qhl.jpg",
+    "Runtime": 121
+   }
+  },
+  {
+   "title": "You Hurt My Feelings",
+   "fields": {
+    "Year": 2023,
+    "Director": "Nicole Holofcener",
+    "Cover": "https://image.tmdb.org/t/p/w500/do9UvkcDJeYbhYVoQPS00yOCYdc.jpg",
+    "Runtime": 93
+   }
+  },
+  {
+   "title": "It Follows",
+   "fields": {
+    "Year": 2014,
+    "Director": "David Robert Mitchell",
+    "Cover": "https://image.tmdb.org/t/p/w500/iwnQ1JH1wdWrGYkgWySptJ5284A.jpg",
+    "Runtime": 101
+   }
+  },
+  {
+   "title": "The Disaster Artist",
+   "fields": {
+    "Year": 2017,
+    "Director": "James Franco",
+    "Cover": "https://image.tmdb.org/t/p/w500/2HuLGiyH0TPYxnCvYHAxc8K738o.jpg",
+    "Runtime": 104
+   }
+  },
+  {
+   "title": "Annihilation",
+   "fields": {
+    "Year": 2018,
+    "Director": "Alex Garland",
+    "Cover": "https://image.tmdb.org/t/p/w500/4YRplSk6BhH6PRuE9gfyw9byUJ6.jpg",
+    "Runtime": 115
+   }
+  },
+  {
+   "title": "Howl's Moving Castle",
+   "fields": {
+    "Year": 2004,
+    "Director": "Hayao Miyazaki",
+    "Cover": "https://image.tmdb.org/t/p/w500/13kOl2v0nD2OLbVSHnHk8GUFEhO.jpg",
+    "Runtime": 119
+   }
+  },
+  {
+   "title": "Kiki's Delivery Service",
+   "fields": {
+    "Year": 1989,
+    "Director": "Hayao Miyazaki",
+    "Cover": "https://image.tmdb.org/t/p/w500/Aufa4YdZIv4AXpR9rznwVA5SEfd.jpg",
+    "Runtime": 103
+   }
+  },
+  {
+   "title": "Castle in the Sky",
+   "fields": {
+    "Year": 1986,
+    "Director": "Hayao Miyazaki",
+    "Cover": "https://image.tmdb.org/t/p/w500/41XxSsJc5OrulP0m7TrrUeO2hoz.jpg",
+    "Runtime": 125
+   }
+  },
+  {
+   "title": "When Marnie Was There",
+   "fields": {
+    "Year": 2014,
+    "Director": "Hiromasa Yonebayashi",
+    "Cover": "https://image.tmdb.org/t/p/w500/vug1dvDI1tSa60Z8qjCuUE7ntkO.jpg",
+    "Runtime": 103
+   }
+  },
+  {
+   "title": "The Cat Returns",
+   "fields": {
+    "Year": 2002,
+    "Director": "Hiroyuki Morita",
+    "Cover": "https://image.tmdb.org/t/p/w500/pqyY7IEWkCWNZ7EuRStQaJITEta.jpg",
+    "Runtime": 75
+   }
+  },
+  {
+   "title": "Ocean Waves",
+   "fields": {
+    "Year": 1993,
+    "Director": "Tomomi Mochizuki",
+    "Cover": "https://image.tmdb.org/t/p/w500/fSR1LLMIJZ6WcQEkM82yKy4F9vQ.jpg",
+    "Runtime": 72
+   }
+  },
+  {
+   "title": "Pom Poko",
+   "fields": {
+    "Year": 1994,
+    "Director": "Isao Takahata",
+    "Cover": "https://image.tmdb.org/t/p/w500/gyoJmFf24MOUc4TTu97sd0cHIQF.jpg",
+    "Runtime": 119
+   }
+  },
+  {
+   "title": "The Red Turtle",
+   "fields": {
+    "Year": 2016,
+    "Director": "Michael Dudok de Wit",
+    "Cover": "https://image.tmdb.org/t/p/w500/wOBU3SLjQ9358Km9YWYasPZyebp.jpg",
+    "Runtime": 81
+   }
+  }
+ ]
+}

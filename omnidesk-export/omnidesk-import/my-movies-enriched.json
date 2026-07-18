@@ -1,0 +1,2825 @@
+{
+ "name": "My Movies",
+ "icon": "🎬",
+ "template": "poster",
+ "showImage": true,
+ "fields": [
+  {
+   "name": "Director",
+   "type": "TEXT"
+  },
+  {
+   "name": "Year",
+   "type": "NUMBER"
+  },
+  {
+   "name": "Stars",
+   "type": "NUMBER"
+  },
+  {
+   "name": "Runtime",
+   "type": "NUMBER"
+  },
+  {
+   "name": "Watched Date",
+   "type": "DATE"
+  },
+  {
+   "name": "Letterboxd",
+   "type": "URL"
+  },
+  {
+   "name": "Cover",
+   "type": "IMAGE_URL"
+  }
+ ],
+ "visibleFields": [
+  "Director",
+  "Year",
+  "Stars"
+ ],
+ "items": [
+  {
+   "title": "Big Hero 6",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/2mxS4wUimwlLmI1xp6QW6NSU361.jpg",
+    "Year": 2014,
+    "Watched Date": "2022-07-10",
+    "Stars": 8,
+    "Letterboxd": "https://boxd.it/5rje",
+    "Director": "Chris Williams",
+    "Runtime": 102
+   }
+  },
+  {
+   "title": "Back to the Future",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/vN5B5WgYscRGcQpVhHl6p9DDTP0.jpg",
+    "Year": 1985,
+    "Watched Date": "2022-07-10",
+    "Stars": 9,
+    "Letterboxd": "https://boxd.it/2b8e",
+    "Director": "Robert Zemeckis",
+    "Runtime": 116
+   }
+  },
+  {
+   "title": "Avengers: Infinity War",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/7WsyChQLEftFiDOVTGkv3hFpyyt.jpg",
+    "Year": 2018,
+    "Watched Date": "2022-07-10",
+    "Stars": 8,
+    "Letterboxd": "https://boxd.it/9vEe",
+    "Director": "Anthony Russo",
+    "Runtime": 149
+   }
+  },
+  {
+   "title": "Avengers: Age of Ultron",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/4ssDuvEDkSArWEdyBl2X5EHvYKU.jpg",
+    "Year": 2015,
+    "Watched Date": "2022-07-10",
+    "Stars": 4,
+    "Letterboxd": "https://boxd.it/3qi6",
+    "Director": "Joss Whedon",
+    "Runtime": 141
+   }
+  },
+  {
+   "title": "Ant-Man and the Wasp",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/cFQEO687n1K6umXbInzocxcnAQz.jpg",
+    "Year": 2018,
+    "Watched Date": "2022-07-10",
+    "Stars": 3,
+    "Letterboxd": "https://boxd.it/cqUW",
+    "Director": "Peyton Reed",
+    "Runtime": 119
+   }
+  },
+  {
+   "title": "Ant-Man",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/rQRnQfUl3kfp78nCWq8Ks04vnq1.jpg",
+    "Year": 2015,
+    "Watched Date": "2022-07-10",
+    "Stars": 4,
+    "Letterboxd": "https://boxd.it/3vmW",
+    "Director": "Peyton Reed",
+    "Runtime": 117
+   }
+  },
+  {
+   "title": "Along with the Gods: The Two Worlds",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/gJSvIsI6oQfFim0PGyuuiCYfqKs.jpg",
+    "Year": 2017,
+    "Watched Date": "2022-10-11",
+    "Stars": 8,
+    "Letterboxd": "https://boxd.it/dVlA",
+    "Director": "Kim Yong-hwa",
+    "Runtime": 139
+   }
+  },
+  {
+   "title": "Batman v Superman: Dawn of Justice",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/5UsK3grJvtQrtzEgqNlDljJW96w.jpg",
+    "Year": 2016,
+    "Watched Date": "2022-12-27",
+    "Stars": 4,
+    "Letterboxd": "https://boxd.it/6fBW",
+    "Director": "Zack Snyder",
+    "Runtime": 152
+   }
+  },
+  {
+   "title": "Angel's Egg",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/dcEUGvckbePFzPKhGXnS9T3kZMG.jpg",
+    "Year": 1985,
+    "Watched Date": "2023-06-04",
+    "Stars": 10,
+    "Letterboxd": "https://boxd.it/1LeA",
+    "Director": "Mamoru Oshii",
+    "Runtime": 71
+   }
+  },
+  {
+   "title": "Akira",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/neZ0ykEsPqxamsX6o5QNUFILQrz.jpg",
+    "Year": 1988,
+    "Watched Date": "2023-06-04",
+    "Stars": 10,
+    "Letterboxd": "https://boxd.it/2b1i",
+    "Director": "Katsuhiro Otomo",
+    "Runtime": 124
+   }
+  },
+  {
+   "title": "American History X",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/x2drgoXYZ8484lqyDj7L1CEVR4T.jpg",
+    "Year": 1998,
+    "Watched Date": "2023-08-13",
+    "Stars": 9,
+    "Letterboxd": "https://boxd.it/2bdo",
+    "Director": "Tony Kaye",
+    "Runtime": 119
+   }
+  },
+  {
+   "title": "Asteroid City",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/hfo7pvL9Fys7rocfL4VOzw9qDEQ.jpg",
+    "Year": 2023,
+    "Watched Date": "2023-08-22",
+    "Stars": 8,
+    "Letterboxd": "https://boxd.it/s3ds",
+    "Director": "Wes Anderson",
+    "Runtime": 105
+   }
+  },
+  {
+   "title": "Birdman or (The Unexpected Virtue of Ignorance)",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/rHUg2AuIuLSIYMYFgavVwqt1jtc.jpg",
+    "Year": 2014,
+    "Watched Date": "2024-02-10",
+    "Stars": 10,
+    "Letterboxd": "https://boxd.it/5RFA",
+    "Director": "Alejandro G. Iñárritu",
+    "Runtime": 120
+   }
+  },
+  {
+   "title": "A Star Is Born",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/wrFpXMNBRj2PBiN4Z5kix51XaIZ.jpg",
+    "Year": 2018,
+    "Watched Date": "2024-02-15",
+    "Stars": 9,
+    "Letterboxd": "https://boxd.it/aXgc",
+    "Director": "Bradley Cooper",
+    "Runtime": 136
+   }
+  },
+  {
+   "title": "Cars 3",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/zg5RDxvIIAKsucjuU2EZJIHEIvz.jpg",
+    "Year": 2017,
+    "Watched Date": "2022-07-10",
+    "Stars": 6,
+    "Letterboxd": "https://boxd.it/7IPq",
+    "Director": "Brian Fee",
+    "Runtime": 102
+   }
+  },
+  {
+   "title": "Cars",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/oloVyeBbkVGbFFaUjR8I7Boo7wA.jpg",
+    "Year": 2006,
+    "Watched Date": "2022-07-10",
+    "Stars": 8,
+    "Letterboxd": "https://boxd.it/29ho",
+    "Director": "John Lasseter",
+    "Runtime": 117
+   }
+  },
+  {
+   "title": "Captain Marvel",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/AtsgWhDnHTq68L0lLsUrCnM7TjG.jpg",
+    "Year": 2019,
+    "Watched Date": "2022-07-10",
+    "Stars": 2,
+    "Letterboxd": "https://boxd.it/9vSA",
+    "Director": "Ryan Fleck",
+    "Runtime": 124
+   }
+  },
+  {
+   "title": "Captain America: The Winter Soldier",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/tVFRpFw3xTedgPGqxW0AOI8Qhh0.jpg",
+    "Year": 2014,
+    "Watched Date": "2022-07-10",
+    "Stars": 7,
+    "Letterboxd": "https://boxd.it/3r58",
+    "Director": "Joe Russo",
+    "Runtime": 136
+   }
+  },
+  {
+   "title": "Captain America: Civil War",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/rAGiXaUfPzY7CDEyNKUofk3Kw2e.jpg",
+    "Year": 2016,
+    "Watched Date": "2022-07-10",
+    "Stars": 5,
+    "Letterboxd": "https://boxd.it/89Ja",
+    "Director": "Joe Russo",
+    "Runtime": 147
+   }
+  },
+  {
+   "title": "Brave",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/1XAuDtMWpL0sYSFK0R6EZate2Ux.jpg",
+    "Year": 2012,
+    "Watched Date": "2022-07-10",
+    "Stars": 6,
+    "Letterboxd": "https://boxd.it/bVG",
+    "Director": "Mark Andrews",
+    "Runtime": 93
+   }
+  },
+  {
+   "title": "Blade Runner",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/63N9uy8nd9j7Eog2axPQ8lbr3Wj.jpg",
+    "Year": 1982,
+    "Watched Date": "2022-07-10",
+    "Stars": 10,
+    "Letterboxd": "https://boxd.it/2bcA",
+    "Director": "Ridley Scott",
+    "Runtime": 118
+   }
+  },
+  {
+   "title": "Black Widow",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/qAZ0pzat24kLdO3o8ejmbLxyOac.jpg",
+    "Year": 2021,
+    "Watched Date": "2022-07-10",
+    "Stars": 2,
+    "Letterboxd": "https://boxd.it/hWV8",
+    "Director": "Cate Shortland",
+    "Runtime": 134
+   }
+  },
+  {
+   "title": "Black Panther",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/uxzzxijgPIY7slzFvMotPv8wjKA.jpg",
+    "Year": 2018,
+    "Watched Date": "2022-07-10",
+    "Stars": 7,
+    "Letterboxd": "https://boxd.it/8MHs",
+    "Director": "Ryan Coogler",
+    "Runtime": 135
+   }
+  },
+  {
+   "title": "Black Adam",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/rCtreCr4xiYEWDQTebybolIh6Xe.jpg",
+    "Year": 2022,
+    "Watched Date": "2023-01-02",
+    "Stars": 4,
+    "Letterboxd": "https://boxd.it/fup0",
+    "Director": "Jaume Collet-Serra",
+    "Runtime": 125
+   }
+  },
+  {
+   "title": "Citizen Kane",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/sav0jxhqiH0bPr2vZFU0Kjt2nZL.jpg",
+    "Year": 1941,
+    "Watched Date": "2023-07-10",
+    "Stars": 10,
+    "Letterboxd": "https://boxd.it/71O",
+    "Director": "Orson Welles",
+    "Runtime": 119
+   }
+  },
+  {
+   "title": "Blade Runner 2049",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/gajva2L0rPYkEWjzgFlBXCAVBE5.jpg",
+    "Year": 2017,
+    "Watched Date": "2023-07-10",
+    "Stars": 10,
+    "Letterboxd": "https://boxd.it/b8wK",
+    "Director": "Denis Villeneuve",
+    "Runtime": 164
+   }
+  },
+  {
+   "title": "Cape Fear",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/meJZAAuVcjic2ipvbOPz5UlE4P9.jpg",
+    "Year": 1991,
+    "Watched Date": "2024-01-29",
+    "Stars": 7,
+    "Letterboxd": "https://boxd.it/28vu",
+    "Director": "Martin Scorsese",
+    "Runtime": 128
+   }
+  },
+  {
+   "title": "Chernobyl",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/1lAxvdtv8lAlDgUnMikkh6bmZ8b.jpg",
+    "Year": 2019,
+    "Watched Date": "2026-01-12",
+    "Stars": 9,
+    "Letterboxd": "https://boxd.it/mkbG",
+    "Director": "Alexander Shuryepov",
+    "Runtime": 29
+   }
+  },
+  {
+   "title": "Bugonia",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/oxgsAQDAAxA92mFGYCZllgWkH9J.jpg",
+    "Year": 2025,
+    "Watched Date": "2026-03-23",
+    "Stars": 9,
+    "Letterboxd": "https://boxd.it/qeWY",
+    "Director": "Yorgos Lanthimos",
+    "Runtime": 119
+   }
+  },
+  {
+   "title": "Eternals",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/lFByFSLV5WDJEv3KabbdAF959F2.jpg",
+    "Year": 2021,
+    "Watched Date": "2022-07-10",
+    "Stars": 5,
+    "Letterboxd": "https://boxd.it/j36o",
+    "Director": "Chloé Zhao",
+    "Runtime": 156
+   }
+  },
+  {
+   "title": "Donnie Darko",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/j2AtZFsflxiluaNtajMTI0Avm8C.jpg",
+    "Year": 2001,
+    "Watched Date": "2022-07-10",
+    "Stars": 10,
+    "Letterboxd": "https://boxd.it/2b2A",
+    "Director": "Richard Kelly",
+    "Runtime": 114
+   }
+  },
+  {
+   "title": "Don't Look Up",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/th4E1yqsE8DGpAseLiUrI60Hf8V.jpg",
+    "Year": 2021,
+    "Watched Date": "2022-07-10",
+    "Stars": 7,
+    "Letterboxd": "https://boxd.it/o0Hc",
+    "Director": "Adam McKay",
+    "Runtime": 138
+   }
+  },
+  {
+   "title": "Doctor Strange",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/xf8PbyQcR5ucXErmZNzdKR0s8ya.jpg",
+    "Year": 2016,
+    "Watched Date": "2022-07-10",
+    "Stars": 4,
+    "Letterboxd": "https://boxd.it/8MH8",
+    "Director": "Scott Derrickson",
+    "Runtime": 115
+   }
+  },
+  {
+   "title": "Deadpool",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/3E53WEZJqP6aM84D8CckXx4pIHw.jpg",
+    "Year": 2016,
+    "Watched Date": "2022-07-10",
+    "Stars": 6,
+    "Letterboxd": "https://boxd.it/9fOC",
+    "Director": "Tim Miller",
+    "Runtime": 108
+   }
+  },
+  {
+   "title": "Deadpool 2",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/to0spRl1CMDvyUbOnbb4fTk3VAd.jpg",
+    "Year": 2018,
+    "Watched Date": "2022-07-10",
+    "Stars": 3,
+    "Letterboxd": "https://boxd.it/dlLM",
+    "Director": "David Leitch",
+    "Runtime": 120
+   }
+  },
+  {
+   "title": "CODA",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/BzVjmm8l23rPsijLiNLUzuQtyd.jpg",
+    "Year": 2021,
+    "Watched Date": "2022-07-10",
+    "Stars": 9,
+    "Letterboxd": "https://boxd.it/tbf4",
+    "Director": "Sian Heder",
+    "Runtime": 112
+   }
+  },
+  {
+   "title": "Despicable Me",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/b1BT309QWjtFUlJPLmXmrcHOWEL.jpg",
+    "Year": 2010,
+    "Watched Date": "2022-07-13",
+    "Stars": 8,
+    "Letterboxd": "https://boxd.it/1DD8",
+    "Director": "Chris Renaud",
+    "Runtime": 95
+   }
+  },
+  {
+   "title": "Evangelion: 3.0 You Can (Not) Redo",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/d0s1xvykzl0kz7fP5S2ROYqphdz.jpg",
+    "Year": 2012,
+    "Watched Date": "2023-06-04",
+    "Stars": 7,
+    "Letterboxd": "https://boxd.it/2BwG",
+    "Director": "Hideaki Anno",
+    "Runtime": 96
+   }
+  },
+  {
+   "title": "Evangelion: 3.0+1.0 Thrice Upon a Time",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/md5wZRRj8biHrGtyitgBZo7674t.jpg",
+    "Year": 2021,
+    "Watched Date": "2023-06-04",
+    "Stars": 9,
+    "Letterboxd": "https://boxd.it/8LnQ",
+    "Director": "Katsuichi Nakayama",
+    "Runtime": 155
+   }
+  },
+  {
+   "title": "Evangelion: 1.0 You Are (Not) Alone",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/pETU4GurpeEjBOM8oytMH0yNBHx.jpg",
+    "Year": 2007,
+    "Watched Date": "2023-06-04",
+    "Stars": 8,
+    "Letterboxd": "https://boxd.it/1MKi",
+    "Director": "Kazuya Tsurumaki",
+    "Runtime": 101
+   }
+  },
+  {
+   "title": "Drive",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/602vevIURmpDfzbnv5Ubi6wIkQm.jpg",
+    "Year": 2011,
+    "Watched Date": "2023-06-04",
+    "Stars": 9,
+    "Letterboxd": "https://boxd.it/IG",
+    "Director": "Nicolas Winding Refn",
+    "Runtime": 100
+   }
+  },
+  {
+   "title": "Eyes Wide Shut",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/knEIz1eNGl5MQDbrEAVWA7iRqF9.jpg",
+    "Year": 1999,
+    "Watched Date": "2023-06-26",
+    "Stars": 10,
+    "Letterboxd": "https://boxd.it/2axs",
+    "Director": "Stanley Kubrick",
+    "Runtime": 159
+   }
+  },
+  {
+   "title": "Dunkirk",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/b4Oe15CGLL61Ped0RAS9JpqdmCt.jpg",
+    "Year": 2017,
+    "Watched Date": "2023-08-11",
+    "Stars": 8,
+    "Letterboxd": "https://boxd.it/d0Y6",
+    "Director": "Christopher Nolan",
+    "Runtime": 107
+   }
+  },
+  {
+   "title": "Guardians of the Galaxy",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/r7vmZjiyZw9rpJMQJdXpjgiCOk9.jpg",
+    "Year": 2014,
+    "Watched Date": "2022-07-10",
+    "Stars": 6,
+    "Letterboxd": "https://boxd.it/3VH2",
+    "Director": "James Gunn",
+    "Runtime": 121
+   }
+  },
+  {
+   "title": "GoodFellas",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/9OkCLM73MIU2CrKZbqiT8Ln1wY2.jpg",
+    "Year": 1990,
+    "Watched Date": "2022-07-10",
+    "Stars": 10,
+    "Letterboxd": "https://boxd.it/29FA",
+    "Director": "Martin Scorsese",
+    "Runtime": 145
+   }
+  },
+  {
+   "title": "Ghost Rider",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/1KyJfmgCo2dUywUxpk6bGMZbyeZ.jpg",
+    "Year": 2007,
+    "Watched Date": "2022-07-10",
+    "Stars": 3,
+    "Letterboxd": "https://boxd.it/290M",
+    "Director": "Mark Steven Johnson",
+    "Runtime": 114
+   }
+  },
+  {
+   "title": "Full Metal Jacket",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/kMKyx1k8hWWscYFnPbnxxN4Eqo4.jpg",
+    "Year": 1987,
+    "Watched Date": "2022-07-10",
+    "Stars": 9,
+    "Letterboxd": "https://boxd.it/2a1Q",
+    "Director": "Stanley Kubrick",
+    "Runtime": 117
+   }
+  },
+  {
+   "title": "Fight Club",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/jSziioSwPVrOy9Yow3XhWIBDjq1.jpg",
+    "Year": 1999,
+    "Watched Date": "2022-07-10",
+    "Stars": 9,
+    "Letterboxd": "https://boxd.it/2a9q",
+    "Director": "David Fincher",
+    "Runtime": 139
+   }
+  },
+  {
+   "title": "Gran Torino",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/zUybYvxWdAJy5hhYovsXtHSWI1l.jpg",
+    "Year": 2008,
+    "Watched Date": "2022-09-23",
+    "Stars": 9,
+    "Letterboxd": "https://boxd.it/1Qzy",
+    "Director": "Clint Eastwood",
+    "Runtime": 116
+   }
+  },
+  {
+   "title": "Fallen Angels",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/yyM9BPdwttK5LKZSLvHae7QPKo1.jpg",
+    "Year": 1995,
+    "Watched Date": "2023-05-21",
+    "Stars": 10,
+    "Letterboxd": "https://boxd.it/1UkW",
+    "Director": "Wong Kar-Wai",
+    "Runtime": 98
+   }
+  },
+  {
+   "title": "Grave of the Fireflies",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/k9tv1rXZbOhH7eiCk378x61kNQ1.jpg",
+    "Year": 1988,
+    "Watched Date": "2023-06-04",
+    "Stars": 10,
+    "Letterboxd": "https://boxd.it/1RUM",
+    "Director": "Isao Takahata",
+    "Runtime": 89
+   }
+  },
+  {
+   "title": "Ghost in the Shell",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/9gC88zYUBARRSThcG93MvW14sqx.jpg",
+    "Year": 1995,
+    "Watched Date": "2023-06-04",
+    "Stars": 10,
+    "Letterboxd": "https://boxd.it/1YYc",
+    "Director": "Mamoru Oshii",
+    "Runtime": 83
+   }
+  },
+  {
+   "title": "From Up on Poppy Hill",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/rRLYX4RZIyloHSJwvZKAhphAjiB.jpg",
+    "Year": 2011,
+    "Watched Date": "2023-07-30",
+    "Stars": 8,
+    "Letterboxd": "https://boxd.it/2VCa",
+    "Director": "Goro Miyazaki",
+    "Runtime": 91
+   }
+  },
+  {
+   "title": "Gangs of New York",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/lemqKtcCuAano5aqrzxYiKC8kkn.jpg",
+    "Year": 2002,
+    "Watched Date": "2023-08-06",
+    "Stars": 4,
+    "Letterboxd": "https://boxd.it/25FG",
+    "Director": "Martin Scorsese",
+    "Runtime": 168
+   }
+  },
+  {
+   "title": "Get Out",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/tFXcEccSQMf3lfhfXKSU9iRBpa3.jpg",
+    "Year": 2017,
+    "Watched Date": "2024-01-25",
+    "Stars": 8,
+    "Letterboxd": "https://boxd.it/eOCm",
+    "Director": "Jordan Peele",
+    "Runtime": 104
+   }
+  },
+  {
+   "title": "Heat",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/e09dLw1Ljtccd2P4NsuUvVtS5du.jpg",
+    "Year": 1995,
+    "Watched Date": "2024-01-28",
+    "Stars": 10,
+    "Letterboxd": "https://boxd.it/2bg8",
+    "Director": "Michael Mann",
+    "Runtime": 170
+   }
+  },
+  {
+   "title": "Good Will Hunting",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/z2FnLKpFi1HPO7BEJxdkv6hpJSU.jpg",
+    "Year": 1997,
+    "Watched Date": "2025-09-02",
+    "Stars": 9,
+    "Letterboxd": "https://boxd.it/2ahY",
+    "Director": "Gus Van Sant",
+    "Runtime": 127
+   }
+  },
+  {
+   "title": "King Richard",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/2dfujXrxePtYJPiPHj1HkAFQvpu.jpg",
+    "Year": 2021,
+    "Watched Date": "2022-07-10",
+    "Stars": 7,
+    "Letterboxd": "https://boxd.it/mJZ2",
+    "Director": "Reinaldo Marcus Green",
+    "Runtime": 144
+   }
+  },
+  {
+   "title": "Kill Bill: Vol. 1",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/v7TaX8kXMXs5yFFGR41guUDNcnB.jpg",
+    "Year": 2003,
+    "Watched Date": "2022-07-10",
+    "Stars": 10,
+    "Letterboxd": "https://boxd.it/70w",
+    "Director": "Quentin Tarantino",
+    "Runtime": 111
+   }
+  },
+  {
+   "title": "Iron Man",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/78lPtwv72eTNqFW9COBYI0dWDJa.jpg",
+    "Year": 2008,
+    "Watched Date": "2022-07-10",
+    "Stars": 7,
+    "Letterboxd": "https://boxd.it/28dA",
+    "Director": "Jon Favreau",
+    "Runtime": 126
+   }
+  },
+  {
+   "title": "Iron Man 2",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/6WBeq4fCfn7AN0o21W9qNcRF2l9.jpg",
+    "Year": 2010,
+    "Watched Date": "2022-07-10",
+    "Stars": 5,
+    "Letterboxd": "https://boxd.it/1WZM",
+    "Director": "Jon Favreau",
+    "Runtime": 124
+   }
+  },
+  {
+   "title": "Interstellar",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/yQvGrMoipbRoddT0ZR8tPoR7NfX.jpg",
+    "Year": 2014,
+    "Watched Date": "2022-07-10",
+    "Stars": 10,
+    "Letterboxd": "https://boxd.it/4VZ8",
+    "Director": "Christopher Nolan",
+    "Runtime": 169
+   }
+  },
+  {
+   "title": "Inglourious Basterds",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/aupnPtagH9JVBuMrGEanf4iqXEQ.jpg",
+    "Year": 2009,
+    "Watched Date": "2022-07-10",
+    "Stars": 10,
+    "Letterboxd": "https://boxd.it/1JzG",
+    "Director": "Quentin Tarantino",
+    "Runtime": 153
+   }
+  },
+  {
+   "title": "Incredibles 2",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/9lFKBtaVIhP7E2Pk0IY1CwTKTMZ.jpg",
+    "Year": 2018,
+    "Watched Date": "2022-07-10",
+    "Stars": 7,
+    "Letterboxd": "https://boxd.it/7IPg",
+    "Director": "Brad Bird",
+    "Runtime": 118
+   }
+  },
+  {
+   "title": "Hereditary",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/4GFPuL14eXi66V96xBWY73Y9PfR.jpg",
+    "Year": 2018,
+    "Watched Date": "2022-07-10",
+    "Stars": 8,
+    "Letterboxd": "https://boxd.it/hNVe",
+    "Director": "Ari Aster",
+    "Runtime": 128
+   }
+  },
+  {
+   "title": "I, Tonya",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/6gNXwSHxaksR1PjVZRqNapmkgj3.jpg",
+    "Year": 2017,
+    "Watched Date": "2023-05-29",
+    "Stars": 8,
+    "Letterboxd": "https://boxd.it/dzR0",
+    "Director": "Craig Gillespie",
+    "Runtime": 120
+   }
+  },
+  {
+   "title": "John Wick: Chapter 2",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/hXWBc0ioZP3cN4zCu6SN3YHXZVO.jpg",
+    "Year": 2017,
+    "Watched Date": "2023-06-04",
+    "Stars": 7,
+    "Letterboxd": "https://boxd.it/ayGu",
+    "Director": "Chad Stahelski",
+    "Runtime": 122
+   }
+  },
+  {
+   "title": "John Wick",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/wXqWR7dHncNRbxoEGybEy7QTe9h.jpg",
+    "Year": 2014,
+    "Watched Date": "2023-06-04",
+    "Stars": 8,
+    "Letterboxd": "https://boxd.it/7dEc",
+    "Director": "Chad Stahelski",
+    "Runtime": 101
+   }
+  },
+  {
+   "title": "Heathers",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/dGbVfM4WlM7uvIbyRehfPZUIgp2.jpg",
+    "Year": 1989,
+    "Watched Date": "2023-06-22",
+    "Stars": 8,
+    "Letterboxd": "https://boxd.it/26x4",
+    "Director": "Michael Lehmann",
+    "Runtime": 103
+   }
+  },
+  {
+   "title": "Jobs",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/mOyZ0UAWaOJartFq2G3Cv0soFtQ.jpg",
+    "Year": 2013,
+    "Watched Date": "2023-07-28",
+    "Stars": 4,
+    "Letterboxd": "https://boxd.it/3RcY",
+    "Director": "Joshua Michael Stern",
+    "Runtime": 129
+   }
+  },
+  {
+   "title": "Justice League",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/eifGNCSDuxJeS1loAXil5bIGgvC.jpg",
+    "Year": 2017,
+    "Watched Date": "2024-02-10",
+    "Stars": 6,
+    "Letterboxd": "https://boxd.it/4w68",
+    "Director": "Zack Snyder",
+    "Runtime": 120
+   }
+  },
+  {
+   "title": "Once Upon a Time... in Hollywood",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/8j58iEBw9pOXFD2L0nt0ZXeHviB.jpg",
+    "Year": 2019,
+    "Watched Date": "2022-07-10",
+    "Stars": 7,
+    "Letterboxd": "https://boxd.it/gH0O",
+    "Director": "Quentin Tarantino",
+    "Runtime": 162
+   }
+  },
+  {
+   "title": "Nightmare Alley",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/vfn1feL0V9HNSXuLLpaxAW8O6LO.jpg",
+    "Year": 2021,
+    "Watched Date": "2022-07-10",
+    "Stars": 8,
+    "Letterboxd": "https://boxd.it/m0HC",
+    "Director": "Guillermo del Toro",
+    "Runtime": 151
+   }
+  },
+  {
+   "title": "Minions: The Rise of Gru",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/wKiOkZTN9lUUUNZLmtnwubZYONg.jpg",
+    "Year": 2022,
+    "Watched Date": "2022-07-10",
+    "Stars": 3,
+    "Letterboxd": "https://boxd.it/fz9w",
+    "Director": "Kyle Balda",
+    "Runtime": 87
+   }
+  },
+  {
+   "title": "Memento",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/fKTPH2WvH8nHTXeBYBVhawtRqtR.jpg",
+    "Year": 2000,
+    "Watched Date": "2022-07-10",
+    "Stars": 9,
+    "Letterboxd": "https://boxd.it/2bcK",
+    "Director": "Christopher Nolan",
+    "Runtime": 113
+   }
+  },
+  {
+   "title": "Mank",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/4yzTcAtvzyZLLto4z04xobUK9el.jpg",
+    "Year": 2020,
+    "Watched Date": "2022-07-10",
+    "Stars": 8,
+    "Letterboxd": "https://boxd.it/mIuC",
+    "Director": "David Fincher",
+    "Runtime": 132
+   }
+  },
+  {
+   "title": "Morbius",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/Av8Z2jZhEm1FLkFzMThzz9hndJF.jpg",
+    "Year": 2022,
+    "Watched Date": "2022-07-27",
+    "Stars": 1,
+    "Letterboxd": "https://boxd.it/j978",
+    "Director": "Daniel Espinosa",
+    "Runtime": 105
+   }
+  },
+  {
+   "title": "Man of Steel",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/8GFtkImmK0K1VaUChR0n9O61CFU.jpg",
+    "Year": 2013,
+    "Watched Date": "2022-10-30",
+    "Stars": 3,
+    "Letterboxd": "https://boxd.it/FRk",
+    "Director": "Zack Snyder",
+    "Runtime": 143
+   }
+  },
+  {
+   "title": "Monster House",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/zCRPr4bkO3ae0U1134vJ39xZnAG.jpg",
+    "Year": 2006,
+    "Watched Date": "2023-05-29",
+    "Stars": 6,
+    "Letterboxd": "https://boxd.it/1Z2e",
+    "Director": "Gil Kenan",
+    "Runtime": 91
+   }
+  },
+  {
+   "title": "Neon Genesis Evangelion",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/d7I5U0dFZYAiQHNieanJMDCZ5vl.jpg",
+    "Year": 1995,
+    "Watched Date": "2023-06-04",
+    "Stars": 10,
+    "Letterboxd": "https://boxd.it/ptEI",
+    "Director": "Hideaki Anno"
+   }
+  },
+  {
+   "title": "My Neighbor Totoro",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/rtGDOeG9LzoerkDGZF9dnVeLppL.jpg",
+    "Year": 1988,
+    "Watched Date": "2023-06-04",
+    "Stars": 9,
+    "Letterboxd": "https://boxd.it/20eA",
+    "Director": "Hayao Miyazaki",
+    "Runtime": 86
+   }
+  },
+  {
+   "title": "Nightcrawler",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/j9HrX8f7GbZQm1BrBiR40uFQZSb.jpg",
+    "Year": 2014,
+    "Watched Date": "2023-06-26",
+    "Stars": 8,
+    "Letterboxd": "https://boxd.it/780m",
+    "Director": "Dan Gilroy",
+    "Runtime": 118
+   }
+  },
+  {
+   "title": "Only Yesterday",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/tOSnFE9e82iH3ZAzSTtuOkBsabJ.jpg",
+    "Year": 1991,
+    "Watched Date": "2023-07-22",
+    "Stars": 9,
+    "Letterboxd": "https://boxd.it/1MR4",
+    "Director": "Isao Takahata",
+    "Runtime": 119
+   }
+  },
+  {
+   "title": "Mean Streets",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/9msfwOeGc9uL1iRRTBdEf15XonC.jpg",
+    "Year": 1973,
+    "Watched Date": "2023-08-09",
+    "Stars": 7,
+    "Letterboxd": "https://boxd.it/2aSU",
+    "Director": "Martin Scorsese",
+    "Runtime": 112
+   }
+  },
+  {
+   "title": "Maestro",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/kxj7rMco6RNYsVcNwuGAIlfWu64.jpg",
+    "Year": 2023,
+    "Watched Date": "2024-02-14",
+    "Stars": 4,
+    "Letterboxd": "https://boxd.it/j0DE",
+    "Director": "Bradley Cooper",
+    "Runtime": 129
+   }
+  },
+  {
+   "title": "Shutter Island",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/nrmXQ0zcZUL8jFLrakWc90IR8z9.jpg",
+    "Year": 2010,
+    "Watched Date": "2022-07-10",
+    "Stars": 7,
+    "Letterboxd": "https://boxd.it/1U82",
+    "Director": "Martin Scorsese",
+    "Runtime": 138
+   }
+  },
+  {
+   "title": "Scarface",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/iQ5ztdjvteGeboxtmRdXEChJOHh.jpg",
+    "Year": 1983,
+    "Watched Date": "2022-07-10",
+    "Stars": 10,
+    "Letterboxd": "https://boxd.it/2b7g",
+    "Director": "Brian De Palma",
+    "Runtime": 170
+   }
+  },
+  {
+   "title": "Return of the Jedi",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/jQYlydvHm3kUix1f8prMucrplhm.jpg",
+    "Year": 1983,
+    "Watched Date": "2022-07-10",
+    "Stars": 9,
+    "Letterboxd": "https://boxd.it/27Vm",
+    "Director": "Richard Marquand",
+    "Runtime": 132
+   }
+  },
+  {
+   "title": "Reservoir Dogs",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/xi8Iu6qyTfyZVDVy60raIOYJJmk.jpg",
+    "Year": 1992,
+    "Watched Date": "2022-07-10",
+    "Stars": 8,
+    "Letterboxd": "https://boxd.it/2agc",
+    "Director": "Quentin Tarantino",
+    "Runtime": 99
+   }
+  },
+  {
+   "title": "Ratatouille",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/t3vaWRPSf6WjDSamIkKDs1iQWna.jpg",
+    "Year": 2007,
+    "Watched Date": "2022-07-10",
+    "Stars": 9,
+    "Letterboxd": "https://boxd.it/27ww",
+    "Director": "Brad Bird",
+    "Runtime": 111
+   }
+  },
+  {
+   "title": "Pulp Fiction",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/vQWk5YBFWF4bZaofAbv0tShwBvQ.jpg",
+    "Year": 1994,
+    "Watched Date": "2022-07-10",
+    "Stars": 10,
+    "Letterboxd": "https://boxd.it/29Pq",
+    "Director": "Quentin Tarantino",
+    "Runtime": 154
+   }
+  },
+  {
+   "title": "Scott Pilgrim vs. the World",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/g5IoYeudx9XBEfwNL0fHvSckLBz.jpg",
+    "Year": 2010,
+    "Watched Date": "2022-09-26",
+    "Stars": 9,
+    "Letterboxd": "https://boxd.it/1Aq6",
+    "Director": "Edgar Wright",
+    "Runtime": 113
+   }
+  },
+  {
+   "title": "Princess Mononoke",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/cMYCDADoLKLbB83g4WnJegaZimC.jpg",
+    "Year": 1997,
+    "Watched Date": "2023-06-04",
+    "Stars": 10,
+    "Letterboxd": "https://boxd.it/2b4w",
+    "Director": "Hayao Miyazaki",
+    "Runtime": 134
+   }
+  },
+  {
+   "title": "Se7en",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/191nKfP0ehp3uIvWqgPbFmI4lv9.jpg",
+    "Year": 1995,
+    "Watched Date": "2023-06-27",
+    "Stars": 8,
+    "Letterboxd": "https://boxd.it/29zs",
+    "Director": "David Fincher",
+    "Runtime": 127
+   }
+  },
+  {
+   "title": "Senior Year",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/6UqbcDQhCYpxboK58Z0eVfdeHcT.jpg",
+    "Year": 2022,
+    "Watched Date": "2023-07-12",
+    "Stars": 2,
+    "Letterboxd": "https://boxd.it/u8C2",
+    "Director": "Alex Hardcastle",
+    "Runtime": 114
+   }
+  },
+  {
+   "title": "Porco Rosso",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/8mIvSvnVBApfORL9N6S38Q7wD6A.jpg",
+    "Year": 1992,
+    "Watched Date": "2023-07-28",
+    "Stars": 8,
+    "Letterboxd": "https://boxd.it/1Tp2",
+    "Director": "Hayao Miyazaki",
+    "Runtime": 93
+   }
+  },
+  {
+   "title": "Raging Bull",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/1WV7WlTS8LI1L5NkCgjWT9GSW3O.jpg",
+    "Year": 1980,
+    "Watched Date": "2023-08-03",
+    "Stars": 9,
+    "Letterboxd": "https://boxd.it/28yI",
+    "Director": "Martin Scorsese",
+    "Runtime": 129
+   }
+  },
+  {
+   "title": "Reservoir Dogs",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/oiPx0edR4IoT97KOHDJx4n1dk5U.jpg",
+    "Year": 1991,
+    "Watched Date": "2024-01-28",
+    "Stars": 8,
+    "Letterboxd": "https://boxd.it/fL8A",
+    "Director": "Quentin Tarantino",
+    "Runtime": 12
+   }
+  },
+  {
+   "title": "Shazam! Fury of the Gods",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/3GrRgt6CiLIUXUtoktcv1g2iwT5.jpg",
+    "Year": 2023,
+    "Watched Date": "2024-02-10",
+    "Stars": 2,
+    "Letterboxd": "https://boxd.it/lV0S",
+    "Director": "David F. Sandberg",
+    "Runtime": 130
+   }
+  },
+  {
+   "title": "Sicario",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/lz8vNyXeidqqOdJW9ZjnDAMb5Vr.jpg",
+    "Year": 2015,
+    "Watched Date": "2024-02-15",
+    "Stars": 10,
+    "Letterboxd": "https://boxd.it/8i7u",
+    "Director": "Denis Villeneuve",
+    "Runtime": 122
+   }
+  },
+  {
+   "title": "Star Wars: The Last Jedi",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/kOVEVeg59E0wsnXmF9nrh6OmWII.jpg",
+    "Year": 2017,
+    "Watched Date": "2022-07-10",
+    "Stars": 7,
+    "Letterboxd": "https://boxd.it/5xme",
+    "Director": "Rian Johnson",
+    "Runtime": 152
+   }
+  },
+  {
+   "title": "Star Wars: Episode II – Attack of the Clones",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/oZNPzxqM2s5DyVWab09NTQScDQt.jpg",
+    "Year": 2002,
+    "Watched Date": "2022-07-10",
+    "Stars": 8,
+    "Letterboxd": "https://boxd.it/27V2",
+    "Director": "George Lucas",
+    "Runtime": 142
+   }
+  },
+  {
+   "title": "Star Wars: Episode I – The Phantom Menace",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/xQzMnuiv81d0gfUIVstuleNutjA.jpg",
+    "Year": 1999,
+    "Watched Date": "2022-07-10",
+    "Stars": 7,
+    "Letterboxd": "https://boxd.it/27Vc",
+    "Director": "George Lucas",
+    "Runtime": 136
+   }
+  },
+  {
+   "title": "Star Wars",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/6FfCtAuVAW8XJjZ7eWeLibRLWTw.jpg",
+    "Year": 1977,
+    "Watched Date": "2022-07-10",
+    "Stars": 9,
+    "Letterboxd": "https://boxd.it/72s",
+    "Director": "George Lucas",
+    "Runtime": 121
+   }
+  },
+  {
+   "title": "Spider-Man: Homecoming",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/c24sv2weTHPsmDa7jEMN0m2P3RT.jpg",
+    "Year": 2017,
+    "Watched Date": "2022-07-10",
+    "Stars": 3,
+    "Letterboxd": "https://boxd.it/aboM",
+    "Director": "Jon Watts",
+    "Runtime": 133
+   }
+  },
+  {
+   "title": "Spider-Man: Into the Spider-Verse",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/iiZZdoQBEYBv6id8su7ImL0oCbD.jpg",
+    "Year": 2018,
+    "Watched Date": "2022-07-10",
+    "Stars": 10,
+    "Letterboxd": "https://boxd.it/azpY",
+    "Director": "Bob Persichetti",
+    "Runtime": 117
+   }
+  },
+  {
+   "title": "Spider-Man 3",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/qFmwhVUoUSXjkKRmca5yGDEXBIj.jpg",
+    "Year": 2007,
+    "Watched Date": "2022-07-10",
+    "Stars": 5,
+    "Letterboxd": "https://boxd.it/2a7Y",
+    "Director": "Sam Raimi",
+    "Runtime": 139
+   }
+  },
+  {
+   "title": "Spider-Man",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/kjdJntyBeEvqm9w97QGBdxPptzj.jpg",
+    "Year": 2002,
+    "Watched Date": "2022-07-10",
+    "Stars": 8,
+    "Letterboxd": "https://boxd.it/2a8i",
+    "Director": "Sam Raimi",
+    "Runtime": 121
+   }
+  },
+  {
+   "title": "Spider-Man 2",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/aGuvNAaaZuWXYQQ6N2v7DeuP6mB.jpg",
+    "Year": 2004,
+    "Watched Date": "2022-07-10",
+    "Stars": 8,
+    "Letterboxd": "https://boxd.it/2a88",
+    "Director": "Sam Raimi",
+    "Runtime": 127
+   }
+  },
+  {
+   "title": "Suicide Squad",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/sk3FZgh3sRrmr8vyhaitNobMcfh.jpg",
+    "Year": 2016,
+    "Watched Date": "2023-01-02",
+    "Stars": 5,
+    "Letterboxd": "https://boxd.it/9row",
+    "Director": "David Ayer",
+    "Runtime": 122
+   }
+  },
+  {
+   "title": "Spirited Away",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/39wmItIWsg5sZMyRUHLkWBcuVCM.jpg",
+    "Year": 2001,
+    "Watched Date": "2023-06-04",
+    "Stars": 10,
+    "Letterboxd": "https://boxd.it/2b4m",
+    "Director": "Hayao Miyazaki",
+    "Runtime": 125
+   }
+  },
+  {
+   "title": "Tales from Earthsea",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/y0VnJt4eRPMjA1hpJ8f1EFoVaSf.jpg",
+    "Year": 2006,
+    "Watched Date": "2023-07-23",
+    "Stars": 4,
+    "Letterboxd": "https://boxd.it/17ae",
+    "Director": "Goro Miyazaki",
+    "Runtime": 115
+   }
+  },
+  {
+   "title": "Superbad",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/ek8e8txUyUwd2BNqj6lFEerJfbq.jpg",
+    "Year": 2007,
+    "Watched Date": "2024-02-01",
+    "Stars": 8,
+    "Letterboxd": "https://boxd.it/20hO",
+    "Director": "Greg Mottola",
+    "Runtime": 113
+   }
+  },
+  {
+   "title": "Straight Outta Compton",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/1CiLJx8Xtv3TbbFj6k7BboSmKgC.jpg",
+    "Year": 2015,
+    "Watched Date": "2025-09-06",
+    "Stars": 8,
+    "Letterboxd": "https://boxd.it/8rMc",
+    "Director": "F. Gary Gray",
+    "Runtime": 147
+   }
+  },
+  {
+   "title": "The Incredible Hulk",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/gKzYx79y0AQTL4UAk1cBQJ3nvrm.jpg",
+    "Year": 2008,
+    "Watched Date": "2022-07-10",
+    "Stars": 4,
+    "Letterboxd": "https://boxd.it/28dU",
+    "Director": "Louis Leterrier",
+    "Runtime": 114
+   }
+  },
+  {
+   "title": "The Great Gatsby",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/nimh1rrDDLhgpG8XAYoUZXHYwb6.jpg",
+    "Year": 2013,
+    "Watched Date": "2022-07-10",
+    "Stars": 7,
+    "Letterboxd": "https://boxd.it/JY",
+    "Director": "Baz Luhrmann",
+    "Runtime": 143
+   }
+  },
+  {
+   "title": "The Empire Strikes Back",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/nNAeTmF4CtdSgMDplXTDPOpYzsX.jpg",
+    "Year": 1980,
+    "Watched Date": "2022-07-10",
+    "Stars": 8,
+    "Letterboxd": "https://boxd.it/27Vw",
+    "Director": "Irvin Kershner",
+    "Runtime": 124
+   }
+  },
+  {
+   "title": "The Avengers",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/RYMX2wcKCBAr24UyPD7xwmjaTn.jpg",
+    "Year": 2012,
+    "Watched Date": "2022-07-10",
+    "Stars": 4,
+    "Letterboxd": "https://boxd.it/1xFW",
+    "Director": "Joss Whedon",
+    "Runtime": 143
+   }
+  },
+  {
+   "title": "The Amazing Spider-Man 2",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/dGjoPttcbKR5VWg1jQuNFB247KL.jpg",
+    "Year": 2014,
+    "Watched Date": "2022-07-10",
+    "Stars": 4,
+    "Letterboxd": "https://boxd.it/3utM",
+    "Director": "Marc Webb",
+    "Runtime": 141
+   }
+  },
+  {
+   "title": "Tenet",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/aCIFMriQh8rvhxpN1IWGgvH0Tlg.jpg",
+    "Year": 2020,
+    "Watched Date": "2022-07-10",
+    "Stars": 4,
+    "Letterboxd": "https://boxd.it/leq4",
+    "Director": "Christopher Nolan",
+    "Runtime": 150
+   }
+  },
+  {
+   "title": "The Godfather Part II",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/hek3koDUyRQk7FIhPXsa6mT2Zc3.jpg",
+    "Year": 1974,
+    "Watched Date": "2022-08-20",
+    "Stars": 10,
+    "Letterboxd": "https://boxd.it/2aNq",
+    "Director": "Francis Ford Coppola",
+    "Runtime": 202
+   }
+  },
+  {
+   "title": "The Big Short",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/scVEaJEwP8zUix8vgmMoJJ9Nq0w.jpg",
+    "Year": 2015,
+    "Watched Date": "2022-09-05",
+    "Stars": 8,
+    "Letterboxd": "https://boxd.it/ajZw",
+    "Director": "Adam McKay",
+    "Runtime": 131
+   }
+  },
+  {
+   "title": "The Batman",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/74xTEgt7R36Fpooo50r9T25onhq.jpg",
+    "Year": 2022,
+    "Watched Date": "2023-01-02",
+    "Stars": 9,
+    "Letterboxd": "https://boxd.it/eDGs",
+    "Director": "Matt Reeves",
+    "Runtime": 177
+   }
+  },
+  {
+   "title": "The Help",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/3kmfoWWEc9Vtyuaf9v5VipRgdjx.jpg",
+    "Year": 2011,
+    "Watched Date": "2023-06-03",
+    "Stars": 8,
+    "Letterboxd": "https://boxd.it/EDm",
+    "Director": "Tate Taylor",
+    "Runtime": 146
+   }
+  },
+  {
+   "title": "The Departed",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/nT97ifVT2J1yMQmeq20Qblg61T.jpg",
+    "Year": 2006,
+    "Watched Date": "2023-08-07",
+    "Stars": 9,
+    "Letterboxd": "https://boxd.it/28MA",
+    "Director": "Martin Scorsese",
+    "Runtime": 151
+   }
+  },
+  {
+   "title": "The Hateful Eight",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/jIywvdPjia2t3eKYbjVTcwBQlG8.jpg",
+    "Year": 2015,
+    "Watched Date": "2024-01-27",
+    "Stars": 9,
+    "Letterboxd": "https://boxd.it/8gw8",
+    "Director": "Quentin Tarantino",
+    "Runtime": 188
+   }
+  },
+  {
+   "title": "The French Dispatch of the Liberty, Kansas Evening Sun",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/6JXR3KJH5roiBCjWFt09xfgxHZc.jpg",
+    "Year": 2021,
+    "Watched Date": "2024-02-17",
+    "Stars": 9,
+    "Letterboxd": "https://boxd.it/jLP8",
+    "Director": "Wes Anderson",
+    "Runtime": 108
+   }
+  },
+  {
+   "title": "The Boy and the Heron",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/f4oZTcfGrVTXKTWg157AwikXqmP.jpg",
+    "Year": 2023,
+    "Watched Date": "2025-09-04",
+    "Stars": 9,
+    "Letterboxd": "https://boxd.it/ipeM",
+    "Director": "Hayao Miyazaki",
+    "Runtime": 124
+   }
+  },
+  {
+   "title": "Thor: Ragnarok",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/rzRwTcFvttcN1ZpX2xv4j3tSdJu.jpg",
+    "Year": 2017,
+    "Watched Date": "2022-07-10",
+    "Stars": 3,
+    "Letterboxd": "https://boxd.it/8MHi",
+    "Director": "Taika Waititi",
+    "Runtime": 131
+   }
+  },
+  {
+   "title": "The Wolf of Wall Street",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/kW9LmvYHAaS9iA0tHmZVq8hQYoq.jpg",
+    "Year": 2013,
+    "Watched Date": "2022-07-10",
+    "Stars": 9,
+    "Letterboxd": "https://boxd.it/3C1m",
+    "Director": "Martin Scorsese",
+    "Runtime": 180
+   }
+  },
+  {
+   "title": "The Trial of the Chicago 7",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/ahf5cVdooMAlDRiJOZQNuLqa1Is.jpg",
+    "Year": 2020,
+    "Watched Date": "2022-07-10",
+    "Stars": 8,
+    "Letterboxd": "https://boxd.it/kn3w",
+    "Director": "Aaron Sorkin",
+    "Runtime": 130
+   }
+  },
+  {
+   "title": "The Shining",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/uAR0AWqhQL1hQa69UDEbb2rE5Wx.jpg",
+    "Year": 1980,
+    "Watched Date": "2022-07-10",
+    "Stars": 8,
+    "Letterboxd": "https://boxd.it/29Nu",
+    "Director": "Stanley Kubrick",
+    "Runtime": 144
+   }
+  },
+  {
+   "title": "The Revenant",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/ji3ecJphATlVgWNY0B0RVXZizdf.jpg",
+    "Year": 2015,
+    "Watched Date": "2022-07-10",
+    "Stars": 7,
+    "Letterboxd": "https://boxd.it/8H5e",
+    "Director": "Alejandro G. Iñárritu",
+    "Runtime": 157
+   }
+  },
+  {
+   "title": "The Matrix",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/dXNAPwY7VrqMAo51EKhhCJfaGb5.jpg",
+    "Year": 1999,
+    "Watched Date": "2022-07-10",
+    "Stars": 10,
+    "Letterboxd": "https://boxd.it/2a1m",
+    "Director": "Lana Wachowski",
+    "Runtime": 136
+   }
+  },
+  {
+   "title": "The Truman Show",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/vuza0WqY239yBXOadKlGwJsZJFE.jpg",
+    "Year": 1998,
+    "Watched Date": "2022-08-03",
+    "Stars": 10,
+    "Letterboxd": "https://boxd.it/18U8",
+    "Director": "Peter Weir",
+    "Runtime": 103
+   }
+  },
+  {
+   "title": "Thor: Love and Thunder",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/pIkRyD18kl4FhoCNQuWxWu5cBLM.jpg",
+    "Year": 2022,
+    "Watched Date": "2022-10-09",
+    "Stars": 1,
+    "Letterboxd": "https://boxd.it/mMAY",
+    "Director": "Taika Waititi",
+    "Runtime": 119
+   }
+  },
+  {
+   "title": "The Suicide Squad",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/q61qEyssk2ku3okWICKArlAdhBn.jpg",
+    "Year": 2021,
+    "Watched Date": "2023-01-02",
+    "Stars": 8,
+    "Letterboxd": "https://boxd.it/fw6O",
+    "Director": "James Gunn",
+    "Runtime": 132
+   }
+  },
+  {
+   "title": "tick, tick... BOOM!",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/DPmfcuR8fh8ROYXgdjrAjSGA0o.jpg",
+    "Year": 2021,
+    "Watched Date": "2023-07-10",
+    "Stars": 7,
+    "Letterboxd": "https://boxd.it/jz2e",
+    "Director": "Lin-Manuel Miranda",
+    "Runtime": 120
+   }
+  },
+  {
+   "title": "The Social Network",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/n0ybibhJtQ5icDqTp8eRytcIHJx.jpg",
+    "Year": 2010,
+    "Watched Date": "2023-07-14",
+    "Stars": 8,
+    "Letterboxd": "https://boxd.it/17ue",
+    "Director": "David Fincher",
+    "Runtime": 121
+   }
+  },
+  {
+   "title": "The Wind Rises",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/jfwSexzlIzaOgxP9A8bTA6t8YYb.jpg",
+    "Year": 2013,
+    "Watched Date": "2023-07-28",
+    "Stars": 9,
+    "Letterboxd": "https://boxd.it/4JQS",
+    "Director": "Hayao Miyazaki",
+    "Runtime": 126
+   }
+  },
+  {
+   "title": "The Secret World of Arrietty",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/3lSRaSjDp2nkXMQkzzjpRi3035O.jpg",
+    "Year": 2010,
+    "Watched Date": "2023-07-28",
+    "Stars": 8,
+    "Letterboxd": "https://boxd.it/AF4",
+    "Director": "Hiromasa Yonebayashi",
+    "Runtime": 94
+   }
+  },
+  {
+   "title": "The King of Comedy",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/m24EbHxT9NGYEkOlu29YcLOgjgK.jpg",
+    "Year": 1982,
+    "Watched Date": "2023-08-07",
+    "Stars": 10,
+    "Letterboxd": "https://boxd.it/2aJS",
+    "Director": "Martin Scorsese",
+    "Runtime": 109
+   }
+  },
+  {
+   "title": "West Side Story",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/yfz3IUoYYSY32tkb97HlUBGFsnh.jpg",
+    "Year": 2021,
+    "Watched Date": "2022-07-10",
+    "Stars": 5,
+    "Letterboxd": "https://boxd.it/iwt0",
+    "Director": "Steven Spielberg",
+    "Runtime": 156
+   }
+  },
+  {
+   "title": "WALL·E",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/hbhFnRzzg6ZDmm8YAmxBnQpQIPh.jpg",
+    "Year": 2008,
+    "Watched Date": "2022-07-10",
+    "Stars": 9,
+    "Letterboxd": "https://boxd.it/1VEo",
+    "Director": "Andrew Stanton",
+    "Runtime": 98
+   }
+  },
+  {
+   "title": "Venom: Let There Be Carnage",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/pzKsRuKLFmYrW5Q0q8E8G78Tcgo.jpg",
+    "Year": 2021,
+    "Watched Date": "2022-07-10",
+    "Stars": 2,
+    "Letterboxd": "https://boxd.it/llco",
+    "Director": "Andy Serkis",
+    "Runtime": 97
+   }
+  },
+  {
+   "title": "Up",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/mFvoEwSfLqbcWwFsDjQebn9bzFe.jpg",
+    "Year": 2009,
+    "Watched Date": "2022-07-10",
+    "Stars": 9,
+    "Letterboxd": "https://boxd.it/1OEc",
+    "Director": "Pete Docter",
+    "Runtime": 96
+   }
+  },
+  {
+   "title": "Uncut Gems",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/6XN1vxHc7kUSqNWtaQKN45J5x2v.jpg",
+    "Year": 2019,
+    "Watched Date": "2022-07-10",
+    "Stars": 6,
+    "Letterboxd": "https://boxd.it/gXGc",
+    "Director": "Josh Safdie",
+    "Runtime": 136
+   }
+  },
+  {
+   "title": "Toy Story 2",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/4rbcp3ng8n1MKHjpeqW0L7Fnpzz.jpg",
+    "Year": 1999,
+    "Watched Date": "2022-07-10",
+    "Stars": 8,
+    "Letterboxd": "https://boxd.it/29qq",
+    "Director": "John Lasseter",
+    "Runtime": 92
+   }
+  },
+  {
+   "title": "Toy Story",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/uXDfjJbdP4ijW5hWSBrPrlKpxab.jpg",
+    "Year": 1995,
+    "Watched Date": "2022-07-10",
+    "Stars": 9,
+    "Letterboxd": "https://boxd.it/29qA",
+    "Director": "John Lasseter",
+    "Runtime": 81
+   }
+  },
+  {
+   "title": "Zack Snyder's Justice League",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/tnAuB8q5vv7Ax9UAEje5Xi4BXik.jpg",
+    "Year": 2021,
+    "Watched Date": "2023-01-02",
+    "Stars": 4,
+    "Letterboxd": "https://boxd.it/tLOk",
+    "Director": "Zack Snyder",
+    "Runtime": 242
+   }
+  },
+  {
+   "title": "Wonder Woman",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/v4ncgZjG2Zu8ZW5al1vIZTsSjqX.jpg",
+    "Year": 2017,
+    "Watched Date": "2023-01-02",
+    "Stars": 8,
+    "Letterboxd": "https://boxd.it/9roG",
+    "Director": "Patty Jenkins",
+    "Runtime": 141
+   }
+  },
+  {
+   "title": "Whiplash",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/7fn624j5lj3xTme2SgiLCeuedmO.jpg",
+    "Year": 2014,
+    "Watched Date": "2023-05-23",
+    "Stars": 10,
+    "Letterboxd": "https://boxd.it/7bQA",
+    "Director": "Damien Chazelle",
+    "Runtime": 107
+   }
+  },
+  {
+   "title": "We Can Be Heroes",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/1S21HpcKY6uQ9UAw68aICmrJaq6.jpg",
+    "Year": 2020,
+    "Watched Date": "2023-05-29",
+    "Stars": 2,
+    "Letterboxd": "https://boxd.it/mLc2",
+    "Director": "Robert Rodriguez",
+    "Runtime": 97
+   }
+  },
+  {
+   "title": "Whisper of the Heart",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/5FROLD8zpWFs9ja7aYho1uOMJHg.jpg",
+    "Year": 1995,
+    "Watched Date": "2023-08-04",
+    "Stars": 9,
+    "Letterboxd": "https://boxd.it/17uy",
+    "Director": "Yoshifumi Kondo",
+    "Runtime": 111
+   }
+  },
+  {
+   "title": "Zootopia",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/hlK0e0wAQ3VLuJcsfIYPvb4JVud.jpg",
+    "Year": 2016,
+    "Watched Date": "2022-07-10",
+    "Stars": 8,
+    "Letterboxd": "https://boxd.it/84xS",
+    "Director": "Byron Howard",
+    "Runtime": 109
+   }
+  },
+  {
+   "title": "Venom",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/2uNW4WbgBXL25BAbXGLnLqX71Sw.jpg",
+    "Year": 2018,
+    "Watched Date": "2022-07-10",
+    "Stars": 4,
+    "Letterboxd": "https://boxd.it/b8wA",
+    "Director": "Ruben Fleischer",
+    "Runtime": 112
+   }
+  },
+  {
+   "title": "Toy Story 3",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/AbbXspMOwdvwWZgVN0nabZq03Ec.jpg",
+    "Year": 2010,
+    "Watched Date": "2022-07-10",
+    "Stars": 9,
+    "Letterboxd": "https://boxd.it/1WRe",
+    "Director": "Lee Unkrich",
+    "Runtime": 103
+   }
+  },
+  {
+   "title": "Thor: The Dark World",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/wp6OxE4poJ4G7c0U2ZIXasTSMR7.jpg",
+    "Year": 2013,
+    "Watched Date": "2022-07-10",
+    "Stars": 4,
+    "Letterboxd": "https://boxd.it/2DqA",
+    "Director": "Alan Taylor",
+    "Runtime": 112
+   }
+  },
+  {
+   "title": "Thor",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/prSfAi1xGrhLQNxVSUFh61xQ4Qy.jpg",
+    "Year": 2011,
+    "Watched Date": "2022-07-10",
+    "Stars": 3,
+    "Letterboxd": "https://boxd.it/1WQU",
+    "Director": "Kenneth Branagh",
+    "Runtime": 115
+   }
+  },
+  {
+   "title": "The Shawshank Redemption",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/9cqNxx0GxF0bflZmeSMuL5tnGzr.jpg",
+    "Year": 1994,
+    "Watched Date": "2022-07-10",
+    "Stars": 10,
+    "Letterboxd": "https://boxd.it/2aHi",
+    "Director": "Frank Darabont",
+    "Runtime": 142
+   }
+  },
+  {
+   "title": "The Irishman",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/mbm8k3GFhXS0ROd9AD1gqYbIFbM.jpg",
+    "Year": 2019,
+    "Watched Date": "2022-07-10",
+    "Stars": 8,
+    "Letterboxd": "https://boxd.it/dYOq",
+    "Director": "Martin Scorsese",
+    "Runtime": 209
+   }
+  },
+  {
+   "title": "The Incredibles",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/2LqaLgk4Z226KkgPJuiOQ58wvrm.jpg",
+    "Year": 2004,
+    "Watched Date": "2022-07-10",
+    "Stars": 9,
+    "Letterboxd": "https://boxd.it/1XLm",
+    "Director": "Brad Bird",
+    "Runtime": 115
+   }
+  },
+  {
+   "title": "The Incredible Hulk",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/nCstm2LAXwT60QkejeU0fcYUSXS.jpg",
+    "Year": 1977,
+    "Watched Date": "2022-07-10",
+    "Stars": 1,
+    "Letterboxd": "https://boxd.it/3ZK",
+    "Director": "Kenneth Johnson",
+    "Runtime": 95
+   }
+  },
+  {
+   "title": "The Amazing Spider-Man",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/jexoNYnPd6vVrmygwF6QZmWPFdu.jpg",
+    "Year": 2012,
+    "Watched Date": "2022-07-10",
+    "Stars": 4,
+    "Letterboxd": "https://boxd.it/27PI",
+    "Director": "Marc Webb",
+    "Runtime": 136
+   }
+  },
+  {
+   "title": "Sound of Metal",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/3178oOJKKPDeQ2legWQvMPpllv.jpg",
+    "Year": 2019,
+    "Watched Date": "2022-07-10",
+    "Stars": 9,
+    "Letterboxd": "https://boxd.it/i7Q4",
+    "Director": "Darius Marder",
+    "Runtime": 121
+   }
+  },
+  {
+   "title": "Star Wars: The Rise of Skywalker",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/db32LaOibwEliAmSL2jjDF6oDdj.jpg",
+    "Year": 2019,
+    "Watched Date": "2022-07-10",
+    "Stars": 8,
+    "Letterboxd": "https://boxd.it/5xlK",
+    "Director": "J.J. Abrams",
+    "Runtime": 142
+   }
+  },
+  {
+   "title": "Star Wars: Episode III – Revenge of the Sith",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/xfSAoBEm9MNBjmlNcDYLvLSMlnq.jpg",
+    "Year": 2005,
+    "Watched Date": "2022-07-10",
+    "Stars": 10,
+    "Letterboxd": "https://boxd.it/27US",
+    "Director": "George Lucas",
+    "Runtime": 140
+   }
+  },
+  {
+   "title": "Spider-Man: No Way Home",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/1g0dhYtq4irTY1GPXvft6k4YLjm.jpg",
+    "Year": 2021,
+    "Watched Date": "2022-07-10",
+    "Stars": 7,
+    "Letterboxd": "https://boxd.it/nwRw",
+    "Director": "Jon Watts",
+    "Runtime": 148
+   }
+  },
+  {
+   "title": "Spider-Man: Far From Home",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/4q2NNj4S5dG2RLF9CpXsej7yXl.jpg",
+    "Year": 2019,
+    "Watched Date": "2022-07-10",
+    "Stars": 6,
+    "Letterboxd": "https://boxd.it/fegG",
+    "Director": "Jon Watts",
+    "Runtime": 129
+   }
+  },
+  {
+   "title": "Shang-Chi and the Legend of the Ten Rings",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/9f2Q0U3IOsLgrI2HkvldwSABZy5.jpg",
+    "Year": 2021,
+    "Watched Date": "2022-07-10",
+    "Stars": 1,
+    "Letterboxd": "https://boxd.it/kLDI",
+    "Director": "Destin Daniel Cretton",
+    "Runtime": 132
+   }
+  },
+  {
+   "title": "Requiem for a Dream",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/9BTwsLaMVHOGFlmsSlx5QYCaXb.jpg",
+    "Year": 2000,
+    "Watched Date": "2022-07-10",
+    "Stars": 9,
+    "Letterboxd": "https://boxd.it/29VI",
+    "Director": "Darren Aronofsky",
+    "Runtime": 102
+   }
+  },
+  {
+   "title": "Papers, Please",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/GmwZVQ9usIWHsLVHdiVO0LZXKe.jpg",
+    "Year": 2018,
+    "Watched Date": "2022-07-10",
+    "Stars": 7,
+    "Letterboxd": "https://boxd.it/hovA",
+    "Director": "Nikita Ordynskiy",
+    "Runtime": 10
+   }
+  },
+  {
+   "title": "Monsters University",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/y7thwJ7z5Bplv6vwl6RI0yteaDD.jpg",
+    "Year": 2013,
+    "Watched Date": "2022-07-10",
+    "Stars": 6,
+    "Letterboxd": "https://boxd.it/bQm",
+    "Director": "Dan Scanlon",
+    "Runtime": 104
+   }
+  },
+  {
+   "title": "Marriage Story",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/2JRyCKaRKyJAVpsIHeLvPw5nHmw.jpg",
+    "Year": 2019,
+    "Watched Date": "2022-07-10",
+    "Stars": 9,
+    "Letterboxd": "https://boxd.it/hJAw",
+    "Director": "Noah Baumbach",
+    "Runtime": 137
+   }
+  },
+  {
+   "title": "Logan",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/fnbjcRDYn6YviCcePDnGdyAkYsB.jpg",
+    "Year": 2017,
+    "Watched Date": "2022-07-10",
+    "Stars": 8,
+    "Letterboxd": "https://boxd.it/7Piy",
+    "Director": "James Mangold",
+    "Runtime": 137
+   }
+  },
+  {
+   "title": "Iron Man 3",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/qhPtAc1TKbMPqNvcdXSOn9Bn7hZ.jpg",
+    "Year": 2013,
+    "Watched Date": "2022-07-10",
+    "Stars": 4,
+    "Letterboxd": "https://boxd.it/2cBQ",
+    "Director": "Shane Black",
+    "Runtime": 130
+   }
+  },
+  {
+   "title": "Inside Out",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/2H1TmgdfNtsKlU9jKdeNyYL5y8T.jpg",
+    "Year": 2015,
+    "Watched Date": "2022-07-10",
+    "Stars": 7,
+    "Letterboxd": "https://boxd.it/4KHC",
+    "Director": "Pete Docter",
+    "Runtime": 95
+   }
+  },
+  {
+   "title": "Howard the Duck",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/eU0dWo8PJgsSAZFbcyHiUpuLSyW.jpg",
+    "Year": 1986,
+    "Watched Date": "2022-07-10",
+    "Stars": 1,
+    "Letterboxd": "https://boxd.it/1VHW",
+    "Director": "Willard Huyck",
+    "Runtime": 110
+   }
+  },
+  {
+   "title": "Guardians of the Galaxy Vol. 2",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/y4MBh0EjBlMuOzv9axM4qJlmhzz.jpg",
+    "Year": 2017,
+    "Watched Date": "2022-07-10",
+    "Stars": 5,
+    "Letterboxd": "https://boxd.it/8MxC",
+    "Director": "James Gunn",
+    "Runtime": 137
+   }
+  },
+  {
+   "title": "Ghost Rider: Spirit of Vengeance",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/8zmX5xq9mkHNBF00CBQQXDns4MN.jpg",
+    "Year": 2011,
+    "Watched Date": "2022-07-10",
+    "Stars": 1,
+    "Letterboxd": "https://boxd.it/2qne",
+    "Director": "Brian Taylor",
+    "Runtime": 96
+   }
+  },
+  {
+   "title": "Finding Nemo",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/5lc6nQc0VhWFYFbNv016xze8Jvy.jpg",
+    "Year": 2003,
+    "Watched Date": "2022-07-10",
+    "Stars": 8,
+    "Letterboxd": "https://boxd.it/72i",
+    "Director": "Andrew Stanton",
+    "Runtime": 100
+   }
+  },
+  {
+   "title": "Ex Machina",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/dmJW8IAKHKxFNiUnoDR7JfsK7Rp.jpg",
+    "Year": 2015,
+    "Watched Date": "2022-07-10",
+    "Stars": 7,
+    "Letterboxd": "https://boxd.it/7T2k",
+    "Director": "Alex Garland",
+    "Runtime": 108
+   }
+  },
+  {
+   "title": "El Camino: A Breaking Bad Movie",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/ePXuKdXZuJx8hHMNr2yM4jY2L7Z.jpg",
+    "Year": 2019,
+    "Watched Date": "2022-07-10",
+    "Stars": 7,
+    "Letterboxd": "https://boxd.it/kv0q",
+    "Director": "Vince Gilligan",
+    "Runtime": 123
+   }
+  },
+  {
+   "title": "Django Unchained",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/7oWY8VDWW7thTzWh3OKYRkWUlD5.jpg",
+    "Year": 2012,
+    "Watched Date": "2022-07-10",
+    "Stars": 8,
+    "Letterboxd": "https://boxd.it/2cCk",
+    "Director": "Quentin Tarantino",
+    "Runtime": 165
+   }
+  },
+  {
+   "title": "Daredevil",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/oCDBwSkntYamuw8VJIxMRCtDBmi.jpg",
+    "Year": 2003,
+    "Watched Date": "2022-07-10",
+    "Stars": 1,
+    "Letterboxd": "https://boxd.it/1YzG",
+    "Director": "Mark Steven Johnson",
+    "Runtime": 103
+   }
+  },
+  {
+   "title": "Catch Me If You Can",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/ctjEj2xM32OvBXCq8zAdK3ZrsAj.jpg",
+    "Year": 2002,
+    "Watched Date": "2022-07-10",
+    "Stars": 7,
+    "Letterboxd": "https://boxd.it/29VS",
+    "Director": "Steven Spielberg",
+    "Runtime": 141
+   }
+  },
+  {
+   "title": "Cars 2",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/okIz1HyxeVOMzYwwHUjH2pHi74I.jpg",
+    "Year": 2011,
+    "Watched Date": "2022-07-10",
+    "Stars": 7,
+    "Letterboxd": "https://boxd.it/H4Y",
+    "Director": "John Lasseter",
+    "Runtime": 106
+   }
+  },
+  {
+   "title": "Captain America: The First Avenger",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/vSNxAJTlD0r02V9sPYpOjqDZXUK.jpg",
+    "Year": 2011,
+    "Watched Date": "2022-07-10",
+    "Stars": 5,
+    "Letterboxd": "https://boxd.it/28b0",
+    "Director": "Joe Johnston",
+    "Runtime": 124
+   }
+  },
+  {
+   "title": "Blade",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/oWT70TvbsmQaqyphCZpsnQR7R32.jpg",
+    "Year": 1998,
+    "Watched Date": "2022-07-10",
+    "Stars": 4,
+    "Letterboxd": "https://boxd.it/1a8A",
+    "Director": "Stephen Norrington",
+    "Runtime": 121
+   }
+  },
+  {
+   "title": "Birdman",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/rHUg2AuIuLSIYMYFgavVwqt1jtc.jpg",
+    "Year": 2015,
+    "Watched Date": "2022-07-10",
+    "Stars": 10,
+    "Letterboxd": "https://boxd.it/frqO",
+    "Director": "Alejandro G. Iñárritu",
+    "Runtime": 120
+   }
+  },
+  {
+   "title": "Barry Lyndon",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/znfLskGQnXYB2xcOGM9eInRHPAV.jpg",
+    "Year": 1975,
+    "Watched Date": "2022-07-10",
+    "Stars": 8,
+    "Letterboxd": "https://boxd.it/25A2",
+    "Director": "Stanley Kubrick",
+    "Runtime": 188
+   }
+  },
+  {
+   "title": "Avengers: Endgame",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/ulzhLuWrPK07P1YkdWQLZnQh1JL.jpg",
+    "Year": 2019,
+    "Watched Date": "2022-07-10",
+    "Stars": 6,
+    "Letterboxd": "https://boxd.it/9vE4",
+    "Director": "Anthony Russo",
+    "Runtime": 181
+   }
+  },
+  {
+   "title": "American Psycho",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/9uGHEgsiUXjCNq8wdq4r49YL8A1.jpg",
+    "Year": 2000,
+    "Watched Date": "2022-07-10",
+    "Stars": 8,
+    "Letterboxd": "https://boxd.it/28Vs",
+    "Director": "Mary Harron",
+    "Runtime": 102
+   }
+  },
+  {
+   "title": "A Clockwork Orange",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/4sHeTAp65WrSSuc05nRBKddhBxO.jpg",
+    "Year": 1971,
+    "Watched Date": "2022-07-10",
+    "Stars": 10,
+    "Letterboxd": "https://boxd.it/2aVE",
+    "Director": "Stanley Kubrick",
+    "Runtime": 137
+   }
+  },
+  {
+   "title": "A Bug's Life",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/Ah3J9OJVc2CNCuH2zMydXy9fmIC.jpg",
+    "Year": 1998,
+    "Watched Date": "2022-07-10",
+    "Stars": 7,
+    "Letterboxd": "https://boxd.it/1Yyy",
+    "Director": "John Lasseter",
+    "Runtime": 95
+   }
+  },
+  {
+   "title": "2001: A Space Odyssey",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/ve72VxNqjGM69Uky4WTo2bK6rfq.jpg",
+    "Year": 1968,
+    "Watched Date": "2022-07-10",
+    "Stars": 10,
+    "Letterboxd": "https://boxd.it/2bf0",
+    "Director": "Stanley Kubrick",
+    "Runtime": 149
+   }
+  },
+  {
+   "title": "The Godfather",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/3bhkrj58Vtu7enYsRolD1fZdja1.jpg",
+    "Year": 1972,
+    "Watched Date": "2022-07-16",
+    "Stars": 10,
+    "Letterboxd": "https://boxd.it/2aNK",
+    "Director": "Francis Ford Coppola",
+    "Runtime": 175
+   }
+  },
+  {
+   "title": "Doctor Strange in the Multiverse of Madness",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/ddJcSKbcp4rKZTmuyWaMhuwcfMz.jpg",
+    "Year": 2022,
+    "Watched Date": "2022-07-26",
+    "Stars": 4,
+    "Letterboxd": "https://boxd.it/gaTc",
+    "Director": "Sam Raimi",
+    "Runtime": 126
+   }
+  },
+  {
+   "title": "Taxi Driver",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/ekstpH614fwDX8DUln1a2Opz0N8.jpg",
+    "Year": 1976,
+    "Watched Date": "2022-08-27",
+    "Stars": 10,
+    "Letterboxd": "https://boxd.it/2b8y",
+    "Director": "Martin Scorsese",
+    "Runtime": 114
+   }
+  },
+  {
+   "title": "Trainspotting",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/1jUC02qsqS2NxBMFarbIhcQtazV.jpg",
+    "Year": 1996,
+    "Watched Date": "2022-10-04",
+    "Stars": 10,
+    "Letterboxd": "https://boxd.it/29XY",
+    "Director": "Danny Boyle",
+    "Runtime": 94
+   }
+  },
+  {
+   "title": "Wonder Woman 1984",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/8UlWHLMpgZm9bx6QYh0NFoq67TZ.jpg",
+    "Year": 2020,
+    "Watched Date": "2023-01-02",
+    "Stars": 4,
+    "Letterboxd": "https://boxd.it/gBtA",
+    "Director": "Patty Jenkins",
+    "Runtime": 151
+   }
+  },
+  {
+   "title": "Shazam!",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/xnopI5Xtky18MPhK40cZAGAOVeV.jpg",
+    "Year": 2019,
+    "Watched Date": "2023-01-02",
+    "Stars": 6,
+    "Letterboxd": "https://boxd.it/8WBu",
+    "Director": "David F. Sandberg",
+    "Runtime": 132
+   }
+  },
+  {
+   "title": "Birds of Prey (and the Fantabulous Emancipation of One Harley Quinn)",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/h4VB6m0RwcicVEZvzftYZyKXs6K.jpg",
+    "Year": 2020,
+    "Watched Date": "2023-01-02",
+    "Stars": 6,
+    "Letterboxd": "https://boxd.it/hSyO",
+    "Director": "Cathy Yan",
+    "Runtime": 109
+   }
+  },
+  {
+   "title": "Aquaman",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/ufl63EFcc5XpByEV2Ecdw6WJZAI.jpg",
+    "Year": 2018,
+    "Watched Date": "2023-01-02",
+    "Stars": 7,
+    "Letterboxd": "https://boxd.it/9ru0",
+    "Director": "James Wan",
+    "Runtime": 143
+   }
+  },
+  {
+   "title": "Persona",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/fVA5hTcAOlW2LJyelViQfWHxUcx.jpg",
+    "Year": 1966,
+    "Watched Date": "2023-05-21",
+    "Stars": 10,
+    "Letterboxd": "https://boxd.it/29B4",
+    "Director": "Ingmar Bergman",
+    "Runtime": 85
+   }
+  },
+  {
+   "title": "The Adventures of Sharkboy and Lavagirl",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/xpFbHSkRgOxOoutKqXob9T8iBPA.jpg",
+    "Year": 2005,
+    "Watched Date": "2023-05-29",
+    "Stars": 4,
+    "Letterboxd": "https://boxd.it/1Ozm",
+    "Director": "Robert Rodriguez",
+    "Runtime": 92
+   }
+  },
+  {
+   "title": "Guardians of the Galaxy Vol. 3",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/r2J02Z2OpNTctfOSN1Ydgii51I3.jpg",
+    "Year": 2023,
+    "Watched Date": "2023-05-29",
+    "Stars": 9,
+    "Letterboxd": "https://boxd.it/fVNI",
+    "Director": "James Gunn",
+    "Runtime": 150
+   }
+  },
+  {
+   "title": "Neon Genesis Evangelion: The End of Evangelion",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/j6G24dqI4WgUtChhWjfnI4lnmiK.jpg",
+    "Year": 1997,
+    "Watched Date": "2023-06-04",
+    "Stars": 10,
+    "Letterboxd": "https://boxd.it/1GRM",
+    "Director": "Kazuya Tsurumaki",
+    "Runtime": 87
+   }
+  },
+  {
+   "title": "John Wick: Chapter 3 – Parabellum",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/ziEuG1essDuWuC5lpWUaw1uXY2O.jpg",
+    "Year": 2019,
+    "Watched Date": "2023-06-04",
+    "Stars": 9,
+    "Letterboxd": "https://boxd.it/gmFw",
+    "Director": "Chad Stahelski",
+    "Runtime": 131
+   }
+  },
+  {
+   "title": "Evangelion: 2.0 You Can (Not) Advance",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/7VLYN2CfJpB6PrcuzDKKqdGSUi6.jpg",
+    "Year": 2009,
+    "Watched Date": "2023-06-04",
+    "Stars": 8,
+    "Letterboxd": "https://boxd.it/1zYm",
+    "Director": "Masayuki",
+    "Runtime": 112
+   }
+  },
+  {
+   "title": "Spider-Man: Across the Spider-Verse",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/8Vt6mWEReuy4Of61Lnj5Xj704m8.jpg",
+    "Year": 2023,
+    "Watched Date": "2023-06-09",
+    "Stars": 10,
+    "Letterboxd": "https://boxd.it/kSz4",
+    "Director": "Kemp Powers",
+    "Runtime": 140
+   }
+  },
+  {
+   "title": "The Texas Chain Saw Massacre",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/mpgkRPH1GNkMCgdPk2OMyHzAks7.jpg",
+    "Year": 1974,
+    "Watched Date": "2023-06-23",
+    "Stars": 9,
+    "Letterboxd": "https://boxd.it/1lcS",
+    "Director": "Tobe Hooper",
+    "Runtime": 83
+   }
+  },
+  {
+   "title": "Gone Girl",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/ts996lKsxvjkO2yiYG0ht4qAicO.jpg",
+    "Year": 2014,
+    "Watched Date": "2023-07-10",
+    "Stars": 8,
+    "Letterboxd": "https://boxd.it/6hQu",
+    "Director": "David Fincher",
+    "Runtime": 149
+   }
+  },
+  {
+   "title": "Léon: The Professional",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/bxB2q91nKYp8JNzqE7t7TWBVupB.jpg",
+    "Year": 1994,
+    "Watched Date": "2023-07-15",
+    "Stars": 8,
+    "Letterboxd": "https://boxd.it/2b8S",
+    "Director": "Luc Besson",
+    "Runtime": 111
+   }
+  },
+  {
+   "title": "The Tale of The Princess Kaguya",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/cQidJuA546OSSXKWXoiCeINDxuj.jpg",
+    "Year": 2013,
+    "Watched Date": "2023-07-21",
+    "Stars": 10,
+    "Letterboxd": "https://boxd.it/4JQI",
+    "Director": "Isao Takahata",
+    "Runtime": 137
+   }
+  },
+  {
+   "title": "Nausicaä of the Valley of the Wind",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/tcrkfB8SRPQCgwI88hQScua6nxh.jpg",
+    "Year": 1984,
+    "Watched Date": "2023-07-23",
+    "Stars": 8,
+    "Letterboxd": "https://boxd.it/2bc6",
+    "Director": "Hayao Miyazaki",
+    "Runtime": 95
+   }
+  },
+  {
+   "title": "Ponyo",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/yp8vEZflGynlEylxEesbYasc06i.jpg",
+    "Year": 2008,
+    "Watched Date": "2023-07-27",
+    "Stars": 7,
+    "Letterboxd": "https://boxd.it/1S0A",
+    "Director": "Hayao Miyazaki",
+    "Runtime": 100
+   }
+  },
+  {
+   "title": "Casino",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/gziIkUSnYuj9ChCi8qOu2ZunpSC.jpg",
+    "Year": 1995,
+    "Watched Date": "2023-08-04",
+    "Stars": 9,
+    "Letterboxd": "https://boxd.it/2ads",
+    "Director": "Martin Scorsese",
+    "Runtime": 179
+   }
+  },
+  {
+   "title": "Battleship Potemkin",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/hZmsRLsCnE9Zshf1YJONUpCOhds.jpg",
+    "Year": 1925,
+    "Watched Date": "2023-08-08",
+    "Stars": 8,
+    "Letterboxd": "https://boxd.it/29Vo",
+    "Director": "Sergei Eisenstein",
+    "Runtime": 75
+   }
+  },
+  {
+   "title": "The Grand Budapest Hotel",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/zOVCqKUzjFKqa1eDMcOzvXwthY4.jpg",
+    "Year": 2014,
+    "Watched Date": "2023-08-16",
+    "Stars": 10,
+    "Letterboxd": "https://boxd.it/3ZqO",
+    "Director": "Wes Anderson",
+    "Runtime": 100
+   }
+  },
+  {
+   "title": "Fantastic Mr. Fox",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/euZyZb6iGreujYKrGyZHRddhUYh.jpg",
+    "Year": 2009,
+    "Watched Date": "2023-08-16",
+    "Stars": 10,
+    "Letterboxd": "https://boxd.it/1WyQ",
+    "Director": "Wes Anderson",
+    "Runtime": 87
+   }
+  },
+  {
+   "title": "American Gangster",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/sX9idXDqRUxE5ffww3n3RV5gL55.jpg",
+    "Year": 2007,
+    "Watched Date": "2024-01-26",
+    "Stars": 8,
+    "Letterboxd": "https://boxd.it/23wi",
+    "Director": "Ridley Scott",
+    "Runtime": 157
+   }
+  },
+  {
+   "title": "The Silence of the Lambs",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/uS9m8OBk1A8eM9I042bx8XXpqAq.jpg",
+    "Year": 1991,
+    "Watched Date": "2024-02-02",
+    "Stars": 10,
+    "Letterboxd": "https://boxd.it/2aHW",
+    "Director": "Jonathan Demme",
+    "Runtime": 119
+   }
+  },
+  {
+   "title": "Phone Booth",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/r6lIwPKVDa6Q76qH2TbIBqPhXL3.jpg",
+    "Year": 2002,
+    "Watched Date": "2024-02-08",
+    "Stars": 6,
+    "Letterboxd": "https://boxd.it/285G",
+    "Director": "Joel Schumacher",
+    "Runtime": 81
+   }
+  },
+  {
+   "title": "Dr. Strangelove or: How I Learned to Stop Worrying and Love the Bomb",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/6x7MzQ6BOMlRzam1StcmPO9v61g.jpg",
+    "Year": 1964,
+    "Watched Date": "2024-02-10",
+    "Stars": 8,
+    "Letterboxd": "https://boxd.it/29eY",
+    "Director": "Stanley Kubrick",
+    "Runtime": 95
+   }
+  },
+  {
+   "title": "Glass Onion",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/vDGr1YdrlfbU9wxTOdpf3zChmv9.jpg",
+    "Year": 2022,
+    "Watched Date": "2024-02-12",
+    "Stars": 8,
+    "Letterboxd": "https://boxd.it/oCkK",
+    "Director": "Rian Johnson",
+    "Runtime": 140
+   }
+  },
+  {
+   "title": "Licorice Pizza",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/ivXtvzfliGvoJ1DhSHIGyYBToWe.jpg",
+    "Year": 2021,
+    "Watched Date": "2024-02-15",
+    "Stars": 8,
+    "Letterboxd": "https://boxd.it/qTKY",
+    "Director": "Paul Thomas Anderson",
+    "Runtime": 133
+   }
+  },
+  {
+   "title": "The Fast and the Furious: Tokyo Drift",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/46xqGOwHbh2TH2avWSw3SMXph4E.jpg",
+    "Year": 2006,
+    "Watched Date": "2025-09-04",
+    "Stars": 5,
+    "Letterboxd": "https://boxd.it/1Yeo",
+    "Director": "Justin Lin",
+    "Runtime": 104
+   }
+  },
+  {
+   "title": "Now You See Me",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/tWsNYbrqy1p1w6K9zRk0mSchztT.jpg",
+    "Year": 2013,
+    "Watched Date": "2025-09-06",
+    "Stars": 5,
+    "Letterboxd": "https://boxd.it/2Bsu",
+    "Director": "Louis Leterrier",
+    "Runtime": 116
+   }
+  },
+  {
+   "title": "Swing Girls",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/5pAfMXqcaUjr0dBuOhLpTRbtZqa.jpg",
+    "Year": 2004,
+    "Watched Date": "2026-03-23",
+    "Stars": 8,
+    "Letterboxd": "https://boxd.it/1ag0",
+    "Director": "Shinobu Yaguchi",
+    "Runtime": 105
+   }
+  },
+  {
+   "title": "12 Angry Men",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/zhG3vKWyDRaZYoaww1UVAi29T9h.jpg",
+    "Year": 1957,
+    "Watched Date": "2026-06-29",
+    "Stars": 9,
+    "Letterboxd": "https://boxd.it/2auI",
+    "Director": "Sidney Lumet",
+    "Runtime": 97
+   }
+  },
+  {
+   "title": "Sweet Smell of Success",
+   "fields": {
+    "Cover": "https://image.tmdb.org/t/p/w500/akzvV8JasNrgEl5iAP9K6zPHGJe.jpg",
+    "Year": 1957,
+    "Watched Date": "2026-07-01",
+    "Stars": 10,
+    "Director": "Alexander Mackendrick",
+    "Runtime": 97
+   }
+  }
+ ]
+}
