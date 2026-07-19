@@ -1,0 +1,14 @@
+# Cloudflare Pages security headers for the SPA.
+# script-src 'self' is the key XSS mitigation (tokens live in localStorage).
+# - connect-src pins the API origin — update it if the backend URL changes.
+# - img-src allows any https host: list covers/posters are user-provided URLs
+#   (TMDB, Last.fm, OpenLibrary…).
+# - style-src needs 'unsafe-inline' (Angular injects component <style> tags)
+#   and fonts.googleapis.com (font stylesheets in index.html).
+# - If Cloudflare Turnstile is enabled later, add https://challenges.cloudflare.com
+#   to script-src and frame-src.
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://omnidesk-api-kwjj.onrender.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: no-referrer
+  Permissions-Policy: camera=(), microphone=(), geolocation=()

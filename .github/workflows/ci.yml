@@ -1,0 +1,40 @@
+# CI: typecheck both apps + AOT-build the Angular frontend.
+# The Angular build is the ONLY thing that validates templates (tsc does not),
+# so running it here catches template errors BEFORE Cloudflare deploys.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: pnpm --filter backend exec prisma generate
+
+      - name: Typecheck backend
+        run: pnpm --filter backend typecheck
+
+      - name: Typecheck frontend
+        run: pnpm --filter frontend typecheck
+
+      - name: Build frontend (AOT template validation)
+        run: pnpm --filter frontend exec ng build

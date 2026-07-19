@@ -50,8 +50,12 @@ export class HttpExceptionFilter implements ExceptionFilter {
         }
       }
     } else if (exception instanceof Error) {
-      message = exception.message || 'Internal server error';
-      this.logger.error(`Unhandled error at ${request.method} ${request.url}`, exception.stack);
+      // Never surface internal error messages (Prisma table/constraint names,
+      // driver errors…) to the client — log them, respond generically.
+      this.logger.error(
+        `Unhandled error at ${request.method} ${request.url}: ${exception.message}`,
+        exception.stack,
+      );
     } else {
       this.logger.error(`Unknown exception type at ${request.method} ${request.url}`, exception);
     }

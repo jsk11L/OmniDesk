@@ -4,7 +4,14 @@ import { map, Observable } from 'rxjs';
 
 import { environment } from '../../../../environments/environment';
 import type { ApiResponse } from '../../../core/models/api-response.model';
-import type { AnchoredNote, CreateNoteDto, Note, NoteAnchorType, UpdateNoteDto } from '../notes.types';
+import type {
+  AnchoredNote,
+  CreateNoteDto,
+  Note,
+  NoteAnchorType,
+  NoteSummary,
+  UpdateNoteDto,
+} from '../notes.types';
 
 export interface ImportReport {
   notesCreated: number;
@@ -29,12 +36,13 @@ export class NotesService {
       .pipe(map((r) => r.data));
   }
 
-  list(opts: { q?: string; tag?: string; pinned?: boolean } = {}): Observable<Note[]> {
+  /** Sidebar metadata only — note bodies come from findById when opened. */
+  list(opts: { q?: string; tag?: string; pinned?: boolean } = {}): Observable<NoteSummary[]> {
     let params = new HttpParams();
     if (opts.q) params = params.set('q', opts.q);
     if (opts.tag) params = params.set('tag', opts.tag);
     if (opts.pinned !== undefined) params = params.set('pinned', String(opts.pinned));
-    return this.http.get<ApiResponse<Note[]>>(this.base, { params }).pipe(map((r) => r.data));
+    return this.http.get<ApiResponse<NoteSummary[]>>(this.base, { params }).pipe(map((r) => r.data));
   }
 
   findById(id: string): Observable<Note> {

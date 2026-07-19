@@ -123,72 +123,70 @@ export class UploadsService {
     return { uploads, data };
   }
 
-  /** Estimated bytes of the user's actual content (text + JSON), grouped by module. */
+  /**
+   * Estimated bytes of the user's actual content (text + JSON), grouped by
+   * module. Aggregated IN SQL (octet_length sums) — the previous version
+   * loaded every note/item body into Node memory just to measure it.
+   */
   private async dataUsage(
     userId: string,
   ): Promise<{ total: number; breakdown: StorageBreakdownItem[] }> {
-    const b = (s: string | null | undefined): number => (s ? Buffer.byteLength(s, 'utf8') : 0);
-    const jb = (o: unknown): number => (o ? Buffer.byteLength(JSON.stringify(o), 'utf8') : 0);
+    type Agg = { count: bigint; bytes: bigint };
+    const one = (rows: Agg[]): { count: number; bytes: number } => ({
+      count: Number(rows[0]?.count ?? 0),
+      bytes: Number(rows[0]?.bytes ?? 0),
+    });
 
     const [notes, listItems, events, todoItems, habits, habitEntries, transactions] =
       await Promise.all([
-        this.prisma.note.findMany({
-          where: { userId },
-          select: { title: true, content: true, plainText: true },
-        }),
-        this.prisma.listItem.findMany({
-          where: { list: { userId } },
-          select: { title: true, customFields: true },
-        }),
-        this.prisma.calendarEvent.findMany({
-          where: { userId },
-          select: { title: true, description: true, location: true },
-        }),
-        this.prisma.todoItem.findMany({
-          where: { column: { board: { userId } } },
-          select: { title: true, description: true },
-        }),
-        this.prisma.habit.findMany({ where: { userId }, select: { name: true, description: true } }),
-        this.prisma.habitEntry.findMany({ where: { habit: { userId } }, select: { notes: true } }),
-        this.prisma.transaction.findMany({
-          where: { board: { userId } },
-          select: { title: true, notes: true },
-        }),
+        this.prisma.$queryRaw<Agg[]>`
+          SELECT COUNT(*) AS count,
+                 COALESCE(SUM(octet_length(title) + octet_length(coalesce(content,'')) + octet_length(coalesce("plainText",''))), 0) AS bytes
+          FROM "Note" WHERE "userId" = ${userId}`,
+        this.prisma.$queryRaw<Agg[]>`
+          SELECT COUNT(*) AS count,
+                 COALESCE(SUM(octet_length(i.title) + octet_length(coalesce(i."customFields"::text,''))), 0) AS bytes
+          FROM "ListItem" i JOIN "List" l ON l.id = i."listId" WHERE l."userId" = ${userId}`,
+        this.prisma.$queryRaw<Agg[]>`
+          SELECT COUNT(*) AS count,
+                 COALESCE(SUM(octet_length(title) + octet_length(coalesce(description,'')) + octet_length(coalesce(location,''))), 0) AS bytes
+          FROM "CalendarEvent" WHERE "userId" = ${userId}`,
+        this.prisma.$queryRaw<Agg[]>`
+          SELECT COUNT(*) AS count,
+                 COALESCE(SUM(octet_length(t.title) + octet_length(coalesce(t.description,''))), 0) AS bytes
+          FROM "TodoItem" t
+          JOIN "TodoColumn" c ON c.id = t."columnId"
+          JOIN "TodoBoard" b ON b.id = c."boardId"
+          WHERE b."userId" = ${userId}`,
+        this.prisma.$queryRaw<Agg[]>`
+          SELECT COUNT(*) AS count,
+                 COALESCE(SUM(octet_length(name) + octet_length(coalesce(description,''))), 0) AS bytes
+          FROM "Habit" WHERE "userId" = ${userId}`,
+        this.prisma.$queryRaw<Agg[]>`
+          SELECT COUNT(*) AS count,
+                 COALESCE(SUM(octet_length(coalesce(e.notes,''))), 0) AS bytes
+          FROM "HabitEntry" e JOIN "Habit" h ON h.id = e."habitId" WHERE h."userId" = ${userId}`,
+        this.prisma.$queryRaw<Agg[]>`
+          SELECT COUNT(*) AS count,
+                 COALESCE(SUM(octet_length(tr.title) + octet_length(coalesce(tr.notes,''))), 0) AS bytes
+          FROM "Transaction" tr JOIN "FinanceBoard" fb ON fb.id = tr."boardId" WHERE fb."userId" = ${userId}`,
       ]);
 
+    const n = one(notes);
+    const li = one(listItems);
+    const ev = one(events);
+    const td = one(todoItems);
+    const h = one(habits);
+    const he = one(habitEntries);
+    const tr = one(transactions);
+
     const breakdown: StorageBreakdownItem[] = [
-      {
-        module: 'Notes',
-        count: notes.length,
-        bytes: notes.reduce((s, n) => s + b(n.title) + b(n.content) + b(n.plainText), 0),
-      },
-      {
-        module: 'List items',
-        count: listItems.length,
-        bytes: listItems.reduce((s, i) => s + b(i.title) + jb(i.customFields), 0),
-      },
-      {
-        module: 'Calendar',
-        count: events.length,
-        bytes: events.reduce((s, e) => s + b(e.title) + b(e.description) + b(e.location), 0),
-      },
-      {
-        module: 'To-Do',
-        count: todoItems.length,
-        bytes: todoItems.reduce((s, t) => s + b(t.title) + b(t.description), 0),
-      },
-      {
-        module: 'Habits',
-        count: habits.length + habitEntries.length,
-        bytes:
-          habits.reduce((s, h) => s + b(h.name) + b(h.description), 0) +
-          habitEntries.reduce((s, e) => s + b(e.notes), 0),
-      },
-      {
-        module: 'Finance',
-        count: transactions.length,
-        bytes: transactions.reduce((s, t) => s + b(t.title) + b(t.notes), 0),
-      },
+      { module: 'Notes', count: n.count, bytes: n.bytes },
+      { module: 'List items', count: li.count, bytes: li.bytes },
+      { module: 'Calendar', count: ev.count, bytes: ev.bytes },
+      { module: 'To-Do', count: td.count, bytes: td.bytes },
+      { module: 'Habits', count: h.count + he.count, bytes: h.bytes + he.bytes },
+      { module: 'Finance', count: tr.count, bytes: tr.bytes },
     ];
     const total = breakdown.reduce((s, x) => s + x.bytes, 0);
     return { total, breakdown };

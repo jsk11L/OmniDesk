@@ -10,9 +10,11 @@ import {
 import { NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ToastrService } from 'ngx-toastr';
 import { HttpErrorResponse } from '@angular/common/http';
+import { Subject, debounceTime } from 'rxjs';
 
 import { ListsService } from '../services/lists.service';
 import { TagChipComponent } from '../../../shared/components/tag-chip/tag-chip.component';
@@ -160,7 +162,7 @@ interface CardFieldRow {
           <input
             type="search"
             [(ngModel)]="search"
-            (ngModelChange)="reload()"
+            (ngModelChange)="onSearchInput()"
             placeholder="Search…"
             class="px-3 py-2 bg-surface border border-border rounded text-sm outline-none focus:border-primary w-64"
           />
@@ -634,6 +636,17 @@ export class ListDetailComponent implements OnInit {
   protected readonly layoutEditorFieldId = signal<string | null>(null);
   protected readonly titleKey = TITLE_KEY;
   protected search = '';
+
+  /** Debounced search — reload() per keystroke was one API call per key. */
+  private readonly search$ = new Subject<void>();
+
+  constructor() {
+    this.search$.pipe(debounceTime(300), takeUntilDestroyed()).subscribe(() => this.reload());
+  }
+
+  protected onSearchInput(): void {
+    this.search$.next();
+  }
 
   /**
    * Rows for the Fields popover: the card flow (visible fields + the movable
@@ -1268,6 +1281,12 @@ export class ListDetailComponent implements OnInit {
       if (candidates.length === 0) {
         this.toastr.info('No items found in the file');
         return;
+      }
+      // Reviewing is one dialog per item — cap so a huge file stays sane.
+      const MAX_REVIEW_ITEMS = 500;
+      if (candidates.length > MAX_REVIEW_ITEMS) {
+        this.toastr.info(`File has ${candidates.length} items — reviewing the first ${MAX_REVIEW_ITEMS}`);
+        candidates = candidates.slice(0, MAX_REVIEW_ITEMS);
       }
       this.reviewImportQueue(candidates, 0, 0);
     };

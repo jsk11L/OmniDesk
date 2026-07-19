@@ -301,7 +301,9 @@ export class AuthService {
     }
 
     const user = await this.users.findById(payload.sub);
-    if (!user) {
+    // Suspended/deleted accounts must not mint fresh access tokens (the guard
+    // would reject them anyway, but don't hand out tokens in the first place).
+    if (!user || user.deletedAt || user.isSuspended) {
       throw new UnauthorizedException('Invalid refresh token');
     }
 

@@ -106,6 +106,12 @@ export class CalendarService {
   async delete(userId: string, id: string): Promise<{ id: string }> {
     await this.findById(userId, id);
     await this.prisma.calendarEvent.delete({ where: { id } });
+    // Unanchor the event's note (if any) so it isn't orphaned — it goes back
+    // to the main notes list instead of pointing at a dead element.
+    await this.prisma.note.updateMany({
+      where: { anchorType: 'event', anchorId: id },
+      data: { anchorType: null, anchorId: null },
+    });
     return { id };
   }
 

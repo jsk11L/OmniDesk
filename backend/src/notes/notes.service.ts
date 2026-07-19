@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import type { Note, NoteNotification, Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/client';
+import type { Note, NoteNotification } from '@prisma/client';
 
 import { PrismaService } from '../prisma/prisma.service';
 import {
@@ -18,11 +19,34 @@ export interface ListNotesParams extends PaginationQuery {
   pinned?: string;
 }
 
+/**
+ * Sidebar projection: everything EXCEPT `content`/`plainText`. A vault-sized
+ * account was shipping megabytes of note bodies on every list/search request;
+ * the editor loads the full note via findById when one is opened.
+ */
+const NOTE_LIST_SELECT = {
+  id: true,
+  userId: true,
+  title: true,
+  description: true,
+  icon: true,
+  coverImageUrl: true,
+  isPinned: true,
+  tags: true,
+  anchorType: true,
+  anchorId: true,
+  createdAt: true,
+  updatedAt: true,
+  notifications: true,
+} satisfies Prisma.NoteSelect;
+
+export type NoteListEntry = Prisma.NoteGetPayload<{ select: typeof NOTE_LIST_SELECT }>;
+
 @Injectable()
 export class NotesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async list(userId: string, params: ListNotesParams): Promise<Paginated<Note>> {
+  async list(userId: string, params: ListNotesParams): Promise<Paginated<NoteListEntry>> {
     // Anchored notes live with their element, not in the main notes list.
     const where: Prisma.NoteWhereInput = { userId, anchorType: null };
 
@@ -44,7 +68,7 @@ export class NotesService {
       this.prisma.note.findMany({
         where,
         orderBy: [{ isPinned: 'desc' }, { updatedAt: 'desc' }],
-        include: { notifications: true },
+        select: NOTE_LIST_SELECT,
         skip: pagination.skip,
         take: pagination.take,
       }),
@@ -68,21 +92,30 @@ export class NotesService {
   async create(userId: string, dto: CreateNoteDto): Promise<Note> {
     const content = dto.content ?? '';
     const anchor = await this.resolveAnchor(userId, dto.anchorType, dto.anchorId);
-    return this.prisma.note.create({
-      data: {
-        userId,
-        title: dto.title,
-        content,
-        plainText: this.derivePlainText(content),
-        description: dto.description ?? null,
-        icon: dto.icon ?? null,
-        coverImageUrl: dto.coverImageUrl ?? null,
-        isPinned: dto.isPinned ?? false,
-        tags: dto.tags ?? [],
-        anchorType: anchor?.type ?? null,
-        anchorId: anchor?.id ?? null,
-      },
-    });
+    try {
+      return await this.prisma.note.create({
+        data: {
+          userId,
+          title: dto.title,
+          content,
+          plainText: this.derivePlainText(content),
+          description: dto.description ?? null,
+          icon: dto.icon ?? null,
+          coverImageUrl: dto.coverImageUrl ?? null,
+          isPinned: dto.isPinned ?? false,
+          tags: dto.tags ?? [],
+          anchorType: anchor?.type ?? null,
+          anchorId: anchor?.id ?? null,
+        },
+      });
+    } catch (err) {
+      // Concurrent create for the same anchor slips past resolveAnchor's check
+      // and hits the unique index — answer 400, not 500.
+      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
+        throw new BadRequestException('This element already has an anchored note');
+      }
+      throw err;
+    }
   }
 
   /** Notes anchored to an element, with the element's live label resolved. */

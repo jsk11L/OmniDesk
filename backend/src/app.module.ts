@@ -50,7 +50,9 @@ import { SearchModule } from './search/search.module';
       {
         name: 'default',
         ttl: 15 * 60 * 1000,
-        limit: 100,
+        // Generous for normal SPA traffic (autosave + search + navigation);
+        // sensitive endpoints keep their own strict @Throttle overrides.
+        limit: 600,
       },
     ]),
     ScheduleModule.forRoot(),

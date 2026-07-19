@@ -17,6 +17,11 @@ async function bootstrap(): Promise<void> {
   const frontendUrl = config.get<string>('FRONTEND_URL', 'http://localhost:4200');
   const nodeEnv = config.get<string>('NODE_ENV', 'development');
 
+  // Behind Render's load balancer req.ip would otherwise be the proxy's IP for
+  // EVERY user — sharing one throttle bucket app-wide and logging wrong IPs.
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+  app.getHttpAdapter().getInstance().set('trust proxy', 1);
+
   app.use(
     helmet({
       contentSecurityPolicy: {

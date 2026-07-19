@@ -10,9 +10,11 @@ import {
 import { FormsModule } from '@angular/forms';
 import { NgTemplateOutlet } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatDialog } from '@angular/material/dialog';
 import { ToastrService } from 'ngx-toastr';
 import { HttpErrorResponse } from '@angular/common/http';
+import { Subject, debounceTime } from 'rxjs';
 
 import { NotesService } from '../services/notes.service';
 import { NoteEditorComponent } from '../note-editor/note-editor.component';
@@ -21,7 +23,7 @@ import {
   type AnchoredNoteDialogData,
   type AnchoredNoteDialogResult,
 } from '../anchored-note-dialog/anchored-note-dialog.component';
-import type { AnchoredNote, Note, NoteAnchorType } from '../notes.types';
+import type { AnchoredNote, Note, NoteAnchorType, NoteSummary } from '../notes.types';
 
 @Component({
   selector: 'app-notes-home',
@@ -63,7 +65,7 @@ import type { AnchoredNote, Note, NoteAnchorType } from '../notes.types';
           <input
             type="search"
             [(ngModel)]="search"
-            (ngModelChange)="reload()"
+            (ngModelChange)="onSearchInput()"
             placeholder="Search note or tag…"
             class="w-full px-3 py-2 bg-surface border border-border rounded text-sm outline-none focus:border-primary"
           />
@@ -184,13 +186,13 @@ import type { AnchoredNote, Note, NoteAnchorType } from '../notes.types';
       <section
         [class]="
           'flex-1 overflow-hidden flex-col min-w-0 ' +
-          (selectedNote() ? 'flex' : 'hidden md:flex')
+          (selectedId() ? 'flex' : 'hidden md:flex')
         "
       >
         @if (selectedNote(); as note) {
           <button
             type="button"
-            (click)="selectedId.set(null)"
+            (click)="selectedId.set(null); selectedNote.set(null)"
             class="md:hidden px-4 py-2 text-sm text-text-muted hover:text-text border-b border-border text-left shrink-0"
           >
             ← Notes
@@ -227,15 +229,28 @@ export class NotesHomeComponent implements OnInit {
   private pendingSelectId: string | null = null;
 
   protected readonly loading = signal(true);
-  protected readonly notes = signal<Note[]>([]);
+  protected readonly notes = signal<NoteSummary[]>([]);
   protected readonly selectedId = signal<string | null>(null);
+  /** Full note (with content) for the editor — fetched on select. */
+  protected readonly selectedNote = signal<Note | null>(null);
   protected search = '';
+
+  /** Debounced search — reload() per keystroke was one API call per key. */
+  private readonly search$ = new Subject<void>();
+
+  constructor() {
+    this.search$.pipe(debounceTime(300), takeUntilDestroyed()).subscribe(() => this.reload());
+  }
+
+  protected onSearchInput(): void {
+    this.search$.next();
+  }
 
   /** How many "All" notes show per horizontal page. */
   private readonly pageSize = 10;
   protected readonly page = signal(0);
 
-  private readonly byRecent = (a: Note, b: Note) =>
+  private readonly byRecent = (a: NoteSummary, b: NoteSummary) =>
     new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
 
   protected readonly pinnedNotes = computed(() =>
@@ -263,10 +278,6 @@ export class NotesHomeComponent implements OnInit {
     this.page.update((p) => Math.min(this.totalPages() - 1, p + 1));
   }
 
-  protected readonly selectedNote = computed(() => {
-    const id = this.selectedId();
-    return id ? this.notes().find((n) => n.id === id) ?? null : null;
-  });
 
   @HostListener('document:keydown', ['$event'])
   onKeydown(event: KeyboardEvent): void {
@@ -282,8 +293,19 @@ export class NotesHomeComponent implements OnInit {
     this.loadAnchored();
   }
 
-  protected select(note: Note): void {
+  protected select(note: NoteSummary): void {
     this.selectedId.set(note.id);
+    // The list only carries metadata — fetch the full body for the editor.
+    this.service.findById(note.id).subscribe({
+      next: (full) => {
+        // Guard against a stale response after switching selection quickly.
+        if (this.selectedId() === full.id) this.selectedNote.set(full);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.selectedId.set(null);
+        this.toastr.error(this.errMsg(err));
+      },
+    });
   }
 
   protected toggleAnchored(): void {
@@ -327,7 +349,7 @@ export class NotesHomeComponent implements OnInit {
         // Honor a deep-link (?note=<id>) once, after the list is available.
         if (this.pendingSelectId) {
           const target = notes.find((n) => n.id === this.pendingSelectId);
-          if (target) this.selectedId.set(target.id);
+          if (target) this.select(target);
           this.pendingSelectId = null;
         }
       },
@@ -343,6 +365,7 @@ export class NotesHomeComponent implements OnInit {
       next: (note) => {
         this.notes.update((arr) => [note, ...arr]);
         this.selectedId.set(note.id);
+        this.selectedNote.set(note); // create returns the full note — no refetch
         this.toastr.success('Note created');
       },
       error: (err: HttpErrorResponse) => this.toastr.error(this.errMsg(err)),
@@ -351,11 +374,15 @@ export class NotesHomeComponent implements OnInit {
 
   protected onDeleted(id: string): void {
     this.notes.update((arr) => arr.filter((n) => n.id !== id));
-    if (this.selectedId() === id) this.selectedId.set(null);
+    if (this.selectedId() === id) {
+      this.selectedId.set(null);
+      this.selectedNote.set(null);
+    }
   }
 
   protected onUpdated(updated: Note): void {
     this.notes.update((arr) => arr.map((n) => (n.id === updated.id ? updated : n)));
+    if (this.selectedId() === updated.id) this.selectedNote.set(updated);
   }
 
   protected formatDate(iso: string): string {

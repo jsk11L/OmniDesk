@@ -22,3 +22,9 @@ export type UpdateNoteDto = Partial<Omit<CreateNoteDto, 'anchorType' | 'anchorId
 
 /** An anchored note plus the live label of the element it's tied to. */
 export type AnchoredNote = Note & { anchorLabel: string | null };
+
+/**
+ * Sidebar projection returned by GET /notes: everything except the (possibly
+ * huge) `content`/`plainText`. Open a note via findById to get the full body.
+ */
+export type NoteSummary = Omit<Note, 'content' | 'plainText'>;

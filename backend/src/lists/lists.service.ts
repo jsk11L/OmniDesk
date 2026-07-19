@@ -109,6 +109,15 @@ export class ListsService {
 
   async delete(userId: string, id: string): Promise<{ id: string }> {
     await this.assertOwner(userId, id);
+    // Anchored notes of the list's items would be orphaned by the cascade —
+    // unanchor them first so they resurface in the main notes list.
+    const items = await this.prisma.listItem.findMany({ where: { listId: id }, select: { id: true } });
+    if (items.length) {
+      await this.prisma.note.updateMany({
+        where: { anchorType: 'list-item', anchorId: { in: items.map((i) => i.id) } },
+        data: { anchorType: null, anchorId: null },
+      });
+    }
     await this.prisma.list.delete({ where: { id } });
     return { id };
   }
@@ -229,6 +238,12 @@ export class ListsService {
       throw new NotFoundException('Item not found');
     }
     await this.prisma.listItem.delete({ where: { id: itemId } });
+    // Unanchor this item's note (if any) so it isn't orphaned — it goes back
+    // to the main notes list instead of pointing at a dead element.
+    await this.prisma.note.updateMany({
+      where: { anchorType: 'list-item', anchorId: itemId },
+      data: { anchorType: null, anchorId: null },
+    });
     return { id: itemId };
   }
 
