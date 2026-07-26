@@ -256,6 +256,32 @@ interface NavItem {
       color: var(--color-danger);
       border-color: var(--color-border);
     }
+
+    /* ─── Mobile drawer: bigger touch targets, no desktop-only chrome ─── */
+    @media (max-width: 1023px) {
+      .sb { width: min(84vw, 300px); }
+      .sb-header { padding: 18px 16px 14px; }
+      .sb-logo { width: 34px; height: 34px; font-size: 16px; border-radius: 8px; }
+      .sb-title { font-size: 17px; }
+
+      .sb-search { padding: 12px; margin: 12px; width: calc(100% - 24px); }
+      .sb-search-ico { font-size: 15px; }
+      .sb-search-text { font-size: 15px; }
+      .kbd { display: none; } /* keyboard shortcut means nothing on touch */
+
+      .sb-section-label { font-size: 11px; padding: 12px 14px 6px; }
+      .nav-item { padding: 12px 14px; font-size: 15px; border-radius: 10px; min-height: 48px; }
+      .nav-ico { width: 24px; font-size: 19px; }
+      .nav-item.active::before { top: 10px; bottom: 10px; }
+
+      .lang-row { padding: 11px 14px; min-height: 46px; }
+      .lang-select { font-size: 15px; }
+      .user-pill { padding: 10px; gap: 10px; }
+      .user-avatar, .user-avatar-img { width: 40px; height: 40px; }
+      .user-name { font-size: 15px; }
+      .user-status { font-size: 12px; }
+      .user-logout { width: 42px; height: 42px; font-size: 17px; }
+    }
   `],
 })
 export class SidebarComponent {

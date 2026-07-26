@@ -126,14 +126,18 @@ interface CardFieldRow {
             }
             @if (enableRoulette()) {
               <button type="button" (click)="openRoulette()" class="px-3 py-2 rounded text-sm hover:bg-surface-hover" title="Pick a random item">
-                🎲 Random
+                🎲<span class="hidden sm:inline"> Random</span>
               </button>
             }
             <button type="button" (click)="openCardStyle()" class="px-3 py-2 rounded text-sm hover:bg-surface-hover" title="Card typography & style">
-              🎨 Style
+              🎨<span class="hidden sm:inline"> Style</span>
             </button>
-            <button type="button" (click)="openSettings()" class="px-3 py-2 rounded text-sm hover:bg-surface-hover">
-              ⚙ Settings
+            <button type="button" (click)="openSettings()" class="px-3 py-2 rounded text-sm hover:bg-surface-hover" title="List settings">
+              ⚙<span class="hidden sm:inline"> Settings</span>
+            </button>
+            <button type="button" (click)="optionsOpen.set(true)"
+              class="lg:hidden px-3 py-2 rounded text-sm border border-border hover:bg-surface-hover" title="Search & filters">
+              🔧
             </button>
             <div class="relative">
               <button type="button" (click)="addMenuOpen.set(!addMenuOpen())" [disabled]="!list()"
@@ -158,13 +162,21 @@ interface CardFieldRow {
           </div>
         </div>
 
-        <div class="flex items-center gap-3 flex-wrap">
+        @if (optionsOpen()) {
+          <div class="lg:hidden fixed inset-0 z-40 bg-black/50" (click)="optionsOpen.set(false)"></div>
+        }
+        <div [class]="'list-controls flex items-center gap-3 flex-wrap ' + (optionsOpen() ? 'list-controls-open' : '')">
+          <div class="lc-head lg:hidden flex items-center justify-between w-full pb-2 mb-1 border-b border-border">
+            <span class="text-sm font-semibold">Search &amp; filters</span>
+            <button type="button" (click)="optionsOpen.set(false)"
+              class="w-9 h-9 grid place-items-center rounded hover:bg-surface-hover text-lg">✕</button>
+          </div>
           <input
             type="search"
             [(ngModel)]="search"
             (ngModelChange)="onSearchInput()"
             placeholder="Search…"
-            class="px-3 py-2 bg-surface border border-border rounded text-sm outline-none focus:border-primary w-64"
+            class="lc-search px-3 py-2 bg-surface border border-border rounded text-sm outline-none focus:border-primary w-64"
           />
 
           <select [ngModel]="effectiveTemplate()" (ngModelChange)="setTemplate($event)"
@@ -606,6 +618,41 @@ interface CardFieldRow {
       overflow: hidden;
       text-overflow: ellipsis;
     }
+
+    /* Desktop: the controls are just the inline toolbar row. The .lc-head
+       (mobile drawer header) is hidden by its lg:hidden Tailwind class. */
+
+    /* ─── Mobile: search & filters become a slide-in right drawer ─── */
+    @media (max-width: 1023px) {
+      .list-controls {
+        position: fixed;
+        top: 0;
+        right: 0;
+        z-index: 50;
+        height: 100dvh;
+        width: min(86vw, 340px);
+        flex-direction: column;
+        align-items: stretch;
+        flex-wrap: nowrap;
+        gap: 12px;
+        padding: 16px;
+        overflow-y: auto;
+        background: var(--color-surface);
+        border-left: 1px solid var(--color-border);
+        box-shadow: -10px 0 28px rgba(0, 0, 0, 0.32);
+        transform: translateX(100%);
+        transition: transform 0.22s ease;
+      }
+      .list-controls.list-controls-open { transform: translateX(0); }
+      /* Every control spans the drawer width; the search loses its w-64. */
+      .list-controls > *,
+      .list-controls .lc-search { width: 100%; }
+      .list-controls .relative { width: 100%; }
+      /* The items-count span shouldn't push to the right in a column. */
+      .list-controls .ml-auto { margin-left: 0; }
+      /* Popovers (Fields) sit under their trigger, full width. */
+      .list-controls .relative > .absolute { position: static; width: 100%; max-height: none; box-shadow: none; margin-top: 6px; }
+    }
   `],
 })
 export class ListDetailComponent implements OnInit {
@@ -632,6 +679,8 @@ export class ListDetailComponent implements OnInit {
   protected readonly fieldsPanelOpen = signal(false);
   /** The "+ Add item" dropdown (Create / Import). */
   protected readonly addMenuOpen = signal(false);
+  /** Mobile: the search & filters right-hand drawer. */
+  protected readonly optionsOpen = signal(false);
   /** Which field's per-card style editor is expanded, if any. */
   protected readonly layoutEditorFieldId = signal<string | null>(null);
   protected readonly titleKey = TITLE_KEY;
