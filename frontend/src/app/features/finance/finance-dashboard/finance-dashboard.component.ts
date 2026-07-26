@@ -63,14 +63,19 @@ import type {
           />
         </div>
         <div class="flex gap-2">
-          <button
-            type="button"
-            (click)="addRecurring()"
-            [disabled]="!board()"
-            class="px-3 py-2 rounded text-sm hover:bg-surface-hover disabled:opacity-50"
-          >
-            + Recurring
-          </button>
+          <div class="relative">
+            @if (moreMenuOpen()) {
+              <div class="fixed inset-0 z-20" (click)="moreMenuOpen.set(false)"></div>
+            }
+            <button type="button" (click)="moreMenuOpen.set(!moreMenuOpen())" [disabled]="!board()"
+              class="px-3 py-2 rounded text-sm hover:bg-surface-hover border border-border disabled:opacity-50" title="More actions">⋯</button>
+            @if (moreMenuOpen()) {
+              <div class="absolute z-30 mt-1 right-0 w-52 bg-surface border border-border rounded-lg shadow-lg p-1">
+                <button type="button" (click)="moreMenuOpen.set(false); addRecurring()"
+                  class="w-full text-left px-3 py-2 text-sm rounded hover:bg-surface-hover">+ Recurring transaction</button>
+              </div>
+            }
+          </div>
           <button
             type="button"
             (click)="addTransaction()"
@@ -390,6 +395,8 @@ export class FinanceDashboardComponent implements OnInit {
   protected readonly loading = signal(true);
   protected readonly boards = signal<FinanceBoard[]>([]);
   protected readonly board = signal<FinanceBoard | null>(null);
+  /** Overflow menu for secondary finance actions. */
+  protected readonly moreMenuOpen = signal(false);
   protected readonly transactions = signal<Transaction[]>([]);
   protected readonly recurring = signal<RecurringTransaction[]>([]);
   protected readonly summary = signal<FinanceSummary | null>(null);

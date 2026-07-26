@@ -14,8 +14,10 @@ const config: CapacitorConfig = {
   appName: 'OmniDesk',
   webDir: 'frontend/dist/frontend/browser',
   server: {
-    // The live web app — the same origin as FRONTEND_URL on Render.
-    url: 'https://omnidesk-8no.pages.dev',
+    // Boot straight into the app (skip the marketing landing at `/`). The auth
+    // guard sends unauthenticated users to /auth/login, authenticated ones to
+    // the dashboard — so the native app never shows the web landing page.
+    url: 'https://omnidesk-8no.pages.dev/app',
     cleartext: false,
   },
   android: {

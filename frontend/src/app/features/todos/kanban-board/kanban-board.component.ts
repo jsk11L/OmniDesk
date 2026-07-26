@@ -67,21 +67,21 @@ const PRIORITY_LABEL: Record<TodoPriority, string> = {
             }
           </div>
           <div class="flex items-center gap-2">
-            <button
-              type="button"
-              (click)="createBoard()"
-              class="px-3 py-2 rounded text-sm hover:bg-surface-hover"
-            >
-              + Board
-            </button>
-            <button
-              type="button"
-              (click)="addColumn()"
-              [disabled]="!board()"
-              class="px-3 py-2 rounded text-sm hover:bg-surface-hover disabled:opacity-50"
-            >
-              + Column
-            </button>
+            <div class="relative">
+              @if (moreMenuOpen()) {
+                <div class="fixed inset-0 z-20" (click)="moreMenuOpen.set(false)"></div>
+              }
+              <button type="button" (click)="moreMenuOpen.set(!moreMenuOpen())"
+                class="px-3 py-2 rounded text-sm hover:bg-surface-hover border border-border" title="More actions">⋯</button>
+              @if (moreMenuOpen()) {
+                <div class="absolute z-30 mt-1 right-0 w-48 bg-surface border border-border rounded-lg shadow-lg p-1">
+                  <button type="button" (click)="moreMenuOpen.set(false); createBoard()"
+                    class="w-full text-left px-3 py-2 text-sm rounded hover:bg-surface-hover">+ New board</button>
+                  <button type="button" (click)="moreMenuOpen.set(false); addColumn()" [disabled]="!board()"
+                    class="w-full text-left px-3 py-2 text-sm rounded hover:bg-surface-hover disabled:opacity-40">+ New column</button>
+                </div>
+              }
+            </div>
             <button
               type="button"
               (click)="addItem(null)"
@@ -274,6 +274,8 @@ export class KanbanBoardComponent implements OnInit {
   // ─── Tag filter ──────────────────────────────────────────
   protected readonly selectedTags = signal<string[]>([]);
   protected readonly tagMode = signal<'or' | 'and'>('or');
+  /** Overflow menu for secondary board/column actions. */
+  protected readonly moreMenuOpen = signal(false);
 
   /** Distinct tags across every item on the board, sorted. */
   protected readonly allTags = computed<string[]>(() => {
